@@ -1044,6 +1044,7 @@ static void fill_network_info(char* output, size_t max_length)
 // {
 //     return 0;
 // }
+void UpdateSettingValue(const char*, int);
 
 static void parse_config(char* config_data, int buffer_len, struct aknano_settings *aknano_settings)
 {
@@ -1094,12 +1095,28 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
                 //         &aknano_settings->polling_interval,
                 //         sizeof(aknano_settings->polling_interval));
             } else {
-                LogInfo(("parse_config_data: Polling interval is unchanged (%d)",
-                        aknano_settings->polling_interval));
+                // LogInfo(("parse_config_data: Polling interval is unchanged (%d)",
+                //         aknano_settings->polling_interval));
             }
         } else {
             LogInfo(("parse_config_data: polling_interval config not found"));
         }
+
+        result = JSON_Search( config_data, buffer_len,
+                             "btn_polling_interval.Value", strlen("btn_polling_interval.Value"),
+                              &value, &valueLength );
+
+        if( result == JSONSuccess ) {
+            if (sscanf(value, "%d", &int_value) <= 0) {
+                LogWarn(("Invalid btn_polling_interval '%s'", value));
+                return -1;
+            }
+            UpdateSettingValue("btn_polling_interval", int_value);
+        } else {
+            LogInfo(("parse_config_data: polling_interval config not found"));
+        }
+
+
     } else {
         LogWarn(("Invalid config JSON result=%d", result));
     }
@@ -1425,7 +1442,7 @@ static bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
 
         LogInfo((ANSI_COLOR_YELLOW "Sending %s event" ANSI_COLOR_RESET,
                 event_type));
-        LogInfo(("Event payload: %.50s", bodyBuffer));
+        LogInfo(("Event payload: %.80s (...)", bodyBuffer));
 
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_POST,
                                             "/events", bodyBuffer, strlen(bodyBuffer), &xResponse, aknano_settings);
@@ -1510,9 +1527,10 @@ int AkNanoPoll(struct aknano_context *aknano_context)
             if (aknano_context->aknano_json_data.selected_target.version == 0) {
                 LogInfo(("* No matching target found in manifest"));
             } else {
-                LogInfo(("* Manifest data parsing result: highest version=%u last unconfirmed applied=%d",
+                LogInfo(("* Manifest data parsing result: highest version=%u  last unconfirmed applied=%d  running version=%d",
                     aknano_context->aknano_json_data.selected_target.version,
-                    aknano_settings->last_applied_version));
+                    aknano_settings->last_applied_version,
+                    aknano_settings->running_version));
 
                 if (aknano_context->aknano_json_data.selected_target.version == aknano_settings->last_applied_version) {
                     LogInfo(("* Same version was already applied (and failed). Do not retrying it"));
@@ -1649,10 +1667,10 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%u", aknano_settings->running_version));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate, sizeof(aknano_settings->device_certificate));
-    LogInfo(("AkNanoInitSettings: device_certificate=%.30s", aknano_settings->device_certificate));
+    LogInfo(("AkNanoInitSettings: device_certificate=%.30s (...)", aknano_settings->device_certificate));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, aknano_settings->device_priv_key, sizeof(aknano_settings->device_priv_key));
-    LogInfo(("AkNanoInitSettings: device_priv_key=%.30s", aknano_settings->device_priv_key));
+    LogInfo(("AkNanoInitSettings: device_priv_key=%.30s (...)", aknano_settings->device_priv_key));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_SERIAL, aknano_settings->serial, sizeof(aknano_settings->serial));
     LogInfo(("AkNanoInitSettings: serial=%s", aknano_settings->serial));
