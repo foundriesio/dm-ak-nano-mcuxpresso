@@ -1063,9 +1063,9 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
 
         if( result == JSONSuccess ) {
             if (strncmp(value, aknano_settings->tag, valueLength)) {
-                LogInfo(("parse_config_data: Tag has changed ('%s' => '%s'). Updating value",
+                LogInfo(("parse_config_data: Tag has changed ('%s' => '%.*s')",
                         aknano_settings->tag,
-                        value));
+                        valueLength, value));
                 strncpy(aknano_settings->tag, value,
                         valueLength);
                 aknano_settings->tag[valueLength] = '\0';
@@ -1088,7 +1088,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
             }
 
             if (int_value != aknano_settings->polling_interval) {
-                LogInfo(("parse_config_data: Polling interval has changed (%d => %d). Updating value",
+                LogInfo(("parse_config_data: Polling interval has changed (%d => %d)",
                         aknano_settings->polling_interval, int_value));
                 aknano_settings->polling_interval = int_value;
                 // aknano_write_to_nvs(AKNANO_NVS_ID_POLLING_INTERVAL,
@@ -1112,10 +1112,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
                 return -1;
             }
             UpdateSettingValue("btn_polling_interval", int_value);
-        } else {
-            LogInfo(("parse_config_data: polling_interval config not found"));
         }
-
 
     } else {
         LogWarn(("Invalid config JSON result=%d", result));
@@ -1349,12 +1346,11 @@ static bool fill_event_payload(char *payload,
 			old_version, new_version, aknano_settings->tag);
 	} else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
 		if (version < 0) {
-			snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d tag: %s",
-				old_version, aknano_settings->last_applied_version, aknano_settings->tag);
+			snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d",
+				old_version, aknano_settings->last_applied_version);
 		} else {
-			snprintf(details, sizeof(details), "Updated from v%d to v%d tag: %s. Image confirmed.",
-				old_version, new_version, aknano_settings->tag);
-
+			snprintf(details, sizeof(details), "Updated from v%d to v%d. Image confirmed.",
+				old_version, new_version);
 		}
 	} else {
 		snprintf(details, sizeof(details), "Updating from v%d to v%d tag: %s.",
@@ -1562,7 +1558,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_PUT,
                                             "/system_info/network", bodyBuffer, strlen(bodyBuffer), &xResponse, aknano_context->settings);
 
-        LogInfo(("aknano_settings->tag=%s",aknano_settings->tag));
+        // LogInfo(("aknano_settings->tag=%s",aknano_settings->tag));
         sprintf(bodyBuffer,
                 "[aknano_settings]\n" \
                 "poll_interval = %d\n" \
