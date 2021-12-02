@@ -13,6 +13,7 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
+void sntp_set_system_time(unsigned long sec);
 #define SNTP_SET_SYSTEM_TIME sntp_set_system_time
 
 #if USE_RTOS

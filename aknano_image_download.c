@@ -1,5 +1,7 @@
+#define LIBRARY_LOG_LEVEL LOG_INFO
+
 /*Include backoff algorithm header for retry logic.*/
-#include "backoff_algorithm.h"
+// #include "backoff_algorithm.h"
 
 /* Transport interface include. */
 #include "transport_interface.h"
@@ -261,7 +263,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
             }
 
             /* Program the page */
-            mflash_result = mflash_drv_page_program(chunk_flash_addr, page_buffer);
+            mflash_result = mflash_drv_page_program(chunk_flash_addr, (uint32_t*)page_buffer);
             if (mflash_result != 0)
             {
                 LogError(("store_update_image: Error storing page %d", mflash_result));
@@ -276,7 +278,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
 
     } while (chunk_len == page_size);
     LogInfo(("** Handled received data offset=%d dataLen=%d total_processed=%d", offset, dataLen, total_processed));
-    return 0;
+    return retval;
 }
 
 
@@ -329,7 +331,7 @@ BaseType_t GetFileSize(size_t* pxFileSize, HTTPResponse_t *xResponse)
 
 #include <time.h>
 
-static BaseType_t prvDownloadFile(const NetworkContext_t *pxNetworkContext,
+static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                                  const TransportInterface_t * pxTransportInterface,
                                            const char * pcPath )
 {
@@ -524,26 +526,22 @@ static BaseType_t prvDownloadFile(const NetworkContext_t *pxNetworkContext,
 
     if (( xStatus == pdPASS ) && ( xHTTPStatus == HTTPSuccess )) {
 #ifndef AKNANO_DRY_RUN
-         LogInfo(("Validating image of size %d", stored));
+        LogInfo(("Validating image of size %d", stored));
 
-             struct image_header *ih;
-            struct image_tlv_info *it;
-            uint32_t decl_size;
-            uint32_t tlv_size;
-
-            ih = (struct image_header *)update_partition.start;
-
-
-         if (bl_verify_image((void *)update_partition.start, stored) <= 0)
-         {
-             /* Image validation failed */
-             LogError(("Image validation failed magic=0x%X", ih->ih_magic));
-             return false;
-            // return true;
-         } else {
+        struct image_header *ih;
+        // struct image_tlv_info *it;
+        // uint32_t decl_size;
+        // uint32_t tlv_size;
+        ih = (struct image_header *)update_partition.start;
+        if (bl_verify_image((void *)update_partition.start, stored) <= 0)
+        {
+            /* Image validation failed */
+            LogError(("Image validation failed magic=0x%X", ih->ih_magic));
+            return false;
+        } else {
             LogInfo(("Image validation succeded"));
             return true;
-         }
+        }
 #endif
     } else {
         return false;

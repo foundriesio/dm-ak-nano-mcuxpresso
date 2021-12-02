@@ -280,7 +280,7 @@ status_t bl_get_image_state(uint32_t *state)
 
 status_t bl_get_image_build_num(uint32_t *iv_build_num)
 {
-    struct image_header *ih = BOOT_FLASH_ACT_APP;
+    struct image_header *ih = (void*)BOOT_FLASH_ACT_APP;
     *iv_build_num = ih->ih_ver.iv_build_num;
     return kStatus_Success;
 }

@@ -1,3 +1,4 @@
+#define LIBRARY_LOG_LEVEL LOG_INFO
 
 #include "aknano_priv.h"
 
@@ -31,9 +32,9 @@ void InitFlashStorage();
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
 status_t UpdateFlashStoragePage(int offset, void *data);
 
-BaseType_t AkNanoGetTime() 
+long unsigned int AkNanoGetTime(void) 
 {
-    static BaseType_t t;
+    static long unsigned int t;
     //  = clock() * 1000 / CLOCKS_PER_SEC;
     t++;
     // LogInfo(( "osfGetTime %d", t) );

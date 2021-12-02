@@ -10,16 +10,16 @@
 
 #define JSON_ARRAY_LIMIT_COUNT 10
 
-static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data, size_t len)
+static int handle_json_data(struct aknano_context *aknano_context, char *data, size_t len)
 {
 	bool foundMatch = false;
-        char *outValue, *outSubValue, *uri;
-        size_t outValueLength, outSubValueLength;
+        char *outValue, *outSubValue;//, *uri;
+        unsigned int outValueLength, outSubValueLength;
         int i;
         uint32_t version;
 
         // LogInfo(("handle_json_data: Parsing target data with len=%d", len));
-        JSONStatus_t result = JSON_Validate((char*)data, len );
+        JSONStatus_t result = JSON_Validate(data, len );
         if( result != JSONSuccess )
         {
                 LogWarn(("handle_json_data: Got invalid targets JSON: %s", data));
@@ -27,10 +27,10 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
         }
 
         foundMatch = false;
-        result = JSON_Search((char*)data, len, "custom.version", strlen("custom.version"), &outValue, &outValueLength);
+        result = JSON_Search(data, len, "custom.version", strlen("custom.version"), &outValue, &outValueLength);
         if (result == JSONSuccess) {
                 // LogInfo(("handle_json_data: custom.version=%.*s", outValueLength, outValue));
-                sscanf(outValue, "%u", &version);
+                sscanf(outValue, "%lu", &version);
                 if (version <= aknano_context->aknano_json_data.selected_target.version) {
                         return 0;
                 }
@@ -40,7 +40,7 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
                 return -2;
         }
 
-        result = JSON_Search((char*)data, len, "custom.hardwareIds", strlen("custom.hardwareIds"), &outValue, &outValueLength);
+        result = JSON_Search(data, len, "custom.hardwareIds", strlen("custom.hardwareIds"), &outValue, &outValueLength);
         if (result == JSONSuccess) {
                 // LogInfo(("handle_json_data: custom.hardwareIds=%.*s", outValueLength, outValue));
 
@@ -113,7 +113,7 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
 }
 
 void aknano_handle_manifest_data(struct aknano_context *context,
-					uint8_t *dst, size_t *offset, 
+					uint8_t *dst, off_t *offset, 
 					uint8_t *src, size_t len)
 {
 	static bool trunc_wrn_printed = false;
@@ -154,7 +154,7 @@ void aknano_handle_manifest_data(struct aknano_context *context,
 			if (context->json_pasring_bracket_level == reference_bracket_level-1) {
 				*(dst + *offset) = '\0';
 				/* A complete target section was received. Process it */
-				handle_json_data(context, dst, *offset);
+				handle_json_data(context, (char*)dst, *offset);
 				is_relevant_data = false;
 				trunc_wrn_printed = false;
 				*offset = 0;

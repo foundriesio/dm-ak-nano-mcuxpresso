@@ -21,8 +21,8 @@
  ******************************************************************************/
 /* Program data buffer should be 4-bytes alignment, which can avoid busfault due to this memory region is configured as
    Device Memory by MPU. */
-SDK_ALIGN(static uint8_t s_nor_program_buffer[256], 4);
-static uint8_t s_nor_read_buffer[256 * 4];
+// SDK_ALIGN(static uint8_t s_nor_program_buffer[256], 4);
+// static uint8_t s_nor_read_buffer[256 * 4];
 
 extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
 extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src);
@@ -122,14 +122,8 @@ const uint32_t customLUT[CUSTOM_LUT_LENGTH] = {
 
 status_t InitFlashStorage()
 {
-    uint32_t i = 0;
     status_t status;
     uint8_t vendorID = 0;
-
-    // BOARD_ConfigMPU();
-    // BOARD_InitBootPins();
-    // BOARD_InitBootClocks();
-    // BOARD_InitDebugConsole();
 
     flexspi_nor_flash_init(EXAMPLE_FLEXSPI);
 
@@ -185,4 +179,5 @@ status_t UpdateFlashStoragePage(int offset, void *data)
          return -1;
     }
     // PRINTF("Update sector OK!\r\n");
+    return 0;
 }

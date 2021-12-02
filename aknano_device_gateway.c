@@ -36,62 +36,6 @@
 
 #include "aknano_priv.h"
 
-// #include "fsl_flexspi.h"
-// #include "aws_demo_config.h"
-// #include "aws_dev_mode_key_provisioning.h"
-
-// #include "FreeRTOS.h"
-// #include "task.h"
-// #include "semphr.h"
-
-// #include "iot_network.h"
-
-// /* Retry utilities include. */
-// #include "backoff_algorithm.h"
-
-// /* Include PKCS11 helper for random number generation. */
-// #include "pkcs11_helpers.h"
-
-// /*Include backoff algorithm header for retry logic.*/
-// #include "backoff_algorithm.h"
-
-// /* Transport interface include. */
-// #include "transport_interface.h"
-
-// /* Transport interface implementation include header for TLS. */
-// #include "transport_secure_sockets.h"
-
-// /* Include header for connection configurations. */
-// #include "aws_clientcredential.h"
-
-// /* Include header for client credentials. */
-// #include "aws_clientcredential_keys.h"
-
-// /* Include header for root CA certificates. */
-// #include "iot_default_root_certificates.h"
-
-// /* OTA Library include. */
-// #include "ota.h"
-
-// /* OTA library and demo configuration macros. */
-// #include "ota_config.h"
-// #include "ota_demo_config.h"
-
-// /* OTA Library Interface include. */
-// #include "ota_os_freertos.h"
-// #include "ota_mqtt_interface.h"
-
-// /* PAL abstraction layer APIs. */
-// #include "ota_pal.h"
-
-// /* Includes the OTA Application version number. */
-// #include "ota_appversion32.h"
-
-// #include "core_http_client.h"
-
-
-
-
 #define AKNANO_DEVICE_GATEWAY_PORT 8443
 #define AKNANO_DEVICE_GATEWAY_ENDPOINT "ac1f3cae-6b17-4872-b559-d197508b3620.ota-lite.foundries.io"
 
@@ -325,7 +269,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
 {
     JSONStatus_t result = JSON_Validate( config_data, buffer_len );
     char * value;
-    size_t valueLength;
+    unsigned int valueLength;
     int int_value;
 
 
@@ -359,7 +303,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
         if( result == JSONSuccess ) {
             if (sscanf(value, "%d", &int_value) <= 0) {
                 LogWarn(("Invalid polling_interval '%s'", value));
-                return -1;
+                // return;
             }
 
             if (int_value != aknano_settings->polling_interval) {
@@ -384,7 +328,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
         if( result == JSONSuccess ) {
             if (sscanf(value, "%d", &int_value) <= 0) {
                 LogWarn(("Invalid btn_polling_interval '%s'", value));
-                return -1;
+                // return;
             }
             UpdateSettingValue("btn_polling_interval", int_value);
         }
@@ -610,7 +554,7 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
     /* The network context for the transport layer interface. */
     NetworkContext_t xNetworkContext = { 0 };
     TransportSocketStatus_t xNetworkStatus;
-    BaseType_t xIsConnectionEstablished = pdFALSE;
+    // BaseType_t xIsConnectionEstablished = pdFALSE;
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
     HTTPResponse_t xResponse;
 
@@ -627,7 +571,7 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
     if( xDemoStatus == pdPASS )
     {
         /* Set a flag indicating that a TLS connection exists. */
-        xIsConnectionEstablished = pdTRUE;
+        // xIsConnectionEstablished = pdTRUE;
 
         /* Define the transport interface. */
         xTransportInterface.pNetworkContext = &xNetworkContext;
@@ -656,30 +600,30 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
 
     /* Close the network connection.  */
     xNetworkStatus = SecureSocketsTransport_Disconnect( &xNetworkContext );
+    if (xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS)
+        LogError(("AkNanoSendEvent Disconnection error: %d", xNetworkStatus));
 
     LogInfo(("AkNanoSendEvent END %s", event_type));
+
+    return TRUE;
 }
 
 
-char single_target_buffer[2000];
-void aknano_handle_manifest_data(struct aknano_context *context,
-					uint8_t *dst, size_t *offset, 
-					uint8_t *src, size_t len);
-
-
+uint8_t single_target_buffer[2000];
 
 int AkNanoPoll(struct aknano_context *aknano_context)
 {
     TransportInterface_t xTransportInterface;
     /* The network context for the transport layer interface. */
     NetworkContext_t xNetworkContext = { 0 };
-    TransportSocketStatus_t xNetworkStatus;
-    BaseType_t xIsConnectionEstablished = pdFALSE;
-    UBaseType_t uxDemoRunCount = 0UL;
+    // TransportSocketStatus_t xNetworkStatus;
+    // BaseType_t xIsConnectionEstablished = pdFALSE;
+    // UBaseType_t uxDemoRunCount = 0UL;
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
     HTTPResponse_t xResponse;
     bool isUpdateRequired = false;
     bool isRebootRequired = false;
+    off_t offset = 0;
 
     LogInfo(("AkNanoPoll BEGIN"));
     /* Upon return, pdPASS will indicate a successful demo execution.
@@ -697,7 +641,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     if( xDemoStatus == pdPASS )
     {
         /* Set a flag indicating that a TLS connection exists. */
-        xIsConnectionEstablished = pdTRUE;
+        // xIsConnectionEstablished = pdTRUE;
 
         /* Define the transport interface. */
         xTransportInterface.pNetworkContext = &xNetworkContext;
@@ -720,14 +664,13 @@ int AkNanoPoll(struct aknano_context *aknano_context)
         xDemoStatus = prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
                             "/config", "", 0, &xResponse, aknano_context->settings);
         if (xDemoStatus == pdPASS)
-            parse_config(xResponse.pBody, xResponse.bodyLen, aknano_context->settings);
+            parse_config((char*)xResponse.pBody, xResponse.bodyLen, aknano_context->settings);
 
 
         xDemoStatus = prvSendHttpRequest( &xTransportInterface,HTTP_METHOD_GET,
                             "/repo/targets.json", "", 0, &xResponse, aknano_context->settings);
         if (xDemoStatus == pdPASS) {
-            size_t offset = 0;
-            aknano_handle_manifest_data(aknano_context, single_target_buffer, &offset, xResponse.pBody, xResponse.bodyLen);
+            aknano_handle_manifest_data(aknano_context, single_target_buffer, &offset, (uint8_t*)xResponse.pBody, xResponse.bodyLen);
             if (aknano_context->aknano_json_data.selected_target.version == 0) {
                 LogInfo(("* No matching target found in manifest"));
             } else {
@@ -782,7 +725,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     }
 
     /* Close the network connection.  */
-    xNetworkStatus = SecureSocketsTransport_Disconnect( &xNetworkContext );
+    SecureSocketsTransport_Disconnect( &xNetworkContext );
 
 
     if (isUpdateRequired) {

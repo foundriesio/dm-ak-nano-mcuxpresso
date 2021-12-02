@@ -34,14 +34,11 @@
 
 #include "iot_network.h"
 
-/* Retry utilities include. */
-#include "backoff_algorithm.h"
-
 /* Include PKCS11 helper for random number generation. */
 #include "pkcs11_helpers.h"
 
 /*Include backoff algorithm header for retry logic.*/
-#include "backoff_algorithm.h"
+// #include "backoff_algorithm.h"
 
 /* Transport interface include. */
 #include "transport_interface.h"
@@ -52,36 +49,9 @@
 /* Include header for connection configurations. */
 #include "aws_clientcredential.h"
 
-/* Include header for client credentials. */
-#include "aws_clientcredential_keys.h"
-
-/* Include header for root CA certificates. */
-#include "iot_default_root_certificates.h"
-
-/* OTA Library include. */
-#include "ota.h"
-
-/* OTA library and demo configuration macros. */
-#include "ota_config.h"
-#include "ota_demo_config.h"
-
-/* OTA Library Interface include. */
-#include "ota_os_freertos.h"
-#include "ota_mqtt_interface.h"
-
-/* PAL abstraction layer APIs. */
-#include "ota_pal.h"
-
-/* Includes the OTA Application version number. */
-#include "ota_appversion32.h"
-
 #include "core_http_client.h"
 
-#define size_t int32_t
-
-
 // #define AKNANO_DRY_RUN
-
 
 #define CONFIG_BOARD BOARD_NAME
 
@@ -192,7 +162,7 @@ struct aknano_settings {
 	char uuid[AKNANO_MAX_UUID_LENGTH];
 	char serial[AKNANO_MAX_SERIAL_LENGTH];
 	char factory_name[AKNANO_MAX_FACTORY_NAME_LENGTH];
-	int running_version;
+	uint32_t running_version;
 	int last_applied_version;
 	int last_confirmed_version;
 	// char running_tag[AKNANO_MAX_TAG_LENGTH];
@@ -275,13 +245,21 @@ struct NetworkContext
     SecureSocketsTransportParams_t * pParams;
 };
 
+int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context);
 
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
 void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings);
-BaseType_t AkNanoGetTime() ;
+long unsigned int AkNanoGetTime(void);
 bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
 					const char* event_type,
 					int version, int success);
+
+void aknano_handle_manifest_data(struct aknano_context *context,
+					uint8_t *dst, off_t *offset, 
+					uint8_t *src, size_t len);
+
+int AkNanoPoll(struct aknano_context *aknano_context);
+
 
 extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
 

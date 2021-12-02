@@ -21,6 +21,8 @@ SET(ProjDirPath ${CMAKE_CURRENT_SOURCE_DIR})
 SET(EXECUTABLE_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 SET(LIBRARY_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 
+# SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fdiagnostics-color")
 
 project(ota_demo_enet)
 
@@ -47,9 +49,9 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../pin_mux.c"
 "${ProjDirPath}/../pin_mux.h"
 "${ProjDirPath}/../config_files/aws_mbedtls_config.h"
-"${ProjDirPath}/../config_files/aws_demo_config.h"
-"${ProjDirPath}/../config_files/aws_wifi_config.h"
-"${ProjDirPath}/../config_files/core_http_config.h"
+# "${ProjDirPath}/../config_files/aws_demo_config.h"
+# "${ProjDirPath}/../config_files/aws_wifi_config.h"
+# "${ProjDirPath}/../config_files/core_http_config.h"
 "${ProjDirPath}/../config_files/core_pkcs11_config.h"
 "${ProjDirPath}/../config_files/FreeRTOSConfig.h"
 "${ProjDirPath}/../config_files/FreeRTOSIPConfig.h"
