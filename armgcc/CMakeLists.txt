@@ -39,6 +39,8 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../aknano_device_gateway.c"
 "${ProjDirPath}/../aknano_targets_manifest.c"
 "${ProjDirPath}/../aknano_flash_storage.c"
+"${ProjDirPath}/../aknano_image_download.c"
+"${ProjDirPath}/../aknano.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../read_button_task.c"
 "${ProjDirPath}/../lwipopts.h"

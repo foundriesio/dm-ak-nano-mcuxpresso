@@ -19,7 +19,69 @@
 #include "fsl_common.h"
 #include <time.h>
 
+#include "mcuboot_app_support.h"
+/* Transport interface implementation include header for TLS. */
+#include "transport_secure_sockets.h"
+
+#include "fsl_flexspi.h"
+#include "aws_demo_config.h"
+#include "aws_dev_mode_key_provisioning.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "core_json.h"
+
+#include "iot_network.h"
+
+/* Retry utilities include. */
+#include "backoff_algorithm.h"
+
+/* Include PKCS11 helper for random number generation. */
+#include "pkcs11_helpers.h"
+
+/*Include backoff algorithm header for retry logic.*/
+#include "backoff_algorithm.h"
+
+/* Transport interface include. */
+#include "transport_interface.h"
+
+/* Transport interface implementation include header for TLS. */
+#include "transport_secure_sockets.h"
+
+/* Include header for connection configurations. */
+#include "aws_clientcredential.h"
+
+/* Include header for client credentials. */
+#include "aws_clientcredential_keys.h"
+
+/* Include header for root CA certificates. */
+#include "iot_default_root_certificates.h"
+
+/* OTA Library include. */
+#include "ota.h"
+
+/* OTA library and demo configuration macros. */
+#include "ota_config.h"
+#include "ota_demo_config.h"
+
+/* OTA Library Interface include. */
+#include "ota_os_freertos.h"
+#include "ota_mqtt_interface.h"
+
+/* PAL abstraction layer APIs. */
+#include "ota_pal.h"
+
+/* Includes the OTA Application version number. */
+#include "ota_appversion32.h"
+
+#include "core_http_client.h"
+
 #define size_t int32_t
+
+
+// #define AKNANO_DRY_RUN
+
 
 #define CONFIG_BOARD BOARD_NAME
 
@@ -159,5 +221,68 @@ struct aknano_context {
 	int json_pasring_bracket_level;
 	struct aknano_settings *settings; /* TODO: may not always be set yet */
 };
+
+
+/**
+ * @brief The length of the HTTP GET method.
+ */
+#define httpexampleHTTP_METHOD_GET_LENGTH                    ( sizeof( HTTP_METHOD_GET ) - 1 )
+
+/**
+ * @brief Field name of the HTTP range header to read from server response.
+ */
+#define httpexampleHTTP_CONTENT_RANGE_HEADER_FIELD           "Content-Range"
+
+/**
+ * @brief Length of the HTTP range header field.
+ */
+#define httpexampleHTTP_CONTENT_RANGE_HEADER_FIELD_LENGTH    ( sizeof( httpexampleHTTP_CONTENT_RANGE_HEADER_FIELD ) - 1 )
+
+/**
+ * @brief The HTTP status code returned for partial content.
+ */
+#define httpexampleHTTP_STATUS_CODE_PARTIAL_CONTENT          206
+
+
+#define democonfigRANGE_REQUEST_LENGTH  4 * 1024 * 30
+#define democonfigUSER_BUFFER_LENGTH democonfigRANGE_REQUEST_LENGTH + 1024
+
+/**
+ * @brief Number of milliseconds in a second.
+ */
+#define NUM_MILLISECONDS_IN_SECOND                  ( 1000U )
+
+/**
+ * @brief Milliseconds per second.
+ */
+#define MILLISECONDS_PER_SECOND                     ( 1000U )
+
+/**
+ * @brief Milliseconds per FreeRTOS tick.
+ */
+#define MILLISECONDS_PER_TICK                       ( MILLISECONDS_PER_SECOND / configTICK_RATE_HZ )
+
+/**
+ * @brief Each compilation unit that consumes the NetworkContext must define it.
+ * It should contain a single pointer to the type of your desired transport.
+ * When using multiple transports in the same compilation unit, define this
+ * pointer as void *.
+ *
+ * @note Transport stacks are defined in amazon-freertos/libraries/abstractions/transport/secure_sockets/transport_secure_sockets.h.
+ */
+struct NetworkContext
+{
+    SecureSocketsTransportParams_t * pParams;
+};
+
+
+status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
+void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings);
+BaseType_t AkNanoGetTime() ;
+bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
+					const char* event_type,
+					int version, int success);
+
+extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
 
 #endif /* __AKNANO_PRIV_H__ */

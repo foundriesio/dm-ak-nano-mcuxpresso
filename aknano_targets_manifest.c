@@ -19,7 +19,7 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
         uint32_t version;
 
         // LogInfo(("handle_json_data: Parsing target data with len=%d", len));
-        JSONStatus_t result = JSON_Validate( data, len );
+        JSONStatus_t result = JSON_Validate((char*)data, len );
         if( result != JSONSuccess )
         {
                 LogWarn(("handle_json_data: Got invalid targets JSON: %s", data));
@@ -27,7 +27,7 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
         }
 
         foundMatch = false;
-        result = JSON_Search(data, len, "custom.version", strlen("custom.version"), &outValue, &outValueLength);
+        result = JSON_Search((char*)data, len, "custom.version", strlen("custom.version"), &outValue, &outValueLength);
         if (result == JSONSuccess) {
                 // LogInfo(("handle_json_data: custom.version=%.*s", outValueLength, outValue));
                 sscanf(outValue, "%u", &version);
@@ -40,7 +40,7 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
                 return -2;
         }
 
-        result = JSON_Search(data, len, "custom.hardwareIds", strlen("custom.hardwareIds"), &outValue, &outValueLength);
+        result = JSON_Search((char*)data, len, "custom.hardwareIds", strlen("custom.hardwareIds"), &outValue, &outValueLength);
         if (result == JSONSuccess) {
                 // LogInfo(("handle_json_data: custom.hardwareIds=%.*s", outValueLength, outValue));
 
@@ -64,7 +64,7 @@ static int handle_json_data(struct aknano_context *aknano_context, uint8_t *data
         }
 
         foundMatch = false;
-        result = JSON_Search(data, len, "custom.tags", strlen("custom.tags"), &outValue, &outValueLength);
+        result = JSON_Search((char*)data, len, "custom.tags", strlen("custom.tags"), &outValue, &outValueLength);
         if (result == JSONSuccess) {
                 // LogInfo(("handle_json_data: custom.tags=%.*s", outValueLength, outValue));
 
