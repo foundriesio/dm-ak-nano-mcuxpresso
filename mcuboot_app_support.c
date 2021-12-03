@@ -55,7 +55,7 @@ static int boot_img_magic_check(uint8_t *p)
     return 0;
 }
 
-static status_t boot_setstate_test(void)
+static status_t boot_swap_test(void)
 {
     uint32_t off;
     status_t status;
@@ -72,14 +72,14 @@ static status_t boot_setstate_test(void)
     PRINTF("write magic number offset = 0x%x\r\n", off);
 
     status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_SECTOR_SIZE);
-    if (status)
+    if (status != kStatus_Success)
     {
-        PRINTF("boot_setstate_perm: failed to erase trailer2\r\n");
+        PRINTF("boot_setstate_test: failed to erase trailer2\r\n");
         return status;
     }
 
     status = mflash_drv_page_program(off, buf);
-    if (status)
+    if (status != kStatus_Success)
     {
         PRINTF("boot_setstate_test: failed to write trailer2\r\n");
         return status;
@@ -88,7 +88,7 @@ static status_t boot_setstate_test(void)
     return status;
 }
 
-static status_t boot_setstate_perm(void)
+static status_t boot_swap_perm(void)
 {
     uint32_t off;
     status_t status;
@@ -99,32 +99,76 @@ static status_t boot_setstate_perm(void)
 
     off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_PAGE_SIZE;
 
-    status = mflash_drv_read(off, buf, MFLASH_PAGE_SIZE);
-    if (status)
-    {
-        PRINTF("boot_setstate_perm: failed to read trailer2\r\n");
-        return status;
-    }
-
+    memset(buf, 0xff, MFLASH_PAGE_SIZE);
     memcpy(image_trailer_p->magic, boot_img_magic, sizeof(boot_img_magic));
     image_trailer_p->image_ok = BOOT_FLAG_SET;
 
-    PRINTF("Write OK flag: off = 0x%x\r\n", off);
-
-    /* todo: check correct order of operations */
-    /* erase trailer of image1 */
-    status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_SECTOR_SIZE);
-    if (status)
+    status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_SECTOR_SIZE);
+    if (status != kStatus_Success)
     {
-        PRINTF("boot_setstate_perm: failed to erase trailer1\r\n");
+        PRINTF("boot_setstate_perm: failed to erase trailer2\r\n");
         return status;
     }
 
-    /* write trailer of image2 */
     status = mflash_drv_page_program(off, buf);
-    if (status)
+    if (status != kStatus_Success)
     {
         PRINTF("boot_setstate_perm: failed to write trailer2\r\n");
+        return status;
+    }
+
+    return status;
+}
+
+static status_t boot_swap_ok(void)
+{
+    uint32_t off;
+    status_t status;
+
+    uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
+    struct image_trailer *image_trailer_p =
+        (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
+
+    off = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_PAGE_SIZE;
+
+    status = mflash_drv_read(off, buf, MFLASH_PAGE_SIZE);
+    if (status != kStatus_Success)
+    {
+        PRINTF("boot_setstate_ok: failed to read trailer\r\n");
+        return status;
+    }
+
+    if ((boot_img_magic_check(image_trailer_p->magic) == 0) || (image_trailer_p->copy_done != 0x01))
+    {
+        /* the image in the slot is likely incomplete (or none) */
+        PRINTF("boot_setstate_ok: there is no image awaiting confirmation\r\n");
+        status = kStatus_NoData;
+        return status;
+    }
+
+    if (image_trailer_p->image_ok == BOOT_FLAG_SET)
+    {
+        /* nothing to be done, report it and return */
+        PRINTF("boot_setstate_ok: image already confirmed\r\n");
+        return status;
+    }
+
+    /* mark image ok */
+    image_trailer_p->image_ok = BOOT_FLAG_SET;
+
+    /* erase trailer */
+    status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_SECTOR_SIZE);
+    if (status != kStatus_Success)
+    {
+        PRINTF("boot_setstate_ok: failed to erase trailer\r\n");
+        return status;
+    }
+
+    /* write trailer */
+    status = mflash_drv_page_program(off, buf);
+    if (status != kStatus_Success)
+    {
+        PRINTF("boot_setstate_ok: failed to write trailer\r\n");
         return status;
     }
 
@@ -208,11 +252,11 @@ status_t bl_update_image_state(uint32_t state)
     switch (state)
     {
         case kSwapType_ReadyForTest:
-            status = boot_setstate_test();
+            status = boot_swap_test();
             break;
 
         case kSwapType_Permanent:
-            status = boot_setstate_perm();
+            status = boot_swap_ok();
             break;
 
         default:
@@ -235,7 +279,7 @@ status_t bl_get_image_state(uint32_t *state)
     status = mflash_drv_read(off, (uint32_t *)&image_trailer1, sizeof(struct image_trailer));
     if (status)
     {
-        PRINTF("boot_setstate_perm: failed to read trailer1\r\n");
+        PRINTF("bl_get_image_state: failed to read trailer1\r\n");
         return status;
     }
 
@@ -243,7 +287,7 @@ status_t bl_get_image_state(uint32_t *state)
     status = mflash_drv_read(off, (uint32_t *)&image_trailer2, sizeof(struct image_trailer));
     if (status)
     {
-        PRINTF("boot_setstate_perm: failed to read trailer2\r\n");
+        PRINTF("bl_get_image_state: failed to read trailer2\r\n");
         return status;
     }
 
