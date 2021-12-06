@@ -1,7 +1,13 @@
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
-#include "aknano_priv.h"
+#include <time.h>
 
+#include "lwip/opt.h"
+#include "lwip/apps/sntp.h"
+#include "sntp_example.h"
+#include "lwip/netif.h"
+
+#include "aknano_priv.h"
 
 
 /**
@@ -93,7 +99,7 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%u", aknano_settings->running_version));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate, sizeof(aknano_settings->device_certificate));
-    LogInfo(("AkNanoInitSettings: device_certificate=%.30s (...)", aknano_settings->device_certificate));
+    LogInfo(("AkNanoInitSettings: device_certificate=%.25s (...)", aknano_settings->device_certificate));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, aknano_settings->device_priv_key, sizeof(aknano_settings->device_priv_key));
     LogInfo(("AkNanoInitSettings: device_priv_key=%.30s (...)", aknano_settings->device_priv_key));
@@ -292,12 +298,6 @@ void vDevModeKeyProvisioning_new(uint8_t *client_key, uint8_t *client_certificat
     vAlternateKeyProvisioning( &xParams );
 }
 
-#include <time.h>
-
-#include "lwip/opt.h"
-#include "lwip/apps/sntp.h"
-#include "sntp_example.h"
-#include "lwip/netif.h"
 
 void sntp_set_system_time(u32_t sec)
 {
@@ -323,6 +323,7 @@ void sntp_example_init(void)
 {
     ip4_addr_t ip_sntp_server;
 
+    /* Using a.time.steadfast.net */
     IP4_ADDR(&ip_sntp_server, 208, 100, 4, 52);
 
     LOCK_TCPIP_CORE();

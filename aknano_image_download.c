@@ -166,11 +166,12 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
                                                      &xServerInfo,
                                                      &xSocketsConfig );
 
-    LogInfo(("prvConnectToDownloadServer result=%d", xNetworkStatus));
     if( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS )
     {
+        LogError(("Error connecting to binaries download server. Result=%d", xNetworkStatus));
         xStatus = pdFAIL;
     }
+    LogInfo(("TLS session to binaries download server established"));
 
     return xStatus;
 }
@@ -178,7 +179,7 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
 
 static int HandleReceivedData(const unsigned char* data, int offset, int dataLen, uint32_t partition_log_addr, uint32_t partition_size)
 {
-    LogInfo(("** Handling received data offset=%d dataLen=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ] ...", offset, dataLen, data[0], data[1], data[2], data[3]));
+    LogInfo(("Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ]", offset, dataLen, data[0], data[1], data[2], data[3]));
 #ifdef AKNANO_DRY_RUN
     LogInfo(("** Dry run mode, skipping flash operations"));
     return 0;
@@ -277,7 +278,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
         }
 
     } while (chunk_len == page_size);
-    LogInfo(("** Handled received data offset=%d dataLen=%d total_processed=%d", offset, dataLen, total_processed));
+    LogInfo(("Chunk writen. offset=%d len=%d total_processed=%d", offset, dataLen, total_processed));
     return retval;
 }
 
@@ -442,11 +443,10 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
         if( xHTTPStatus == HTTPSuccess )
         {
-            LogInfo( ( "Downloading bytes %d-%d, out of %d total bytes, from %s...:  ",
+            LogInfo( ( ANSI_COLOR_GREEN "Downloading new image. Retrieving bytes %d-%d of %d" ANSI_COLOR_RESET,
                        ( int32_t ) ( xCurByte ),
                        ( int32_t ) ( xCurByte + xNumReqBytes - 1 ),
-                       ( int32_t ) xFileSize == FILE_SIZE_UNSET? -1 : xFileSize,
-                       "binary download server" ) );
+                       ( int32_t ) xFileSize == FILE_SIZE_UNSET? -1 : xFileSize));
             LogDebug( ( "Request Headers:\n%.*s",
                         ( int32_t ) xRequestHeaders.headersLen,
                         ( char * ) xRequestHeaders.pBuffer ) );
@@ -475,7 +475,7 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             LogDebug( ( "Response Headers:\n%.*s",
                         ( int32_t ) xResponse.headersLen,
                         xResponse.pHeaders ) );
-            LogInfo( ( "Response Body Len: %d\n",
+            LogInfo( ( "Response Body Len: %d",
                        ( int32_t ) xResponse.bodyLen) );
 
 
@@ -503,18 +503,18 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 #endif
         }
 
-            // Force re-connection
-            if (xHTTPStatus == HTTPNetworkError && retriesLimit-- > 0) {
-                // LogInfo(("Disconnecting retriesLimit=%d", retriesLimit));
-                SecureSocketsTransport_Disconnect( pxNetworkContext );
-                LogInfo(("Reconnecting"));
-                vTaskDelay(50 / portTICK_PERIOD_MS);
-                BaseType_t ret;
-                ret = prvConnectToDownloadServer(pxNetworkContext);
-                LogInfo(("Reconnect result = %d", ret));
-                if (ret == pdPASS)
-                    xHTTPStatus = HTTPSuccess;
-            }
+        // Force re-connection after every attempt
+        if (/*xHTTPStatus == HTTPNetworkError && */ retriesLimit-- > 0) {
+            // LogInfo(("Disconnecting retriesLimit=%d", retriesLimit));
+            SecureSocketsTransport_Disconnect( pxNetworkContext );
+            //LogInfo(("Reconnecting"));
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+            BaseType_t ret;
+            ret = prvConnectToDownloadServer(pxNetworkContext);
+            // LogInfo(("Reconnect result = %d", ret));
+            if (ret == pdPASS)
+                xHTTPStatus = HTTPSuccess;
+        }
 
         if( xStatus != pdPASS )
         {

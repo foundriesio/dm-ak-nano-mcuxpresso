@@ -37,6 +37,9 @@
 #define BOARD_SW_IRQ_HANDLER BOARD_USER_BUTTON_IRQ_HANDLER
 #define BOARD_SW_NAME        BOARD_USER_BUTTON_NAME
 
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 static gpio_pin_config_t sw_config = {
         kGPIO_DigitalInput,
         0,
@@ -76,7 +79,8 @@ void btn_read_task(void *pvParameters)
 	for( ;; )
 	{
 		if (newSleepTimeMs != sleepTimeMs) {
-			LogInfo(("Updating sleep time ms %d -> %d", sleepTimeMs, newSleepTimeMs));
+			LogInfo((ANSI_COLOR_CYAN "Updating sleep time ms %d -> %d" ANSI_COLOR_RESET, 
+				sleepTimeMs, newSleepTimeMs));
 			sleepTimeMs = newSleepTimeMs;
 		}
 
@@ -88,7 +92,7 @@ void btn_read_task(void *pvParameters)
 		// 	xEventGroupSetBits(xFlagsEventGroup, BTN_PRESSED_Msk);
 		// }
 		// prev_state = curr_state;
-                LogInfo(("Button state=%d", curr_state));
+                LogInfo((ANSI_COLOR_CYAN "Button state=%d" ANSI_COLOR_RESET, curr_state));
 	}
 }
 

@@ -97,12 +97,14 @@ static BaseType_t prvConnectToDevicesGateway( NetworkContext_t * pxNetworkContex
                                                      &xServerInfo,
                                                      &xSocketsConfig );
 
-    LogInfo(("prvConnectToDevicesGateway result=%d", xNetworkStatus));
+
     if( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS )
     {
+        LogError(("Error connecting to device gateway. result=%d", xNetworkStatus));
         xStatus = pdFAIL;
     }
 
+    LogInfo(("TLS session to device gatweway established"));
     return xStatus;
 }
 
@@ -499,7 +501,7 @@ static bool fill_event_payload(char *payload,
 			old_version, new_version, aknano_settings->tag);
 	} else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
 		if (version < 0) {
-			snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d",
+			snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d.",
 				old_version, aknano_settings->last_applied_version);
 		} else {
 			snprintf(details, sizeof(details), "Updated from v%d to v%d. Image confirmed.",
@@ -518,7 +520,7 @@ static bool fill_event_payload(char *payload,
     LogInfo(("fill_event_payload: current_time_str=%s", current_time_str));
     LogInfo(("fill_event_payload: old_version=%d", old_version));
     LogInfo(("fill_event_payload: new_version=%d", new_version));
-    LogInfo(("fill_event_payload: version=%d", version));
+    // LogInfo(("fill_event_payload: version=%d", version));
     LogInfo(("fill_event_payload: aknano_settings->tag=%s", aknano_settings->tag));
     LogInfo(("fill_event_payload: correlation_id=%s", correlation_id));
     LogInfo(("fill_event_payload: evt_uuid=%s", evt_uuid));
@@ -542,7 +544,7 @@ static bool fill_event_payload(char *payload,
 		evt_uuid, current_time_str, event_type,
 		correlation_id, target, new_version,
 		success_string, details);
-	LogInfo(("Event: %s %s%s", event_type, details, success_string));
+	LogInfo(("Event: %s %s %s", event_type, details, success_string));
 	return true;
 }
 
@@ -567,7 +569,7 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
     xNetworkContext.pParams = &secureSocketsTransportParams;
     xDemoStatus = prvConnectToDevicesGateway(&xNetworkContext);
 
-    LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
+    // LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
     if( xDemoStatus == pdPASS )
     {
         /* Set a flag indicating that a TLS connection exists. */
@@ -624,8 +626,9 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     bool isUpdateRequired = false;
     bool isRebootRequired = false;
     off_t offset = 0;
+    struct aknano_settings *aknano_settings = aknano_context->settings;
 
-    LogInfo(("AkNanoPoll BEGIN"));
+    LogInfo(("AkNanoPoll. Current Version=%u", aknano_settings->running_version));
     /* Upon return, pdPASS will indicate a successful demo execution.
     * pdFAIL will indicate some failures occurred during execution. The
     * user of this demo must check the logs for any failure codes. */
@@ -634,10 +637,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     xNetworkContext.pParams = &secureSocketsTransportParams;
     xDemoStatus = prvConnectToDevicesGateway(&xNetworkContext);
 
-
-    struct aknano_settings *aknano_settings = aknano_context->settings;
-
-    LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
+    // LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
     if( xDemoStatus == pdPASS )
     {
         /* Set a flag indicating that a TLS connection exists. */
@@ -775,7 +775,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
         NVIC_SystemReset();
     }
 
-    LogInfo(("AkNanoPoll END"));
+    // LogInfo(("AkNanoPoll END"));
 
     return 0;
 }
