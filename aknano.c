@@ -121,11 +121,19 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 
 }
 
+// #define AKNANO_TEST_ROLLBACK
 
 static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
 {
 	bool image_ok;
     uint32_t currentStatus;
+
+#ifdef AKNANO_TEST_ROLLBACK
+    #warning "Compiling broken image for rollback test"
+    LogError((ANSI_COLOR_RED "This is a rollback test. Rebooting in 5 seconds" ANSI_COLOR_RESET));
+    vTaskDelay( pdMS_TO_TICKS( 5000 ) );
+    NVIC_SystemReset();
+#endif
 
     if (bl_get_image_state(&currentStatus) == kStatus_Success) {
         if (currentStatus == kSwapType_Testing) {
