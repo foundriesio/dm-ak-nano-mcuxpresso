@@ -66,15 +66,31 @@ SECTIONS
     *(EXCLUDE_FILE(
         /* Exclude flash and frequently executed functions from XIP */
         */mflash_drv.c.obj
+        */flexspi_nor_flash_ops.c.obj
         */fsl_flexspi.c.obj
+        */fsl_clock.c.obj
     ) .text)                 /* .text sections (code) */
     *(EXCLUDE_FILE(
         /* Exclude flash and frequently executed functions from XIP */
         */mflash_drv.c.obj
+        */flexspi_nor_flash_ops.c.obj
         */fsl_flexspi.c.obj
+        */fsl_clock.c.obj
     ) .text*)                /* .text* sections (code) */
-    *(.rodata)               /* .rodata sections (constants, strings, etc.) */
-    *(.rodata*)              /* .rodata* sections (constants, strings, etc.) */
+    *(EXCLUDE_FILE(
+        /* Exclude flash and frequently executed functions from XIP */
+        */mflash_drv.c.obj
+        */flexspi_nor_flash_ops.c.obj
+        */fsl_flexspi.c.obj
+        */fsl_clock.c.obj
+    ) .rodata)               /* .rodata sections (constants, strings, etc.) */
+    *(EXCLUDE_FILE(
+        /* Exclude flash and frequently executed functions from XIP */
+        */mflash_drv.c.obj
+        */flexspi_nor_flash_ops.c.obj
+        */fsl_flexspi.c.obj
+        */fsl_clock.c.obj
+    ) .rodata*)              /* .rodata* sections (constants, strings, etc.) */
     *(.glue_7)               /* glue arm to thumb code */
     *(.glue_7t)              /* glue thumb to arm code */
     *(.eh_frame)
@@ -179,6 +195,8 @@ SECTIONS
     /* Explicit placement of flash and frequently executed functions in RAM */
     */mflash_drv.c.obj(.text .text* .rodata .rodata*)
     */fsl_flexspi.c.obj(.text .text* .rodata .rodata*)
+    */flexspi_nor_flash_ops.c.obj(.text .text* .rodata .rodata*)
+    */fsl_clock.c.obj(.text .text* .rodata .rodata*)
     *(.data)                 /* .data sections */
     *(.data*)                /* .data* sections */
     KEEP(*(.jcr*))
