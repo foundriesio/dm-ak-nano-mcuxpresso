@@ -628,7 +628,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     off_t offset = 0;
     struct aknano_settings *aknano_settings = aknano_context->settings;
 
-    LogInfo(("AkNanoPoll. Current Version=%u", aknano_settings->running_version));
+    LogInfo(("AkNanoPoll. Version=%u  Tag=%s", aknano_settings->running_version, aknano_settings->tag));
     /* Upon return, pdPASS will indicate a successful demo execution.
     * pdFAIL will indicate some failures occurred during execution. The
     * user of this demo must check the logs for any failure codes. */
@@ -657,15 +657,13 @@ int AkNanoPoll(struct aknano_context *aknano_context)
 
     if( xDemoStatus == pdPASS )
     {
-        prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
-                            "/repo/99999.root.json", "", 0, &xResponse, aknano_context->settings);
-
-
         xDemoStatus = prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
                             "/config", "", 0, &xResponse, aknano_context->settings);
         if (xDemoStatus == pdPASS)
             parse_config((char*)xResponse.pBody, xResponse.bodyLen, aknano_context->settings);
 
+        prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
+                            "/repo/99999.root.json", "", 0, &xResponse, aknano_context->settings);
 
         xDemoStatus = prvSendHttpRequest( &xTransportInterface,HTTP_METHOD_GET,
                             "/repo/targets.json", "", 0, &xResponse, aknano_context->settings);
