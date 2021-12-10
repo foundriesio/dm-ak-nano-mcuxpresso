@@ -50,49 +50,48 @@ static int newSleepTimeMs = 2000;
 
 void UpdateSettingValue(const char* name, int value)
 {
-	(void) name;
+    (void) name;
 
-	if (newSleepTimeMs == value)
-		return;
+    if (newSleepTimeMs == value)
+        return;
 
-	/* Letting the button read task print the "updated value message" */
-	newSleepTimeMs = value;
-	// LogInfo(("Updating sleep time ms %d -> %d", sleepTimeMs, value));
+    /* Letting the button read task print the "updated value message" */
+    newSleepTimeMs = value;
+    // LogInfo(("Updating sleep time ms %d -> %d", sleepTimeMs, value));
 }
 
 /*!
  * @brief Task responsible for reading a button state (0 or 1).
- * 		  The task sets an event flag in case the button is pressed.
+ *           The task sets an event flag in case the button is pressed.
  */
 void btn_read_task(void *pvParameters)
 {
-	TickType_t last_wake_time;
-	uint8_t curr_state /*,prev_state*/ = BTN_NOT_PRESSED; //State for the button
-	//Set toggle interval to 1000ms
-	// const TickType_t sample_interval = 2000 / portTICK_PERIOD_MS;
+    TickType_t last_wake_time;
+    uint8_t curr_state /*,prev_state*/ = BTN_NOT_PRESSED; //State for the button
+    //Set toggle interval to 1000ms
+    // const TickType_t sample_interval = 2000 / portTICK_PERIOD_MS;
 
-	// Initialize the last_wake_time variable with the current time
-	last_wake_time = xTaskGetTickCount();
+    // Initialize the last_wake_time variable with the current time
+    last_wake_time = xTaskGetTickCount();
 
-        GPIO_PinInit(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN, &sw_config);
+    GPIO_PinInit(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN, &sw_config);
 
-	for( ;; )
-	{
-		if (newSleepTimeMs != sleepTimeMs) {
-			LogInfo((ANSI_COLOR_CYAN "Updating sleep time ms %d -> %d" ANSI_COLOR_RESET, 
-				sleepTimeMs, newSleepTimeMs));
-			sleepTimeMs = newSleepTimeMs;
-		}
+    for( ;; ) {
+        if (newSleepTimeMs != sleepTimeMs) {
+            LogInfo((ANSI_COLOR_CYAN "Updating sleep time ms %d -> %d" ANSI_COLOR_RESET,
+                    sleepTimeMs, newSleepTimeMs));
+            sleepTimeMs = newSleepTimeMs;
+        }
 
-		// Wait for the next cycle.
-		vTaskDelayUntil( &last_wake_time, sleepTimeMs / portTICK_PERIOD_MS );
-		// Get the level on button pin
-		curr_state = GPIO_PinRead(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN);
-		// if ((curr_state == BTN_PRESSED) && (prev_state == BTN_NOT_PRESSED)) {
-		// 	xEventGroupSetBits(xFlagsEventGroup, BTN_PRESSED_Msk);
-		// }
-		// prev_state = curr_state;
-                LogInfo((ANSI_COLOR_CYAN "Button state=%d" ANSI_COLOR_RESET, curr_state));
-	}
+        // Wait for the next cycle.
+        vTaskDelayUntil( &last_wake_time, sleepTimeMs / portTICK_PERIOD_MS );
+        // Get the level on button pin
+        curr_state = GPIO_PinRead(BOARD_SW_GPIO, BOARD_SW_GPIO_PIN);
+        // if ((curr_state == BTN_PRESSED) && (prev_state == BTN_NOT_PRESSED)) {
+        //     xEventGroupSetBits(xFlagsEventGroup, BTN_PRESSED_Msk);
+        // }
+        // prev_state = curr_state;
+        LogInfo((ANSI_COLOR_CYAN "Button state=%d" ANSI_COLOR_RESET, curr_state));
+    }
 }
 

@@ -131,7 +131,7 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 
 static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
 {
-	bool image_ok;
+    bool image_ok;
     uint32_t currentStatus;
 
 #ifdef AKNANO_TEST_ROLLBACK
@@ -159,90 +159,90 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         image_ok = true;
     }
 
-	// ret = boot_write_img_confirmed_multi(1);
-	// LOG_INF("Confirmed image 1 %d", ret);
-	// image_ok = boot_is_img_confirmed();
-	LogInfo(("Image is%s confirmed OK", image_ok ? "" : " not"));
+    // ret = boot_write_img_confirmed_multi(1);
+    // LOG_INF("Confirmed image 1 %d", ret);
+    // image_ok = boot_is_img_confirmed();
+    LogInfo(("Image is%s confirmed OK", image_ok ? "" : " not"));
 
-	LogInfo(("aknano_settings.ongoing_update_correlation_id='%s'", aknano_settings->ongoing_update_correlation_id));
+    LogInfo(("aknano_settings.ongoing_update_correlation_id='%s'", aknano_settings->ongoing_update_correlation_id));
 
-	if (aknano_settings->last_applied_version
-		&& aknano_settings->last_applied_version != aknano_settings->running_version
-		&& strnlen(aknano_settings->ongoing_update_correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH) > 0) {
+    if (aknano_settings->last_applied_version
+        && aknano_settings->last_applied_version != aknano_settings->running_version
+        && strnlen(aknano_settings->ongoing_update_correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH) > 0) {
 
-		LogInfo(("A rollback was done"));
-		AkNanoSendEvent(aknano_settings,
-				  AKNANO_EVENT_INSTALLATION_COMPLETED,
-				  -1, AKNANO_EVENT_SUCCESS_FALSE);
-		//aknano_write_to_nvs(AKNANO_NVS_ID_ONGOING_UPDATE_COR_ID, "", 0);
-		
+        LogInfo(("A rollback was done"));
+        AkNanoSendEvent(aknano_settings,
+                  AKNANO_EVENT_INSTALLATION_COMPLETED,
+                  -1, AKNANO_EVENT_SUCCESS_FALSE);
+        //aknano_write_to_nvs(AKNANO_NVS_ID_ONGOING_UPDATE_COR_ID, "", 0);
+
         memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
         AkNanoUpdateSettingsInFlash(aknano_settings);
-	}
+    }
 
-	if (!image_ok) {
-		//ret = boot_write_img_confirmed();
-		//if (ret < 0) {
-		//	LogError(("Couldn't confirm this image: %d", ret));
-		//	return ret;
-		//}
+    if (!image_ok) {
+        //ret = boot_write_img_confirmed();
+        //if (ret < 0) {
+        //    LogError(("Couldn't confirm this image: %d", ret));
+        //    return ret;
+        //}
 
-		// LogInfo(("Marked image as OK"));
+        // LogInfo(("Marked image as OK"));
 
-		// image_ok = boot_is_img_confirmed();
-		// LogInfo(("after Image is%s confirmed OK", image_ok ? "" : " not"));
+        // image_ok = boot_is_img_confirmed();
+        // LogInfo(("after Image is%s confirmed OK", image_ok ? "" : " not"));
 
-		AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_COMPLETED, 0, AKNANO_EVENT_SUCCESS_TRUE);
+        AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_COMPLETED, 0, AKNANO_EVENT_SUCCESS_TRUE);
 
-		// aknano_write_to_nvs(AKNANO_NVS_ID_ONGOING_UPDATE_COR_ID, "", 0);
-		// aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
-		// aknano_write_to_nvs(AKNANO_NVS_ID_LAST_APPLIED_VERSION, &zero, sizeof(zero));
+        // aknano_write_to_nvs(AKNANO_NVS_ID_ONGOING_UPDATE_COR_ID, "", 0);
+        // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
+        // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_APPLIED_VERSION, &zero, sizeof(zero));
 
-		memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
-		aknano_settings->last_applied_version = 0;
-		aknano_settings->last_confirmed_version = aknano_settings->running_version;
+        memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
+        aknano_settings->last_applied_version = 0;
+        aknano_settings->last_confirmed_version = aknano_settings->running_version;
         AkNanoUpdateSettingsInFlash(aknano_settings);
 
-		// aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_TAG, aknano_settings.tag, sizeof(aknano_settings.tag));
+        // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_TAG, aknano_settings.tag, sizeof(aknano_settings.tag));
 
         // TODO: do the same in FreeRTOS?
-		// ret = boot_erase_img_bank(FLASH_AREA_ID(image_1));
-		// if (ret) {
-		// 	LOG_ERR("Failed to erase second slot");
-		// 	return ret;
-		// }
-	} else {
+        // ret = boot_erase_img_bank(FLASH_AREA_ID(image_1));
+        // if (ret) {
+        //     LOG_ERR("Failed to erase second slot");
+        //     return ret;
+        // }
+    } else {
 #if 0
-		// TODO: testing this
-		ret = boot_write_img_confirmed();
-		if (ret < 0) {
-			LOG_ERR("Couldn't confirm this image (forcing): %d", ret);
-			return ret;
-		}
+        // TODO: testing this
+        ret = boot_write_img_confirmed();
+        if (ret < 0) {
+            LOG_ERR("Couldn't confirm this image (forcing): %d", ret);
+            return ret;
+        }
 
-		LOG_INF("Marked image as OK (forcing)");
-		aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
-		aknano_write_to_nvs(AKNANO_NVS_ID_LAST_APPLIED_VERSION, &zero, sizeof(zero));
+        LOG_INF("Marked image as OK (forcing)");
+        aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
+        aknano_write_to_nvs(AKNANO_NVS_ID_LAST_APPLIED_VERSION, &zero, sizeof(zero));
 #endif
-	}
+    }
 
-	if (aknano_settings->last_confirmed_version != aknano_settings->running_version)
-	{
-		// TODO: Should not be required, but doing it here because of temp/permanent bug
+    if (aknano_settings->last_confirmed_version != aknano_settings->running_version)
+    {
+        // TODO: Should not be required, but doing it here because of temp/permanent bug
         AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_COMPLETED, 0, AKNANO_EVENT_SUCCESS_TRUE);
-		memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
-		aknano_settings->last_applied_version = 0;
-		aknano_settings->last_confirmed_version = aknano_settings->running_version;
+        memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
+        aknano_settings->last_applied_version = 0;
+        aknano_settings->last_confirmed_version = aknano_settings->running_version;
         AkNanoUpdateSettingsInFlash(aknano_settings);
 
         LogInfo(("Updating aknano_settings->running_version in flash (%d -> %d)", aknano_settings->last_confirmed_version, aknano_settings->running_version));
-    	aknano_settings->last_confirmed_version = aknano_settings->running_version;
+        aknano_settings->last_confirmed_version = aknano_settings->running_version;
         // strcpy(aknano_settings->ongoing_update_correlation_id, "ABCDEFGHIJKLMNOPQRSTUVXYZ");
         AkNanoUpdateSettingsInFlash(aknano_settings);
-		// aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
-	}
+        // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
+    }
 
-	return 0;
+    return 0;
 }
 
 /* Perform device provisioning using the default TLS client credentials. */

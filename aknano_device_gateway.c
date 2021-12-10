@@ -246,19 +246,19 @@ extern struct netif netif;
 
 static void fill_network_info(char* output, size_t max_length)
 {
-	char* ipv4 = (char*)&netif.ip_addr.addr;
-	uint8_t* mac = netif.hwaddr;
+    char* ipv4 = (char*)&netif.ip_addr.addr;
+    uint8_t* mac = netif.hwaddr;
 
-	snprintf(output, max_length,
-		"{" \
-		" \"local_ipv4\": \"%u.%u.%u.%u\"," \
-		" \"mac\": \"%02x:%02x:%02x:%02x:%02x:%02x\"" \
-		"}",
-		ipv4[0], ipv4[1], ipv4[2], ipv4[3],
-		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
-	);
+    snprintf(output, max_length,
+        "{" \
+        " \"local_ipv4\": \"%u.%u.%u.%u\"," \
+        " \"mac\": \"%02x:%02x:%02x:%02x:%02x:%02x\"" \
+        "}",
+        ipv4[0], ipv4[1], ipv4[2], ipv4[3],
+        mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]
+    );
 
-	LogInfo(("fill_network_info: %s", output));
+    LogInfo(("fill_network_info: %s", output));
 }
 
 // size_t aknano_write_to_nvs(int id, void *data, size_t len)
@@ -350,80 +350,80 @@ static void get_pseudo_time_str(time_t boot_up_epoch, char *output, const char* 
     int event_delta = 0;
     int base_delta = 180;
 
-	if (boot_up_epoch == 0)
-		boot_up_epoch = BUILD_EPOCH_MS / 1000;
+    if (boot_up_epoch == 0)
+        boot_up_epoch = BUILD_EPOCH_MS / 1000;
 
 
-	if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_STARTED)) {
-		event_delta = 1;
-	} else if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_COMPLETED)) {
+    if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_STARTED)) {
+        event_delta = 1;
+    } else if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_COMPLETED)) {
         event_delta = 20;
-	} else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_STARTED)) {
+    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_STARTED)) {
         event_delta = 21;
-	} else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_APPLIED)) {
+    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_APPLIED)) {
         event_delta = 22;
-	} else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
+    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
         if (success == AKNANO_EVENT_SUCCESS_TRUE)
             event_delta = 42;
         else
             event_delta = 242;
     }
 
-	// time_t current_epoch_ms = boot_up_epoch_ms + base_delta + event_delta;
-	time_t current_epoch_sec = boot_up_epoch + base_delta + event_delta;
-	struct tm *tm = gmtime(&current_epoch_sec);
+    // time_t current_epoch_ms = boot_up_epoch_ms + base_delta + event_delta;
+    time_t current_epoch_sec = boot_up_epoch + base_delta + event_delta;
+    struct tm *tm = gmtime(&current_epoch_sec);
 
-	sprintf(output, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
-		tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-		tm->tm_hour, tm->tm_min, tm->tm_sec,
-		0);
+    sprintf(output, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
+        tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+        tm->tm_hour, tm->tm_min, tm->tm_sec,
+        0);
 
-	LogInfo(("get_pseudo_time_str: %s", output));
+    LogInfo(("get_pseudo_time_str: %s", output));
 }
 
 
 static void get_time_str(time_t boot_up_epoch, char *output)
 {
-	if (boot_up_epoch == 0)
-		boot_up_epoch = 1637778974; // 2021-11-24
+    if (boot_up_epoch == 0)
+        boot_up_epoch = 1637778974; // 2021-11-24
 
-	time_t current_epoch_sec = boot_up_epoch + (xTaskGetTickCount() / 1000);
-	struct tm *tm = gmtime(&current_epoch_sec);
+    time_t current_epoch_sec = boot_up_epoch + (xTaskGetTickCount() / 1000);
+    struct tm *tm = gmtime(&current_epoch_sec);
 
-	sprintf(output, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
-		tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-		tm->tm_hour, tm->tm_min, tm->tm_sec,
-		0);
+    sprintf(output, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
+        tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+        tm->tm_hour, tm->tm_min, tm->tm_sec,
+        0);
 
-	LogInfo(("get_time_str: %s (boot_up_epoch=%d)", output, boot_up_epoch));
+    LogInfo(("get_time_str: %s (boot_up_epoch=%d)", output, boot_up_epoch));
 }
 
 
 #include "psa/crypto.h"
 static void btox(char *xp, const char *bb, int n) 
 {
-	const char xx[]= "0123456789ABCDEF";
-	while (--n >= 0) xp[n] = xx[(bb[n>>1] >> ((1 - (n&1)) << 2)) & 0xF];
+    const char xx[]= "0123456789ABCDEF";
+    while (--n >= 0) xp[n] = xx[(bb[n>>1] >> ((1 - (n&1)) << 2)) & 0xF];
 }
 
 static void serial_string_to_uuid_string(const char* serial, char *uuid)
 {
-	const char *s;
-	char *u;
-	int i;
+    const char *s;
+    char *u;
+    int i;
 
-	s = serial;
-	u = uuid;
+    s = serial;
+    u = uuid;
 
-	for(i=0; i<36; i++) {
-		if (i == 8 || i == 13 || i == 18 || i == 23)
-			*u = '-';
-		else {
-			*u = *s;
-			s++;
-		}
-		u++;
-	}
+    for(i=0; i<36; i++) {
+        if (i == 8 || i == 13 || i == 18 || i == 23)
+            *u = '-';
+        else {
+            *u = *s;
+            s++;
+        }
+        u++;
+    }
 }
 
 #include "drivers/fsl_trng.h"
@@ -452,30 +452,30 @@ status_t AkNanoGenRandomBytes(char *output, size_t size)
 
 int aknano_gen_serial_and_uuid(char *uuid_string, char *serial_string)
 {
-	char serial_bytes[16];
+    char serial_bytes[16];
     AkNanoGenRandomBytes(serial_bytes, sizeof(serial_bytes));
-	btox(serial_string, serial_bytes, sizeof(serial_bytes) * 2);
-	serial_string_to_uuid_string(serial_string, uuid_string);
-	uuid_string[36] = '\0';
-	serial_string[32] = '\0';
-	LogInfo(("uuid='%s', serial='%s'", uuid_string, serial_string));
-	return 0;
+    btox(serial_string, serial_bytes, sizeof(serial_bytes) * 2);
+    serial_string_to_uuid_string(serial_string, uuid_string);
+    uuid_string[36] = '\0';
+    serial_string[32] = '\0';
+    LogInfo(("uuid='%s', serial='%s'", uuid_string, serial_string));
+    return 0;
 }
 
 
 static bool fill_event_payload(char *payload,
-					struct aknano_settings *aknano_settings,
-					const char* event_type,
-					int version, int success)
+                    struct aknano_settings *aknano_settings,
+                    const char* event_type,
+                    int version, int success)
 {
-	int old_version = aknano_settings->running_version;
-	int new_version = version;
-	char details[200];
-	char current_time_str[50];
-	char *correlation_id = aknano_settings->ongoing_update_correlation_id;
-	char target[AKNANO_MAX_FACTORY_NAME_LENGTH+15];
-	char evt_uuid[AKNANO_MAX_UUID_LENGTH], _serial_string[AKNANO_MAX_SERIAL_LENGTH];
-	char* success_string;
+    int old_version = aknano_settings->running_version;
+    int new_version = version;
+    char details[200];
+    char current_time_str[50];
+    char *correlation_id = aknano_settings->ongoing_update_correlation_id;
+    char target[AKNANO_MAX_FACTORY_NAME_LENGTH+15];
+    char evt_uuid[AKNANO_MAX_UUID_LENGTH], _serial_string[AKNANO_MAX_SERIAL_LENGTH];
+    char* success_string;
 
     if (success == AKNANO_EVENT_SUCCESS_UNDEFINED) {
         success_string = version < 0? "\"success\": false," : "";
@@ -485,32 +485,32 @@ static bool fill_event_payload(char *payload,
         success_string = "\"success\": false,";
     }
 
-	aknano_gen_serial_and_uuid(evt_uuid, _serial_string);
+    aknano_gen_serial_and_uuid(evt_uuid, _serial_string);
 
-	if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
-		old_version = aknano_settings->last_confirmed_version;
-		new_version = aknano_settings->running_version;
-	}
-	snprintf(target, sizeof(target), "%s-%d", aknano_settings->factory_name, new_version);
+    if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
+        old_version = aknano_settings->last_confirmed_version;
+        new_version = aknano_settings->running_version;
+    }
+    snprintf(target, sizeof(target), "%s-%d", aknano_settings->factory_name, new_version);
 
-	if (strnlen(correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH) == 0)
-		snprintf(correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH, "%s-%s", target, aknano_settings->uuid);
+    if (strnlen(correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH) == 0)
+        snprintf(correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH, "%s-%s", target, aknano_settings->uuid);
 
-	if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_APPLIED)) {
-		snprintf(details, sizeof(details), "Updating from v%d to v%d tag: %s. Image written to flash. Rebooting.",
-			old_version, new_version, aknano_settings->tag);
-	} else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
-		if (version < 0) {
-			snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d.",
-				old_version, aknano_settings->last_applied_version);
-		} else {
-			snprintf(details, sizeof(details), "Updated from v%d to v%d. Image confirmed.",
-				old_version, new_version);
-		}
-	} else {
-		snprintf(details, sizeof(details), "Updating from v%d to v%d tag: %s.",
-			old_version, new_version, aknano_settings->tag);
-	}
+    if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_APPLIED)) {
+        snprintf(details, sizeof(details), "Updating from v%d to v%d tag: %s. Image written to flash. Rebooting.",
+            old_version, new_version, aknano_settings->tag);
+    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
+        if (version < 0) {
+            snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d.",
+                old_version, aknano_settings->last_applied_version);
+        } else {
+            snprintf(details, sizeof(details), "Updated from v%d to v%d. Image confirmed.",
+                old_version, new_version);
+        }
+    } else {
+        snprintf(details, sizeof(details), "Updating from v%d to v%d tag: %s.",
+            old_version, new_version, aknano_settings->tag);
+    }
 
     if (aknano_settings->boot_up_epoch)
         get_time_str(aknano_settings->boot_up_epoch, current_time_str);
@@ -525,32 +525,32 @@ static bool fill_event_payload(char *payload,
     LogInfo(("fill_event_payload: correlation_id=%s", correlation_id));
     LogInfo(("fill_event_payload: evt_uuid=%s", evt_uuid));
 
-	snprintf(payload, 1000,
-		"[{" \
-			"\"id\": \"%s\","\
-			"\"deviceTime\": \"%s\","\
-			"\"eventType\": {"\
-				"\"id\": \"%s\","\
-				"\"version\": 0"\
-			"},"\
-			"\"event\": {"\
-				"\"correlationId\": \"%s\","\
-				"\"targetName\": \"%s\","\
-				"\"version\": \"%d\","\
-				"%s"\
-				"\"details\": \"%s\""\
-			"}"\
-		"}]",
-		evt_uuid, current_time_str, event_type,
-		correlation_id, target, new_version,
-		success_string, details);
-	LogInfo(("Event: %s %s %s", event_type, details, success_string));
-	return true;
+    snprintf(payload, 1000,
+        "[{" \
+            "\"id\": \"%s\","\
+            "\"deviceTime\": \"%s\","\
+            "\"eventType\": {"\
+                "\"id\": \"%s\","\
+                "\"version\": 0"\
+            "},"\
+            "\"event\": {"\
+                "\"correlationId\": \"%s\","\
+                "\"targetName\": \"%s\","\
+                "\"version\": \"%d\","\
+                "%s"\
+                "\"details\": \"%s\""\
+            "}"\
+        "}]",
+        evt_uuid, current_time_str, event_type,
+        correlation_id, target, new_version,
+        success_string, details);
+    LogInfo(("Event: %s %s %s", event_type, details, success_string));
+    return true;
 }
 
 bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
-					const char* event_type,
-					int version, int success)
+                    const char* event_type,
+                    int version, int success)
 {
     TransportInterface_t xTransportInterface;
     /* The network context for the transport layer interface. */

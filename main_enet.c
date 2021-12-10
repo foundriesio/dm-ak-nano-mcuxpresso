@@ -250,9 +250,9 @@ int main(void)
     xLoggingTaskInitialize(LOGGING_TASK_STACK_SIZE, LOGGING_TASK_PRIORITY, LOGGING_QUEUE_LENGTH);
 
         // if( xTaskCreate( prvLoggingTask, "Logging", usStackSize, NULL, uxPriority, NULL ) == pdPASS )
-	xTaskCreate(btn_read_task, "btn_read_task", 2048, NULL, btn_press_task_PRIO, NULL);
+    xTaskCreate(btn_read_task, "btn_read_task", 2048, NULL, btn_press_task_PRIO, NULL);
 
-	// xTaskCreate(sampleAppTask, "sntp_task", 4096, NULL, btn_press_task_PRIO, NULL);
+    // xTaskCreate(sampleAppTask, "sntp_task", 4096, NULL, btn_press_task_PRIO, NULL);
 
     vTaskStartScheduler();
     for (;;)
