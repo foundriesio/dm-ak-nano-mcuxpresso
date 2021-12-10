@@ -38,7 +38,7 @@ void InitFlashStorage();
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
 status_t UpdateFlashStoragePage(int offset, void *data);
 
-long unsigned int AkNanoGetTime(void) 
+long unsigned int AkNanoGetTime(void)
 {
     static long unsigned int t;
     //  = clock() * 1000 / CLOCKS_PER_SEC;
@@ -76,10 +76,11 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
 
     memcpy(flashPageBuffer, &aknano_settings->last_applied_version, sizeof(int));
     memcpy(flashPageBuffer + sizeof(int), &aknano_settings->last_confirmed_version, sizeof(int));
-    memcpy(flashPageBuffer + sizeof(int) * 2, aknano_settings->ongoing_update_correlation_id, sizeof(aknano_settings->ongoing_update_correlation_id));
-    
-    
-    LogInfo(("Saving buffer: 0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x", 
+    memcpy(flashPageBuffer + sizeof(int) * 2, aknano_settings->ongoing_update_correlation_id,
+           sizeof(aknano_settings->ongoing_update_correlation_id));
+
+
+    LogInfo(("Saving buffer: 0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x",
     flashPageBuffer[0], flashPageBuffer[1], flashPageBuffer[2], flashPageBuffer[3],
     flashPageBuffer[4], flashPageBuffer[5], flashPageBuffer[6], flashPageBuffer[7],
     flashPageBuffer[8], flashPageBuffer[9], flashPageBuffer[10], flashPageBuffer[11]));
@@ -94,36 +95,49 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
 
     // strcpy(aknano_settings->serial, "000000000000");
-    
+
     bl_get_image_build_num(&aknano_settings->running_version);
-    LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%u", aknano_settings->running_version));
+    LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%u",
+             aknano_settings->running_version));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate, sizeof(aknano_settings->device_certificate));
-    LogInfo(("AkNanoInitSettings: device_certificate=%.25s (...)", aknano_settings->device_certificate));
+    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate,
+                     sizeof(aknano_settings->device_certificate));
+    LogInfo(("AkNanoInitSettings: device_certificate=%.25s (...)",
+             aknano_settings->device_certificate));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, aknano_settings->device_priv_key, sizeof(aknano_settings->device_priv_key));
+    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, aknano_settings->device_priv_key,
+                     sizeof(aknano_settings->device_priv_key));
     LogInfo(("AkNanoInitSettings: device_priv_key=%.30s (...)", aknano_settings->device_priv_key));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_SERIAL, aknano_settings->serial, sizeof(aknano_settings->serial));
+    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_SERIAL, aknano_settings->serial,
+                     sizeof(aknano_settings->serial));
     LogInfo(("AkNanoInitSettings: serial=%s", aknano_settings->serial));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_UUID, aknano_settings->uuid, sizeof(aknano_settings->uuid));
+    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_UUID, aknano_settings->uuid,
+                     sizeof(aknano_settings->uuid));
     LogInfo(("AkNanoInitSettings: uuid=%s", aknano_settings->uuid));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_LAST_APPLIED_VERSION, &aknano_settings->last_applied_version, sizeof(aknano_settings->last_applied_version));
+    ReadFlashStorage(AKNANO_FLASH_OFF_LAST_APPLIED_VERSION,
+                     &aknano_settings->last_applied_version,
+                     sizeof(aknano_settings->last_applied_version));
     if (aknano_settings->last_applied_version < 0 || aknano_settings->last_applied_version > 999999999)
         aknano_settings->last_applied_version = 0;
     LogInfo(("AkNanoInitSettings: last_applied_version=%d", aknano_settings->last_applied_version));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_LAST_CONFIRMED_VERSION, &aknano_settings->last_confirmed_version, sizeof(aknano_settings->last_confirmed_version));
+    ReadFlashStorage(AKNANO_FLASH_OFF_LAST_CONFIRMED_VERSION, &aknano_settings->last_confirmed_version,
+                     sizeof(aknano_settings->last_confirmed_version));
     if (aknano_settings->last_confirmed_version < 0 || aknano_settings->last_confirmed_version > 999999999)
         aknano_settings->last_confirmed_version = 0;
-    LogInfo(("AkNanoInitSettings: last_confirmed_version=%d", aknano_settings->last_confirmed_version));
+    LogInfo(("AkNanoInitSettings: last_confirmed_version=%d",
+             aknano_settings->last_confirmed_version));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_ONGOING_UPDATE_COR_ID, &aknano_settings->ongoing_update_correlation_id, sizeof(aknano_settings->ongoing_update_correlation_id));
+    ReadFlashStorage(AKNANO_FLASH_OFF_ONGOING_UPDATE_COR_ID,
+                     &aknano_settings->ongoing_update_correlation_id,
+                     sizeof(aknano_settings->ongoing_update_correlation_id));
     if (aknano_settings->ongoing_update_correlation_id[0] == 0xFF)
         aknano_settings->ongoing_update_correlation_id[0] = 0;
-    LogInfo(("AkNanoInitSettings: ongoing_update_correlation_id=%s", aknano_settings->ongoing_update_correlation_id));
+    LogInfo(("AkNanoInitSettings: ongoing_update_correlation_id=%s",
+             aknano_settings->ongoing_update_correlation_id));
 
 }
 
@@ -176,7 +190,8 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
                   -1, AKNANO_EVENT_SUCCESS_FALSE);
         //aknano_write_to_nvs(AKNANO_NVS_ID_ONGOING_UPDATE_COR_ID, "", 0);
 
-        memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
+        memset(aknano_settings->ongoing_update_correlation_id, 0, 
+               sizeof(aknano_settings->ongoing_update_correlation_id));
         AkNanoUpdateSettingsInFlash(aknano_settings);
     }
 
@@ -198,7 +213,8 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
         // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_APPLIED_VERSION, &zero, sizeof(zero));
 
-        memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
+        memset(aknano_settings->ongoing_update_correlation_id, 0, 
+               sizeof(aknano_settings->ongoing_update_correlation_id));
         aknano_settings->last_applied_version = 0;
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         AkNanoUpdateSettingsInFlash(aknano_settings);
@@ -230,12 +246,14 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
     {
         // TODO: Should not be required, but doing it here because of temp/permanent bug
         AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_COMPLETED, 0, AKNANO_EVENT_SUCCESS_TRUE);
-        memset(aknano_settings->ongoing_update_correlation_id, 0, sizeof(aknano_settings->ongoing_update_correlation_id));
+        memset(aknano_settings->ongoing_update_correlation_id, 0,
+               sizeof(aknano_settings->ongoing_update_correlation_id));
         aknano_settings->last_applied_version = 0;
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         AkNanoUpdateSettingsInFlash(aknano_settings);
 
-        LogInfo(("Updating aknano_settings->running_version in flash (%d -> %d)", aknano_settings->last_confirmed_version, aknano_settings->running_version));
+        LogInfo(("Updating aknano_settings->running_version in flash (%d -> %d)", 
+                 aknano_settings->last_confirmed_version, aknano_settings->running_version));
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         // strcpy(aknano_settings->ongoing_update_correlation_id, "ABCDEFGHIJKLMNOPQRSTUVXYZ");
         AkNanoUpdateSettingsInFlash(aknano_settings);
@@ -311,7 +329,8 @@ void sntp_set_system_time(u32_t sec)
     //xaknano_settings.boot_up_epoch_ms = (sec * 1000);// - xTaskGetTickCount();
     xaknano_settings.boot_up_epoch = sec;// - xTaskGetTickCount();
 
-    LogInfo(("SNTP time: %s  sec=%d xaknano_settings.boot_up_epoch=%d xTaskGetTickCount()=%llu\n", buf, sec, xaknano_settings.boot_up_epoch, xTaskGetTickCount()));
+    LogInfo(("SNTP time: %s  sec=%d xaknano_settings.boot_up_epoch=%d xTaskGetTickCount()=%llu\n", 
+             buf, sec, xaknano_settings.boot_up_epoch, xTaskGetTickCount()));
     vTaskDelay(50 / portTICK_PERIOD_MS);
 
     // LOCK_TCPIP_CORE();
@@ -359,21 +378,21 @@ static void SNTPRequest()
     LogInfo(("Proceeding after sntp"));
 }
 
-static void AkNanoInit(struct aknano_settings *aknano_settings) 
+static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
     InitFlashStorage();
     AkNanoInitSettings(aknano_settings);
 
     SNTPRequest();
-    
-    vDevModeKeyProvisioning_new((uint8_t*)xaknano_settings.device_priv_key, 
+
+    vDevModeKeyProvisioning_new((uint8_t*)xaknano_settings.device_priv_key,
                                 (uint8_t*)xaknano_settings.device_certificate );
     LogInfo(("vDevModeKeyProvisioning_new done"));
     // UpdateClientCertificate(aknano_settings->device_certificate, aknano_settings->device_priv_key);
     aknano_handle_img_confirmed(aknano_settings);
 }
 
-static void AkNanoInitContext(struct aknano_context *aknano_context, 
+static void AkNanoInitContext(struct aknano_context *aknano_context,
                             struct aknano_settings *aknano_settings)
 {
     memset(aknano_context, 0, sizeof(*aknano_context));

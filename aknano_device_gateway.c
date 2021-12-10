@@ -400,7 +400,7 @@ static void get_time_str(time_t boot_up_epoch, char *output)
 
 
 #include "psa/crypto.h"
-static void btox(char *xp, const char *bb, int n) 
+static void btox(char *xp, const char *bb, int n)
 {
     const char xx[]= "0123456789ABCDEF";
     while (--n >= 0) xp[n] = xx[(bb[n>>1] >> ((1 - (n&1)) << 2)) & 0xF];
@@ -596,7 +596,9 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
         LogInfo(("Event payload: %.80s (...)", bodyBuffer));
 
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_POST,
-                                            "/events", bodyBuffer, strlen(bodyBuffer), &xResponse, aknano_settings);
+                            "/events",
+                            bodyBuffer, strlen(bodyBuffer),
+                            &xResponse, aknano_settings);
 
     }
 
@@ -658,15 +660,18 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     if( xDemoStatus == pdPASS )
     {
         xDemoStatus = prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
-                            "/config", "", 0, &xResponse, aknano_context->settings);
+                                          "/config", "", 0,
+                                          &xResponse, aknano_context->settings);
         if (xDemoStatus == pdPASS)
             parse_config((char*)xResponse.pBody, xResponse.bodyLen, aknano_context->settings);
 
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
-                            "/repo/99999.root.json", "", 0, &xResponse, aknano_context->settings);
+                            "/repo/99999.root.json", "", 0,
+                            &xResponse, aknano_context->settings);
 
         xDemoStatus = prvSendHttpRequest( &xTransportInterface,HTTP_METHOD_GET,
-                            "/repo/targets.json", "", 0, &xResponse, aknano_context->settings);
+                                          "/repo/targets.json", "", 0,
+                                          &xResponse, aknano_context->settings);
         if (xDemoStatus == pdPASS) {
             aknano_handle_manifest_data(aknano_context, single_target_buffer, &offset, (uint8_t*)xResponse.pBody, xResponse.bodyLen);
             if (aknano_context->aknano_json_data.selected_target.version == 0) {
@@ -681,8 +686,9 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                     LogInfo(("* Same version was already applied (and failed). Do not retrying it"));
 
                 } else if (aknano_context->settings->running_version != aknano_context->aknano_json_data.selected_target.version) {
-                    LogInfo((ANSI_COLOR_GREEN "* Update required: %u -> %u" ANSI_COLOR_RESET, 
-                            aknano_context->settings->running_version, aknano_context->aknano_json_data.selected_target.version));
+                    LogInfo((ANSI_COLOR_GREEN "* Update required: %u -> %u" ANSI_COLOR_RESET,
+                            aknano_context->settings->running_version,
+                            aknano_context->aknano_json_data.selected_target.version));
                     isUpdateRequired = true;
                 } else {
                     LogInfo(("* No update required"));
@@ -701,11 +707,13 @@ int AkNanoPoll(struct aknano_context *aknano_context)
             "}",
             CONFIG_BOARD, aknano_settings->serial, CONFIG_BOARD);
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_PUT,
-                                            "/system_info", bodyBuffer, strlen(bodyBuffer), &xResponse, aknano_context->settings);
+                            "/system_info", bodyBuffer, strlen(bodyBuffer),
+                            &xResponse, aknano_context->settings);
 
         fill_network_info(bodyBuffer, sizeof(bodyBuffer));
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_PUT,
-                                            "/system_info/network", bodyBuffer, strlen(bodyBuffer), &xResponse, aknano_context->settings);
+                            "/system_info/network", bodyBuffer, strlen(bodyBuffer),
+                            &xResponse, aknano_context->settings);
 
         // LogInfo(("aknano_settings->tag=%s",aknano_settings->tag));
         sprintf(bodyBuffer,
@@ -718,7 +726,8 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                 CONFIG_BOARD,
                 aknano_settings->tag);
         prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_PUT,
-                                            "/system_info/config", bodyBuffer, strlen(bodyBuffer), &xResponse, aknano_context->settings);
+                            "/system_info/config", bodyBuffer, strlen(bodyBuffer),
+                            &xResponse, aknano_context->settings);
 
     }
 
@@ -740,13 +749,21 @@ int AkNanoPoll(struct aknano_context *aknano_context)
         //             aknano_settings.ongoing_update_correlation_id,
         //             AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH);
 
-        AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_STARTED, aknano_context->aknano_json_data.selected_target.version, AKNANO_EVENT_SUCCESS_UNDEFINED);
+        AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_STARTED,
+                        aknano_context->aknano_json_data.selected_target.version,
+                        AKNANO_EVENT_SUCCESS_UNDEFINED);
         if (AkNanoDownloadAndFlashImage(aknano_context)) {
-            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_COMPLETED, aknano_context->aknano_json_data.selected_target.version, AKNANO_EVENT_SUCCESS_TRUE);
-            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_INSTALLATION_STARTED, aknano_context->aknano_json_data.selected_target.version, AKNANO_EVENT_SUCCESS_UNDEFINED);
-            
+            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_COMPLETED,
+                            aknano_context->aknano_json_data.selected_target.version,
+                            AKNANO_EVENT_SUCCESS_TRUE);
+            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_INSTALLATION_STARTED,
+                            aknano_context->aknano_json_data.selected_target.version,
+                            AKNANO_EVENT_SUCCESS_UNDEFINED);
+
             aknano_settings->last_applied_version = aknano_context->aknano_json_data.selected_target.version;
-            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_INSTALLATION_APPLIED, aknano_context->aknano_json_data.selected_target.version, AKNANO_EVENT_SUCCESS_TRUE);
+            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_INSTALLATION_APPLIED,
+                            aknano_context->aknano_json_data.selected_target.version,
+                            AKNANO_EVENT_SUCCESS_TRUE);
 
             LogInfo(("Requesting update on next boot (ReadyForTest)"));
 
@@ -758,7 +775,9 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                 isRebootRequired = true;
             }
         } else {
-            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_COMPLETED, aknano_context->aknano_json_data.selected_target.version, AKNANO_EVENT_SUCCESS_FALSE);
+            AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_COMPLETED,
+                            aknano_context->aknano_json_data.selected_target.version,
+                            AKNANO_EVENT_SUCCESS_FALSE);
         }
 
         AkNanoUpdateSettingsInFlash(aknano_settings);
