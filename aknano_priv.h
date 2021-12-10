@@ -121,75 +121,75 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 enum aknano_response {
-	AKNANO_NETWORKING_ERROR,
-	AKNANO_UNCONFIRMED_IMAGE,
-	AKNANO_METADATA_ERROR,
-	AKNANO_DOWNLOAD_ERROR,
-	AKNANO_OK,
-	AKNANO_UPDATE_INSTALLED,
-	AKNANO_NO_UPDATE,
-	AKNANO_CANCEL_UPDATE,
+    AKNANO_NETWORKING_ERROR,
+    AKNANO_UNCONFIRMED_IMAGE,
+    AKNANO_METADATA_ERROR,
+    AKNANO_DOWNLOAD_ERROR,
+    AKNANO_OK,
+    AKNANO_UPDATE_INSTALLED,
+    AKNANO_NO_UPDATE,
+    AKNANO_CANCEL_UPDATE,
 };
 
 
 struct aknano_target {
-	char updatedAt[AKNANO_MAX_UPDATE_AT_LENGTH];
-	char uri[AKNANO_MAX_URI_LENGTH];
-	int32_t version;
+    char updatedAt[AKNANO_MAX_UPDATE_AT_LENGTH];
+    char uri[AKNANO_MAX_URI_LENGTH];
+    int32_t version;
 };
 
 struct aknano_json_data {
-	size_t offset;
-	uint8_t data[AKNANO_JSON_BUFFER_SIZE];
-	struct aknano_target selected_target;
+    size_t offset;
+    uint8_t data[AKNANO_JSON_BUFFER_SIZE];
+    struct aknano_target selected_target;
 };
 
 struct aknano_download {
-	int download_status;
-	int download_progress;
-	size_t downloaded_size;
-	size_t http_content_size;
+    int download_status;
+    int download_progress;
+    size_t downloaded_size;
+    size_t http_content_size;
 };
 
 
 /* Settings are kept between iterations */
 struct aknano_settings {
-	char tag[AKNANO_MAX_TAG_LENGTH];
-	char token[AKNANO_MAX_TOKEN_LENGTH];
-	char device_certificate[AKNANO_CERT_BUF_SIZE];
-	char device_priv_key[AKNANO_CERT_BUF_SIZE];
-	char device_name[AKNANO_MAX_DEVICE_NAME_SIZE];
-	char uuid[AKNANO_MAX_UUID_LENGTH];
-	char serial[AKNANO_MAX_SERIAL_LENGTH];
-	char factory_name[AKNANO_MAX_FACTORY_NAME_LENGTH];
-	uint32_t running_version;
-	int last_applied_version;
-	int last_confirmed_version;
-	// char running_tag[AKNANO_MAX_TAG_LENGTH];
-	int polling_interval;
-	time_t boot_up_epoch;
-	char ongoing_update_correlation_id[AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH];
+    char tag[AKNANO_MAX_TAG_LENGTH];
+    char token[AKNANO_MAX_TOKEN_LENGTH];
+    char device_certificate[AKNANO_CERT_BUF_SIZE];
+    char device_priv_key[AKNANO_CERT_BUF_SIZE];
+    char device_name[AKNANO_MAX_DEVICE_NAME_SIZE];
+    char uuid[AKNANO_MAX_UUID_LENGTH];
+    char serial[AKNANO_MAX_SERIAL_LENGTH];
+    char factory_name[AKNANO_MAX_FACTORY_NAME_LENGTH];
+    uint32_t running_version;
+    int last_applied_version;
+    int last_confirmed_version;
+    // char running_tag[AKNANO_MAX_TAG_LENGTH];
+    int polling_interval;
+    time_t boot_up_epoch;
+    char ongoing_update_correlation_id[AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH];
 };
 
 /* Context is not kept between iterations */
 struct aknano_context {
-	int sock;
-	int32_t action_id;
-	uint8_t response_data[RESPONSE_BUFFER_SIZE];
-	struct aknano_json_data aknano_json_data;
-	int32_t json_action_id;
-	size_t url_buffer_size;
-	size_t status_buffer_size;
-	struct aknano_download dl;
-	// struct http_request http_req;
-	// struct flash_img_context flash_ctx;
-	uint8_t url_buffer[URL_BUFFER_SIZE];
-	uint8_t status_buffer[STATUS_BUFFER_SIZE];
-	uint8_t recv_buf_tcp[RECV_BUFFER_SIZE];
-	enum aknano_response code_status;
-	
-	int json_pasring_bracket_level;
-	struct aknano_settings *settings; /* TODO: may not always be set yet */
+    int sock;
+    int32_t action_id;
+    uint8_t response_data[RESPONSE_BUFFER_SIZE];
+    struct aknano_json_data aknano_json_data;
+    int32_t json_action_id;
+    size_t url_buffer_size;
+    size_t status_buffer_size;
+    struct aknano_download dl;
+    // struct http_request http_req;
+    // struct flash_img_context flash_ctx;
+    uint8_t url_buffer[URL_BUFFER_SIZE];
+    uint8_t status_buffer[STATUS_BUFFER_SIZE];
+    uint8_t recv_buf_tcp[RECV_BUFFER_SIZE];
+    enum aknano_response code_status;
+    
+    int json_pasring_bracket_level;
+    struct aknano_settings *settings; /* TODO: may not always be set yet */
 };
 
 
@@ -251,12 +251,12 @@ status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
 void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings);
 long unsigned int AkNanoGetTime(void);
 bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
-					const char* event_type,
-					int version, int success);
+                     const char* event_type,
+                     int version, int success);
 
 void aknano_handle_manifest_data(struct aknano_context *context,
-					uint8_t *dst, off_t *offset, 
-					uint8_t *src, size_t len);
+                                 uint8_t *dst, off_t *offset, 
+                                 uint8_t *src, size_t len);
 
 int AkNanoPoll(struct aknano_context *aknano_context);
 
