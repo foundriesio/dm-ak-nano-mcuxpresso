@@ -35,27 +35,11 @@
 #include <stdio.h>
 
 #include "aknano_priv.h"
-
-#define AKNANO_DEVICE_GATEWAY_PORT 8443
-#define AKNANO_DEVICE_GATEWAY_ENDPOINT "ac1f3cae-6b17-4872-b559-d197508b3620.ota-lite.foundries.io"
+#include "aknano_secret.h"
 
 #define AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN ( ( uint16_t ) ( sizeof( AKNANO_DEVICE_GATEWAY_ENDPOINT ) - 1 ) )
 
-/* FIO: */
-static const char akNanoDeviceGateway_ROOT_CERTIFICATE_PEM[] =
-"-----BEGIN CERTIFICATE-----\n"
-"MIIBmDCCAT2gAwIBAgIUey/eV2WsUqW2lLoE4rTjoO7kShAwCgYIKoZIzj0EAwIw\n"
-"KzETMBEGA1UEAwwKRmFjdG9yeS1DQTEUMBIGA1UECwwLbnhwLWhidC1wb2MwHhcN\n"
-"MjExMDE1MTgyNzEwWhcNNDExMDEwMTgyNzEwWjArMRMwEQYDVQQDDApGYWN0b3J5\n"
-"LUNBMRQwEgYDVQQLDAtueHAtaGJ0LXBvYzBZMBMGByqGSM49AgEGCCqGSM49AwEH\n"
-"A0IABIT/AWqA/7PhOCAipzILFAWIoVQnkUyjyJQpgxzSR9KtUN2zgUWiIht8ZG81\n"
-"KEmt0eNu9LHFEE86zwRu6WrePDCjPzA9MAwGA1UdEwQFMAMBAf8wCwYDVR0PBAQD\n"
-"AgIEMCAGA1UdJQEB/wQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAKBggqhkjOPQQD\n"
-"AgNJADBGAiEA1IF/KOEvqfkZpOK3Ft+o53bINHowmRSU2OBfBFcrxa0CIQDS+TPs\n"
-"Z8p3LrF8dshWpoglIY7j7gPb55i5cZ+XC1hvsw==\n"
-"-----END CERTIFICATE-----\n";
-
-static const uint32_t akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN = sizeof( akNanoDeviceGateway_ROOT_CERTIFICATE_PEM );
+static const uint32_t akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN = sizeof( AKNANO_DEVICE_GATEWAY_CERTIFICATE );
 
 static BaseType_t prvConnectToDevicesGateway( NetworkContext_t * pxNetworkContext )
 {
@@ -77,7 +61,7 @@ static BaseType_t prvConnectToDevicesGateway( NetworkContext_t * pxNetworkContex
     xSocketsConfig.pAlpnProtos = NULL;
     xSocketsConfig.maxFragmentLength = 0;
     xSocketsConfig.disableSni = false;
-    xSocketsConfig.pRootCa = akNanoDeviceGateway_ROOT_CERTIFICATE_PEM;
+    xSocketsConfig.pRootCa = AKNANO_DEVICE_GATEWAY_CERTIFICATE;
     xSocketsConfig.rootCaSize = akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN;
     xSocketsConfig.sendTimeoutMs = 3000;
     xSocketsConfig.recvTimeoutMs = 3000;
