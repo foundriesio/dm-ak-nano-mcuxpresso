@@ -8,6 +8,7 @@
 #include "lwip/netif.h"
 
 #include "aknano_priv.h"
+#include "aknano_secret.h"
 
 
 /**
@@ -78,7 +79,8 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
     memcpy(flashPageBuffer + sizeof(int), &aknano_settings->last_confirmed_version, sizeof(int));
     memcpy(flashPageBuffer + sizeof(int) * 2, aknano_settings->ongoing_update_correlation_id,
            sizeof(aknano_settings->ongoing_update_correlation_id));
-
+    flashPageBuffer[sizeof(int)*2 + sizeof(aknano_settings->ongoing_update_correlation_id)] =
+        aknano_settings->is_device_registered;
 
     LogInfo(("Saving buffer: 0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x",
     flashPageBuffer[0], flashPageBuffer[1], flashPageBuffer[2], flashPageBuffer[3],
@@ -93,6 +95,7 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     strcpy(aknano_settings->tag, "devel");
     aknano_settings->polling_interval = 60;
     strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
+    strcpy(aknano_settings->token, AKNANO_API_TOKEN);
 
     // strcpy(aknano_settings->serial, "000000000000");
 
@@ -139,6 +142,18 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: ongoing_update_correlation_id=%s",
              aknano_settings->ongoing_update_correlation_id));
 
+    ReadFlashStorage(AKNANO_FLASH_OFF_IS_DEVICE_REGISTERED,
+                     &aknano_settings->is_device_registered,
+                     sizeof(aknano_settings->is_device_registered));
+    LogInfo(("AkNanoInitSettings: is_device_registered=%d",
+             aknano_settings->is_device_registered));
+
+    snprintf(aknano_settings->device_name, sizeof(aknano_settings->device_name),
+            "%s-%s",
+            CONFIG_BOARD, aknano_settings->serial);
+
+    LogInfo(("AkNanoInitSettings: device_name=%s",
+             aknano_settings->device_name));
 }
 
 // #define AKNANO_TEST_ROLLBACK
@@ -410,6 +425,7 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
                         const IotNetworkInterface_t * pxNetworkInterface )
 {
     int sleepTime;
+    bool registrationOk;
 
     ( void ) xAwsIotMqttMode;
     ( void ) pIdentifier;
@@ -419,6 +435,14 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
 
     LogInfo(("AKNano RunAkNanoDemo"));
     AkNanoInit(&xaknano_settings);
+    if (!xaknano_settings.is_device_registered) {
+        registrationOk = AkNanoRegisterDevice(&xaknano_settings);
+        if (registrationOk) {
+            xaknano_settings.is_device_registered = registrationOk;
+            AkNanoUpdateSettingsInFlash(&xaknano_settings);
+        }
+    }
+
     while (true) {
         AkNanoInitContext(&xaknano_context, &xaknano_settings);
         AkNanoPoll(&xaknano_context);

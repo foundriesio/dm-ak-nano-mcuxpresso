@@ -560,6 +560,11 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
     HTTPResponse_t xResponse;
 
+    if (!aknano_settings->is_device_registered) {
+        LogInfo(("AkNanoSendEvent: Device is not registered. Skipping send of event %s", event_type));
+        return TRUE;
+    }
+
     LogInfo(("AkNanoSendEvent BEGIN %s", event_type));
     /* Upon return, pdPASS will indicate a successful demo execution.
     * pdFAIL will indicate some failures occurred during execution. The

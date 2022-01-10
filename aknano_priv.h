@@ -95,6 +95,7 @@
 #define AKNANO_FLASH_OFF_LAST_APPLIED_VERSION AKNANO_FLASH_OFF_STATE_BASE + 0
 #define AKNANO_FLASH_OFF_LAST_CONFIRMED_VERSION AKNANO_FLASH_OFF_STATE_BASE + sizeof(int)
 #define AKNANO_FLASH_OFF_ONGOING_UPDATE_COR_ID AKNANO_FLASH_OFF_STATE_BASE + sizeof(int) * 2
+#define AKNANO_FLASH_OFF_IS_DEVICE_REGISTERED AKNANO_FLASH_OFF_STATE_BASE + sizeof(int) * 2 + AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH
 
 // #define AKNANO_FLASH_OFF_ID_TAG 4096 + 256 * 4
 // #define AKNANO_NVS_ID_LAST_APPLIED_TAG 8
@@ -169,6 +170,7 @@ struct aknano_settings {
     int polling_interval;
     time_t boot_up_epoch;
     char ongoing_update_correlation_id[AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH];
+    bool is_device_registered;
 };
 
 /* Context is not kept between iterations */
@@ -260,6 +262,7 @@ void aknano_handle_manifest_data(struct aknano_context *context,
 
 int AkNanoPoll(struct aknano_context *aknano_context);
 
+bool AkNanoRegisterDevice(struct aknano_settings *aknano_settings);
 
 extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
 

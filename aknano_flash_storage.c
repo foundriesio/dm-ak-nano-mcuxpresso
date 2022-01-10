@@ -145,7 +145,7 @@ status_t InitFlashStorage()
 }
 
 #define AKNANO_STORAGE_FLASH_OFFSET 0x600000
-#define AKNANO_FLASH_OFF_STATE_BASE 8192
+// #define AKNANO_FLASH_OFF_STATE_BASE 8192
 
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen)
 {
