@@ -91,6 +91,8 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
 
 static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 {
+    uint8_t temp_value;
+
     memset(aknano_settings, 0, sizeof(*aknano_settings));
     strcpy(aknano_settings->tag, "devel");
     aknano_settings->polling_interval = 60;
@@ -143,9 +145,10 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
              aknano_settings->ongoing_update_correlation_id));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_IS_DEVICE_REGISTERED,
-                     &aknano_settings->is_device_registered,
-                     sizeof(aknano_settings->is_device_registered));
-    LogInfo(("AkNanoInitSettings: is_device_registered=%d",
+                     &temp_value,
+                     sizeof(temp_value));
+    aknano_settings->is_device_registered = temp_value == 1;
+    LogInfo(("AkNanoInitSettings:  is_device_registered=%d",
              aknano_settings->is_device_registered));
 
     snprintf(aknano_settings->device_name, sizeof(aknano_settings->device_name),
