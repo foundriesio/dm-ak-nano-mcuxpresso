@@ -1,8 +1,10 @@
 #ifndef __AKNANO_SECRET_H__
 #define __AKNANO_SECRET_H__
 
-#define AKNANO_FACTORY_NAME ""
+/* set Foundries.io factory name */
+#define AKNANO_FACTORY_NAME "the-factory-name"
 
-#define AKNANO_API_TOKEN ""
+/* set API acces token */
+#define AKNANO_API_TOKEN "0000000000000000000000000000000000000000"
 
 #endif
