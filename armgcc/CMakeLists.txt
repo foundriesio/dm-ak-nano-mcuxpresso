@@ -73,12 +73,21 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../clock_config.h"
 "${ProjDirPath}/../dcd.c"
 "${ProjDirPath}/../dcd.h"
+"${ProjDirPath}/../tests/aknano_test.c"
+"${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/src/unity.c"
+"${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/fixture/src/unity_fixture.c"
+"${ProjDirPath}/../../../../../rtos/freertos/tests/common/aws_test_framework.c"
 )
 
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PUBLIC
     ${ProjDirPath}/../../..
     ${ProjDirPath}/../config_files
     ${ProjDirPath}/..
+    ${ProjDirPath}/../tests
+    ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/src/
+    ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/fixture/src/
+    ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/memory/src/
+    ${ProjDirPath}/../../../../../rtos/freertos/tests/include/
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
@@ -87,6 +96,10 @@ endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
 
 if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
      target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
+endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
+
+if(CMAKE_AKNANO_TEST  EQUAL 1)
+     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
 endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
 
 set(CMAKE_MODULE_PATH
@@ -156,7 +169,7 @@ include(middleware_freertos-aws_iot_libraries_abstractions_transport_MIMXRT1064)
 
 include(middleware_freertos-kernel_MIMXRT1064)
 
-include(middleware_freertos-aws_iot_libraries_abstractions_secure_sockets_MIMXRT1064)
+# include(middleware_freertos-aws_iot_libraries_abstractions_secure_sockets_MIMXRT1064)
 
 include(middleware_freertos-aws_iot_libraries_logging_MIMXRT1064)
 
@@ -168,7 +181,7 @@ include(middleware_freertos-aws_iot_libraries_3rdparty_pkcs11_MIMXRT1064)
 
 include(middleware_freertos-aws_iot_libraries_abstractions_pkcs11_MIMXRT1064)
 
-include(middleware_freertos-aws_iot_libraries_abstractions_pkcs11_mbedtls_MIMXRT1064)
+# include(middleware_freertos-aws_iot_libraries_abstractions_pkcs11_mbedtls_MIMXRT1064)
 
 include(middleware_freertos-aws_iot_vendor_nxp_pkcs11_MIMXRT1064)
 

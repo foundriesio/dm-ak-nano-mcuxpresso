@@ -209,6 +209,13 @@ void vApplicationDaemonTaskStartupHook(void)
         else
         {
 
+#ifdef AKNANO_TEST
+            LogInfo(("AKNano RunAkNanoDemoTest Begin"));
+            RunAkNanoTest();
+            LogInfo(("AKNano RunAkNanoDemoTest Done"));
+            vTaskDelay( pdMS_TO_TICKS( 1000 ) );
+            return 0;
+#else
             static demoContext_t mqttDemoContext = {.networkTypes                = AWSIOT_NETWORK_TYPE_ETH,
                                                     .demoFunction                = RunAkNanoDemo,
                                                     .networkConnectedCallback    = NULL,
@@ -216,6 +223,7 @@ void vApplicationDaemonTaskStartupHook(void)
 
             Iot_CreateDetachedThread(runDemoTask, &mqttDemoContext, (tskIDLE_PRIORITY + 1),
                                      (configMINIMAL_STACK_SIZE * 100));
+#endif
         }
     }
 }
