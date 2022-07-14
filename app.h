@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 NXP
+ * Copyright 2018-2021 NXP
  * All rights reserved.
  *
  *
@@ -16,26 +16,26 @@
 #define FLASH_SIZE                      0x2000 /* 64Mb/KByte */
 #define EXAMPLE_FLEXSPI_AMBA_BASE       FlexSPI_AMBA_BASE
 #define FLASH_PAGE_SIZE                 256
-#define EXAMPLE_SECTOR                  4
+#define EXAMPLE_SECTOR                  20
 #define SECTOR_SIZE                     0x1000 /* 4K */
 #define EXAMPLE_FLEXSPI_CLOCK           kCLOCK_FlexSpi
 #define FLASH_PORT                      kFLEXSPI_PortA1
 #define EXAMPLE_FLEXSPI_RX_SAMPLE_CLOCK kFLEXSPI_ReadSampleClkLoopbackFromDqsPad
 
-#define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL        0
-#define NOR_CMD_LUT_SEQ_IDX_READ_FAST          1
-#define NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD     2
-#define NOR_CMD_LUT_SEQ_IDX_READSTATUS         3
-#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE        4
-#define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR        5
+#define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL        7
+#define NOR_CMD_LUT_SEQ_IDX_READ_FAST          13
+#define NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD     0
+#define NOR_CMD_LUT_SEQ_IDX_READSTATUS         1
+#define NOR_CMD_LUT_SEQ_IDX_WRITEENABLE        2
+#define NOR_CMD_LUT_SEQ_IDX_ERASESECTOR        3
 #define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_SINGLE 6
-#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD   7
+#define NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD   4
 #define NOR_CMD_LUT_SEQ_IDX_READID             8
 #define NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG     9
 #define NOR_CMD_LUT_SEQ_IDX_ENTERQPI           10
 #define NOR_CMD_LUT_SEQ_IDX_EXITQPI            11
 #define NOR_CMD_LUT_SEQ_IDX_READSTATUSREG      12
-#define NOR_CMD_LUT_SEQ_IDX_ERASECHIP          13
+#define NOR_CMD_LUT_SEQ_IDX_ERASECHIP          5
 
 #define CUSTOM_LUT_LENGTH        60
 #define FLASH_QUAD_ENABLE        0x40

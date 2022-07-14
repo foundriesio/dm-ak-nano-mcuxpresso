@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020,2021 NXP
+ * Copyright 2018-2020 ,2021 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -23,11 +23,11 @@
 /* TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 !!GlobalInfo
 product: Clocks v8.0
-processor: MIMXRT1064xxxxA
-package_id: MIMXRT1064DVL6A
+processor: MIMXRT1062xxxxA
+package_id: MIMXRT1062DVL6A
 mcu_data: ksdk2_0
 processor_version: 10.0.0
-board: MIMXRT1064-EVK
+board: MIMXRT1060-EVK
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 
 #include "clock_config.h"
@@ -127,8 +127,6 @@ settings:
 - {id: CCM_ANALOG.PLL3_PFD0_DIV.scale, value: '33', locked: true}
 - {id: CCM_ANALOG.PLL3_PFD0_MUL.scale, value: '18', locked: true}
 - {id: CCM_ANALOG.PLL3_PFD1_BYPASS.sel, value: CCM_ANALOG.PLL3_PFD1}
-- {id: CCM_ANALOG.PLL3_PFD1_DIV.scale, value: '16', locked: true}
-- {id: CCM_ANALOG.PLL3_PFD1_MUL.scale, value: '18', locked: true}
 - {id: CCM_ANALOG.PLL3_PFD2_BYPASS.sel, value: CCM_ANALOG.PLL3_PFD2}
 - {id: CCM_ANALOG.PLL3_PFD3_BYPASS.sel, value: CCM_ANALOG.PLL3_PFD3}
 - {id: CCM_ANALOG.PLL4.denom, value: '50'}
@@ -251,23 +249,23 @@ void BOARD_BootClockRUN(void)
     /* Set Semc clock source. */
     CLOCK_SetMux(kCLOCK_SemcMux, 0);
 #endif
+    /* In SDK projects, external flash (configured by FLEXSPI) will be initialized by dcd.
+     * With this macro XIP_EXTERNAL_FLASH, usb1 pll (selected to be FLEXSPI clock source in SDK projects) will be left unchanged.
+     * Note: If another clock source is selected for FLEXSPI, user may want to avoid changing that clock as well.*/
+#if !(defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1))
     /* Disable Flexspi clock gate. */
     CLOCK_DisableClock(kCLOCK_FlexSpi);
     /* Set FLEXSPI_PODF. */
     CLOCK_SetDiv(kCLOCK_FlexspiDiv, 1);
     /* Set Flexspi clock source. */
     CLOCK_SetMux(kCLOCK_FlexspiMux, 3);
-    /* In SDK projects, external flash (configured by FLEXSPI2) will be initialized by dcd.
-     * With this macro XIP_EXTERNAL_FLASH, usb1 pll (selected to be FLEXSPI2 clock source in SDK projects) will be left unchanged.
-     * Note: If another clock source is selected for FLEXSPI2, user may want to avoid changing that clock as well.*/
-#if !(defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1))
+#endif
     /* Disable Flexspi2 clock gate. */
     CLOCK_DisableClock(kCLOCK_FlexSpi2);
     /* Set FLEXSPI2_PODF. */
     CLOCK_SetDiv(kCLOCK_Flexspi2Div, 1);
     /* Set Flexspi2 clock source. */
     CLOCK_SetMux(kCLOCK_Flexspi2Mux, 1);
-#endif
     /* Disable CSI clock gate. */
     CLOCK_DisableClock(kCLOCK_Csi);
     /* Set CSI_PODF. */
@@ -399,9 +397,9 @@ void BOARD_BootClockRUN(void)
     /* Init System pfd3. */
     CLOCK_InitSysPfd(kCLOCK_Pfd3, 16);
 #endif
-    /* In SDK projects, external flash (configured by FLEXSPI2) will be initialized by dcd.
-     * With this macro XIP_EXTERNAL_FLASH, usb1 pll (selected to be FLEXSPI2 clock source in SDK projects) will be left unchanged.
-     * Note: If another clock source is selected for FLEXSPI2, user may want to avoid changing that clock as well.*/
+    /* In SDK projects, external flash (configured by FLEXSPI) will be initialized by dcd.
+     * With this macro XIP_EXTERNAL_FLASH, usb1 pll (selected to be FLEXSPI clock source in SDK projects) will be left unchanged.
+     * Note: If another clock source is selected for FLEXSPI, user may want to avoid changing that clock as well.*/
 #if !(defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1))
     /* Init Usb1 PLL. */
     CLOCK_InitUsb1Pll(&usb1PllConfig_BOARD_BootClockRUN);
@@ -511,3 +509,4 @@ void BOARD_BootClockRUN(void)
     /* Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;
 }
+
