@@ -18,12 +18,12 @@
  * Definitions
  ******************************************************************************/
 /*${macro:start}*/
-#define EXAMPLE_FLEXSPI           FLEXSPI2
-#define FLASH_SIZE_KB             (COMPONENT_FLASHIAP_SIZE/1024)
-#define EXAMPLE_FLEXSPI_AMBA_BASE FlexSPI2_AMBA_BASE
-#define FLASH_PAGE_SIZE           FLASH_CONFIG_PAGESIZE
-#define SECTOR_SIZE               (FLASH_CONFIG_SECTORSIZE) /* 4K */
-#define FLEXSPI_BASE_ADDRESS_MASK (FLASH_SIZE_KB * 0x400 -1)
+#define EXAMPLE_FLEXSPI                 FLEXSPI
+#define FLASH_SIZE                      0x2000 /* 64Mb/KByte */
+#define EXAMPLE_FLEXSPI_AMBA_BASE       FlexSPI_AMBA_BASE
+#define FLASH_PAGE_SIZE                 256
+#define EXAMPLE_SECTOR                  20
+#define SECTOR_SIZE                     0x1000 /* 4K */
 
 // #define NOR_CMD_LUT_SEQ_IDX_READ_NORMAL        7
 // #define NOR_CMD_LUT_SEQ_IDX_READ_FAST          13
@@ -41,7 +41,7 @@
 // #define NOR_CMD_LUT_SEQ_IDX_ERASECHIP          5
 
 // #define CUSTOM_LUT_LENGTH        60
-#define FLASH_QUAD_ENABLE        0x02
+#define FLASH_QUAD_ENABLE        0x40
 #define FLASH_BUSY_STATUS_POL    1
 #define FLASH_BUSY_STATUS_OFFSET 0
 #define FLASH_ERROR_STATUS_MASK  0x0e
@@ -56,8 +56,8 @@ void BOARD_InitHardware(void);
 static inline void flexspi_clock_init(void)
 {
 #if defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1)
-    CLOCK_SetMux(kCLOCK_Flexspi2Mux, 0x2); /* Choose PLL2 PFD2 clock as flexspi source clock. 396M */
-    CLOCK_SetDiv(kCLOCK_Flexspi2Div, 7);   /* flexspi clock 133M. */
+    CLOCK_SetMux(kCLOCK_FlexspiMux, 0x2); /* Choose PLL2 PFD2 clock as flexspi source clock. 396M */
+    CLOCK_SetDiv(kCLOCK_FlexspiDiv, 7);   /* flexspi clock 133M. */
 #else
     const clock_usb_pll_config_t g_ccmConfigUsbPll = {.loopDivider = 0U};
     CLOCK_InitUsb1Pll(&g_ccmConfigUsbPll);

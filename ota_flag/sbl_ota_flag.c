@@ -114,7 +114,7 @@ remap_image_position_off(void)
 void set_boot_image_position(uint8_t imagePosition)
 {
     uint32_t allignedImagePosition = imagePosition;
-    int ret = flexspi_nor_flash_program(FLEXSPI2, remap_image_position_off() - BOOT_FLASH_BASE, &allignedImagePosition, 1);
+    int ret = flexspi_nor_flash_program(FLEXSPI, remap_image_position_off() - BOOT_FLASH_BASE, &allignedImagePosition, 1);
     LogInfo(("imagePosition imagePosition=%d ret = %d\r\n", imagePosition, ret));
 }
 
