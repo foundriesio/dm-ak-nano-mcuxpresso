@@ -32,40 +32,26 @@ include(${ProjDirPath}/flags.cmake)
 
 include(${ProjDirPath}/config.cmake)
 
-# /home/detsch/nxp_sdk/SDK_2_11_0_EVK-MIMXRT1064/middleware/lwip/src/apps/sntp/sntp.c
-
 add_executable(${MCUX_SDK_PROJECT_NAME} 
-"${ProjDirPath}/../../../../../middleware/lwip/src/apps/sntp/sntp.c"
-"${ProjDirPath}/../config_files/aws_iot_network_config.h"
-"${ProjDirPath}/../main_enet.c"
-"${ProjDirPath}/../aknano_device_gateway.c"
-"${ProjDirPath}/../aknano_targets_manifest.c"
-"${ProjDirPath}/../aknano_flash_storage.c"
-"${ProjDirPath}/../aknano_image_download.c"
-"${ProjDirPath}/../aknano_rest_api.c"
-"${ProjDirPath}/../aknano.c"
-"${ProjDirPath}/../flexspi_nor_flash_ops.c"
-"${ProjDirPath}/../read_button_task.c"
-"${ProjDirPath}/../lwipopts.h"
-"${ProjDirPath}/../pin_mux.c"
-"${ProjDirPath}/../pin_mux.h"
-"${ProjDirPath}/../config_files/aws_mbedtls_config.h"
-# "${ProjDirPath}/../config_files/aws_demo_config.h"
-# "${ProjDirPath}/../config_files/aws_wifi_config.h"
-# "${ProjDirPath}/../config_files/core_http_config.h"
-"${ProjDirPath}/../config_files/core_pkcs11_config.h"
 "${ProjDirPath}/../config_files/FreeRTOSConfig.h"
+"${ProjDirPath}/../config_files/aws_mbedtls_config.h"
+#"${ProjDirPath}/../config_files/aws_demo_config.h"
+#"${ProjDirPath}/../config_files/aws_wifi_config.h"
+#"${ProjDirPath}/../config_files/core_http_config.h"
+#"${ProjDirPath}/../config_files/core_mqtt_config.h"
+"${ProjDirPath}/../config_files/core_pkcs11_config.h"
 "${ProjDirPath}/../config_files/FreeRTOSIPConfig.h"
 "${ProjDirPath}/../config_files/iot_config.h"
 "${ProjDirPath}/../config_files/iot_secure_sockets_config.h"
 "${ProjDirPath}/../config_files/ota_config.h"
 "${ProjDirPath}/../config_files/ota_demo_config.h"
-"${ProjDirPath}/../config_files/FreeRTOSConfig.h"
-"${ProjDirPath}/../ota_flag/sbl_ota_flag.h"
-"${ProjDirPath}/../ota_flag/sbl_ota_flag.c"
-"${ProjDirPath}/../mcuboot_app_support.h"
+"${ProjDirPath}/../config_files/aws_iot_network_config.h"
+"${ProjDirPath}/../main_enet.c"
+"${ProjDirPath}/../lwipopts.h"
+"${ProjDirPath}/../pin_mux.c"
+"${ProjDirPath}/../pin_mux.h"
 "${ProjDirPath}/../mcuboot_app_support.c"
-# "${ProjDirPath}/../mcuboot_app_support.h"
+"${ProjDirPath}/../mcuboot_app_support.h"
 "${ProjDirPath}/../flash_partitioning.h"
 "${ProjDirPath}/../board.c"
 "${ProjDirPath}/../board.h"
@@ -73,15 +59,25 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../clock_config.h"
 "${ProjDirPath}/../dcd.c"
 "${ProjDirPath}/../dcd.h"
+"${ProjDirPath}/../../../../../middleware/lwip/src/apps/sntp/sntp.c"
+"${ProjDirPath}/../read_button_task.c"
+"${ProjDirPath}/../aknano_device_gateway.c"
+"${ProjDirPath}/../aknano_targets_manifest.c"
+"${ProjDirPath}/../aknano_flash_storage.c"
+"${ProjDirPath}/../aknano_image_download.c"
+"${ProjDirPath}/../aknano_rest_api.c"
+"${ProjDirPath}/../aknano.c"
+"${ProjDirPath}/../flexspi_nor_flash_ops.c"
+"${ProjDirPath}/../ota_flag/sbl_ota_flag.c"
 "${ProjDirPath}/../tests/aknano_test.c"
 "${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/src/unity.c"
 "${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/fixture/src/unity_fixture.c"
 "${ProjDirPath}/../../../../../rtos/freertos/tests/common/aws_test_framework.c"
 )
 
-target_include_directories(${MCUX_SDK_PROJECT_NAME} PUBLIC
-    ${ProjDirPath}/../../..
+target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../config_files
+    ${ProjDirPath}/../../..
     ${ProjDirPath}/..
     ${ProjDirPath}/../tests
     ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/src/
@@ -98,9 +94,10 @@ if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
      target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
 endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
 
-if(CMAKE_AKNANO_TEST  EQUAL 1)
-     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
-endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
+if(CMAKE_AKNANO_TEST EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
+endif(CMAKE_AKNANO_TEST EQUAL 1)
+
 
 set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../../../components/phy/mdio/enet
