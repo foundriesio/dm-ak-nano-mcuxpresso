@@ -36,11 +36,6 @@ static struct aknano_settings xaknano_settings;
 static struct aknano_context xaknano_context;
 
 
-
-void InitFlashStorage();
-status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
-status_t UpdateFlashStoragePage(int offset, void *data);
-
 long unsigned int AkNanoGetTime(void)
 {
     static long unsigned int t;
@@ -91,7 +86,7 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
     UpdateFlashStoragePage(AKNANO_FLASH_OFF_STATE_BASE, flashPageBuffer);
 }
 
-static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
+void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 {
     uint8_t temp_value;
 

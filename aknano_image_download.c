@@ -568,7 +568,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
     TransportInterface_t xTransportInterface;
     /* The network context for the transport layer interface. */
     NetworkContext_t xNetworkContext = { 0 };
-    BaseType_t xIsConnectionEstablished = pdFALSE;
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
 
     /* Upon return, pdPASS will indicate a successful demo execution.
@@ -585,9 +584,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
     LogInfo(("AkNanoDownloadAndFlashImage: prvConnectToServer Result: %d", xDemoStatus));
     if( xDemoStatus == pdPASS )
     {
-        /* Set a flag indicating that a TLS connection exists. */
-        xIsConnectionEstablished = pdTRUE;
-
         /* Define the transport interface. */
         xTransportInterface.pNetworkContext = &xNetworkContext;
         xTransportInterface.send = SecureSocketsTransport_Send;

@@ -604,40 +604,26 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
 
 uint8_t single_target_buffer[2000];
 
-int AkNanoPoll(struct aknano_context *aknano_context)
+
+void AkNano_InitializeTransportInterface(TransportInterface_t *pTransportInterface,
+                                        NetworkContext_t *pNetworkContext)
 {
-    TransportInterface_t xTransportInterface;
-    /* The network context for the transport layer interface. */
-    NetworkContext_t xNetworkContext = { 0 };
-    // TransportSocketStatus_t xNetworkStatus;
-    // BaseType_t xIsConnectionEstablished = pdFALSE;
-    // UBaseType_t uxDemoRunCount = 0UL;
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-    HTTPResponse_t xResponse;
-    bool isUpdateRequired = false;
-    bool isRebootRequired = false;
-    off_t offset = 0;
-    struct aknano_settings *aknano_settings = aknano_context->settings;
+    /* Define the transport interface. */
+    pTransportInterface->pNetworkContext = pNetworkContext;
+    pTransportInterface->send = SecureSocketsTransport_Send;
+    pTransportInterface->recv = SecureSocketsTransport_Recv;
+}
 
-    LogInfo(("AkNanoPoll. Version=%u  Tag=%s", aknano_settings->running_version, aknano_settings->tag));
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
-    BaseType_t xDemoStatus = pdPASS;
-
-    xNetworkContext.pParams = &secureSocketsTransportParams;
-    xDemoStatus = prvConnectToDevicesGateway(&xNetworkContext);
-
+BaseType_t AkNano_ConnectToDevicesGateway(NetworkContext_t *pNetworkContext,
+                                        TransportInterface_t *pTransportInterface)
+{
+    BaseType_t xDemoStatus;
+    
+    xDemoStatus = prvConnectToDevicesGateway(pNetworkContext);
     // LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
     if( xDemoStatus == pdPASS )
     {
-        /* Set a flag indicating that a TLS connection exists. */
-        // xIsConnectionEstablished = pdTRUE;
-
-        /* Define the transport interface. */
-        xTransportInterface.pNetworkContext = &xNetworkContext;
-        xTransportInterface.send = SecureSocketsTransport_Send;
-        xTransportInterface.recv = SecureSocketsTransport_Recv;
+        AkNano_InitializeTransportInterface(pTransportInterface, pNetworkContext);
     }
     else
     {
@@ -645,6 +631,47 @@ int AkNanoPoll(struct aknano_context *aknano_context)
             * reconnect attempts are over. */
         LogError( ( "Failed to connect to HTTP server") );
     }
+    return xDemoStatus;
+}
+
+BaseType_t AkNano_GetRootMetadata(TransportInterface_t *pTransportInterface,
+                                struct aknano_settings *aknano_settings,
+                                HTTPResponse_t *pResponse)
+{
+    return prvSendHttpRequest( pTransportInterface, HTTP_METHOD_GET,
+                        "/repo/99999.root.json", "", 0,
+                        pResponse, aknano_settings);
+}
+
+BaseType_t AkNano_GetTargets(TransportInterface_t *pTransportInterface,
+                                struct aknano_settings *aknano_settings,
+                                HTTPResponse_t *pResponse)
+{
+    return prvSendHttpRequest( pTransportInterface, HTTP_METHOD_GET,
+                            "/repo/targets.json", "", 0,
+                            pResponse, aknano_settings);
+}
+
+int AkNanoPoll(struct aknano_context *aknano_context)
+{
+    TransportInterface_t xTransportInterface;
+    /* The network context for the transport layer interface. */
+    NetworkContext_t xNetworkContext = { 0 };
+    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
+    HTTPResponse_t xResponse;
+    BaseType_t xDemoStatus;
+    bool isUpdateRequired = false;
+    bool isRebootRequired = false;
+    off_t offset = 0;
+    struct aknano_settings *aknano_settings = aknano_context->settings;
+
+    LogInfo(("AkNanoPoll. Version=%u  Tag=%s", aknano_settings->running_version, aknano_settings->tag));
+
+    /* Upon return, pdPASS will indicate a successful demo execution.
+    * pdFAIL will indicate some failures occurred during execution. The
+    * user of this demo must check the logs for any failure codes. */
+    xNetworkContext.pParams = &secureSocketsTransportParams;
+    xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &xTransportInterface);
 
     if( xDemoStatus == pdPASS )
     {
@@ -654,13 +681,9 @@ int AkNanoPoll(struct aknano_context *aknano_context)
         if (xDemoStatus == pdPASS)
             parse_config((char*)xResponse.pBody, xResponse.bodyLen, aknano_context->settings);
 
-        prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_GET,
-                            "/repo/99999.root.json", "", 0,
-                            &xResponse, aknano_context->settings);
+        AkNano_GetRootMetadata(&xTransportInterface, aknano_context->settings, &xResponse);
 
-        xDemoStatus = prvSendHttpRequest( &xTransportInterface,HTTP_METHOD_GET,
-                                          "/repo/targets.json", "", 0,
-                                          &xResponse, aknano_context->settings);
+        xDemoStatus = AkNano_GetTargets(&xTransportInterface, aknano_context->settings, &xResponse);
         if (xDemoStatus == pdPASS) {
             aknano_handle_manifest_data(aknano_context, single_target_buffer, &offset, (uint8_t*)xResponse.pBody, xResponse.bodyLen);
             if (aknano_context->aknano_json_data.selected_target.version == 0) {

@@ -265,7 +265,29 @@ void aknano_handle_manifest_data(struct aknano_context *context,
 int AkNanoPoll(struct aknano_context *aknano_context);
 
 bool AkNanoRegisterDevice(struct aknano_settings *aknano_settings);
+void AkNanoInitSettings(struct aknano_settings *aknano_settings);
+
+/* Device Gateway */
+void AkNano_InitializeTransportInterface(TransportInterface_t *pTransportInterface,
+                                        NetworkContext_t *pNetworkContext);
+BaseType_t AkNano_GetRootMetadata(TransportInterface_t *pTransportInterface,
+                                struct aknano_settings *aknano_settings,
+                                HTTPResponse_t *pResponse);
 
 extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
+BaseType_t AkNano_ConnectToDevicesGateway(NetworkContext_t *pNetworkContext,
+                                        TransportInterface_t *pTransportInterface);
+
+BaseType_t AkNano_GetTargets(TransportInterface_t *pTransportInterface,
+                                struct aknano_settings *aknano_settings,
+                                HTTPResponse_t *pResponse);
+
+
+/**/
+
+void InitFlashStorage();
+status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
+status_t UpdateFlashStoragePage(int offset, void *data);
+
 
 #endif /* __AKNANO_PRIV_H__ */
