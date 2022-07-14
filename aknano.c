@@ -88,7 +88,7 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
 
 void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 {
-    uint8_t temp_value;
+    uint32_t temp_value;
 
     memset(aknano_settings, 0, sizeof(*aknano_settings));
     strcpy(aknano_settings->tag, "devel");
@@ -148,7 +148,7 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     ReadFlashStorage(AKNANO_FLASH_OFF_IS_DEVICE_REGISTERED,
                      &temp_value,
                      sizeof(temp_value));
-    aknano_settings->is_device_registered = temp_value == 1;
+    aknano_settings->is_device_registered = (temp_value & 0xFF) == 1;
     LogInfo(("AkNanoInitSettings:  is_device_registered=%d",
              aknano_settings->is_device_registered));
 
