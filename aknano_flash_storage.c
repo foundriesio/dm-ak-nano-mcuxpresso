@@ -1,4 +1,7 @@
-
+#include "logging_levels.h"
+#define LIBRARY_LOG_NAME "aknano_flash"
+#define LIBRARY_LOG_LEVEL LOG_INFO
+#include "logging_stack.h"
 
 #include "fsl_flexspi.h"
 #include "app.h"
@@ -9,6 +12,10 @@
 #include "clock_config.h"
 #include "board.h"
 #include "fsl_common.h"
+
+#include "mflash_common.h"
+#include "mflash_drv.h"
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -23,13 +30,6 @@
    Device Memory by MPU. */
 // SDK_ALIGN(static uint8_t s_nor_program_buffer[256], 4);
 // static uint8_t s_nor_read_buffer[256 * 4];
-
-extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
-extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint16_t write_size);
-extern status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
-extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
-extern status_t flexspi_nor_erase_chip(FLEXSPI_Type *base);
-extern void flexspi_nor_flash_init(FLEXSPI_Type *base);
 
 /*******************************************************************************
  * Code
@@ -122,42 +122,32 @@ const uint32_t customLUT[CUSTOM_LUT_LENGTH] = {
 
 status_t InitFlashStorage()
 {
+    // return kStatus_Success;
     status_t status;
     uint8_t vendorID = 0;
 
-    flexspi_nor_flash_init(EXAMPLE_FLEXSPI);
-
-    /* Get vendor ID. */
-    status = flexspi_nor_get_vendor_id(EXAMPLE_FLEXSPI, &vendorID);
-    if (status != kStatus_Success)
+    int mflash_result = mflash_drv_init();
+    if (mflash_result != 0)
     {
-        return status;
+        LogError(("mflash_drv_init error %d", mflash_result));
+        return -1;
     }
-//     PRINTF("Vendor ID: 0x%x\r\n", vendorID);
-
-    /* Enter quad mode. */
-    status = flexspi_nor_enable_quad_mode(EXAMPLE_FLEXSPI);
-    if (status != kStatus_Success)
-    {
-        return status;
-    }
-    return kStatus_Success;
+    return 0;
 }
+
 
 #define AKNANO_STORAGE_FLASH_OFFSET 0x600000
 // #define AKNANO_FLASH_OFF_STATE_BASE 8192
 
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen)
 {
-//     int data_offset = 1024 + 256;
-    // memset(s_nor_read_buffer, 0, sizeof(s_nor_read_buffer));
-    DCACHE_InvalidateByRange(EXAMPLE_FLEXSPI_AMBA_BASE + AKNANO_STORAGE_FLASH_OFFSET, FLASH_PAGE_SIZE * 3);
-
-    memcpy(output, (void *)(EXAMPLE_FLEXSPI_AMBA_BASE + AKNANO_STORAGE_FLASH_OFFSET + offset),
-           outputMaxLen);
-
-//     s_nor_read_buffer[sizeof(s_nor_read_buffer)-1] = 0;
-
+    // LogInfo(("ReadFlashStorage from 0x%X", AKNANO_STORAGE_FLASH_OFFSET + offset));
+    int mflash_result = mflash_drv_read(AKNANO_STORAGE_FLASH_OFFSET + offset, output, outputMaxLen / 4 * 4);
+    if (mflash_result != 0)
+    {
+        LogError(("ReadFlashStorage: mflash_drv_read error %d", mflash_result));
+        return -1;
+    }
     return 0;
 }
 
@@ -165,19 +155,20 @@ status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen)
 // Data needs to be a 256 bytes array
 status_t UpdateFlashStoragePage(int offset, void *data)
 {
-    status_t status = flexspi_nor_flash_erase_sector(EXAMPLE_FLEXSPI, AKNANO_STORAGE_FLASH_OFFSET + offset);
-    if (status != kStatus_Success)
+    int mflash_result = mflash_drv_sector_erase(AKNANO_STORAGE_FLASH_OFFSET + offset);
+
+    if (mflash_result != 0)
     {
-         PRINTF("Erase sector failure !\r\n");
-         return -1;
+        LogError(("UpdateFlashStoragePage: mflash_drv_sector_erase error %d", mflash_result));
+        return -1;
     }
 
-    status = flexspi_nor_flash_page_program(EXAMPLE_FLEXSPI, AKNANO_STORAGE_FLASH_OFFSET + offset, data, FLASH_PAGE_SIZE);
-    if (status != kStatus_Success)
+    mflash_result = mflash_drv_page_program(AKNANO_STORAGE_FLASH_OFFSET + offset, data);
+    if (mflash_result != 0)
     {
-         PRINTF("Program sector failure !\r\n");
-         return -1;
+        LogError(("UpdateFlashStoragePage: mflash_drv_page_program error %d", mflash_result));
+        return -1;
     }
-    // PRINTF("Update sector OK!\r\n");
+
     return 0;
 }
