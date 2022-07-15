@@ -32,26 +32,6 @@ const uint32_t boot_img_magic[] = {
     0x8079b62c,
 };
 
-void write_update_type(uint8_t type)
-{
-    uint8_t write_buf;
-    status_t status;
-    uint32_t primask;
-    
-    write_buf = type;
-
-    PRINTF("write update type = 0x%x\r\n", write_buf);
-
-    primask = DisableGlobalIRQ();    
-    status = sfw_flash_write(UPDATE_TYPE_FLAG_ADDRESS, &write_buf, 1);
-    if (status) 
-    {
-        PRINTF("write update type: failed to write current update type\r\n");
-        return;
-    }
-    EnableGlobalIRQ(primask);
-}
-
 void print_image_version(void)
 {
     struct image_version *img_ver;
@@ -61,6 +41,7 @@ void print_image_version(void)
     img_ver = (struct image_version *)img_version;
     
     LogInfo(("Current image verison: %d.%d.%d\r\n", img_ver->iv_major, img_ver->iv_minor, img_ver->iv_revision));
+    vTaskDelay(1000);
 }
 
 #ifdef SOC_REMAP_ENABLE
@@ -86,36 +67,29 @@ uint8_t read_ota_status(void)
     }    
 }
 
-// FIXME: cleanup this
-
-const uint32_t boot_remap_magic[] = {
-    0xf395c277,
-    0x7fefd260,
-    0x0f505235,
-    0x8079b62c,
-};
-
-#define REMAP_MAGIC_ARR_SZ \
-    (sizeof boot_remap_magic / sizeof boot_remap_magic[0])
-
-#define REMAP_TRAILER_SIZE     sizeof(struct remap_trailer)
-      
-const uint32_t REMAP_MAGIC_SZ = sizeof boot_remap_magic;
-
-const uint32_t REMAP_MAX_ALIGN = BOOT_MAX_ALIGN;
-
-static uint32_t
-remap_image_position_off(void)
+void dump_remap_trailer()
 {
-    // assert(offsetof(struct remap_trailer, image_position) == 0);
-    return BOOT_FLASH_ACT_APP - REMAP_MAGIC_SZ - REMAP_MAX_ALIGN * 2;
-}
-
-void set_boot_image_position(uint8_t imagePosition)
-{
-    uint32_t allignedImagePosition = imagePosition;
-    int ret = flexspi_nor_flash_program(FLEXSPI, remap_image_position_off() - BOOT_FLASH_BASE, &allignedImagePosition, 1);
-    LogInfo(("imagePosition imagePosition=%d ret = %d\r\n", imagePosition, ret));
+    sfw_flash_read(REMAP_FLAG_ADDRESS, &s_remap_trailer, 32);
+    LogInfo(("s_remap_trailer.image_position=%d", s_remap_trailer.image_position));
+    LogInfo(("s_remap_trailer.image_ok=%d", s_remap_trailer.image_ok));
+    LogInfo(("s_remap_trailer.magic %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X",
+        s_remap_trailer.magic[0],
+        s_remap_trailer.magic[1],
+        s_remap_trailer.magic[2],
+        s_remap_trailer.magic[3],
+        s_remap_trailer.magic[4],
+        s_remap_trailer.magic[5],
+        s_remap_trailer.magic[6],
+        s_remap_trailer.magic[7],
+        s_remap_trailer.magic[8],
+        s_remap_trailer.magic[9],
+        s_remap_trailer.magic[10],
+        s_remap_trailer.magic[11],
+        s_remap_trailer.magic[12],
+        s_remap_trailer.magic[13],
+        s_remap_trailer.magic[14],
+        s_remap_trailer.magic[15]
+        ));
 }
 
 bool is_image_confirmed(void)
@@ -126,64 +100,44 @@ bool is_image_confirmed(void)
 }
 
 /* write the remap image trailer */
-int enable_image(void)
+int enable_image_and_set_boot_image_position(uint8_t imagePosition)
 {
-    uint32_t off;
     status_t status;
     uint32_t primask;
- 
-    sfw_flash_read(REMAP_FLAG_ADDRESS, &s_remap_trailer, 32);
-    
-    primask = DisableGlobalIRQ();
-    status = sfw_flash_erase(FLASH_AREA_IMAGE_1_OFFSET - SECTOR_SIZE, SECTOR_SIZE);
-   
-    EnableGlobalIRQ(primask);
+    uint32_t write_buffer[FLASH_PAGE_SIZE / 4];
 
+    memset(write_buffer, 0xFF, sizeof(write_buffer));
+    mflash_drv_sector_erase(FLASH_AREA_IMAGE_1_OFFSET - SECTOR_SIZE);
     memset((void *)&s_remap_trailer, 0xff, IMAGE_TRAILER_SIZE);
     memcpy((void *)s_remap_trailer.magic, boot_img_magic, sizeof(boot_img_magic));
-
-    off = REMAP_FLAG_ADDRESS + 16;
-    
-    primask = DisableGlobalIRQ();
-    status = sfw_flash_write(off, (void *)&s_remap_trailer.magic, IMAGE_TRAILER_SIZE - 16);
+    s_remap_trailer.image_position = imagePosition;
+    memcpy(((uint8_t*)write_buffer) + (FLASH_PAGE_SIZE - 32), &s_remap_trailer, 32);
+    status = mflash_drv_page_program(FLASH_AREA_IMAGE_1_OFFSET - FLASH_PAGE_SIZE, (uint32_t*)write_buffer);
     if (status) 
     {
         LogError(("enable_image: failed to write remap flag\r\n"));
         return -1;
     }
-    EnableGlobalIRQ(primask);
+    dump_remap_trailer();
     return 0;
 }
 
 int write_image_ok(void)
 {
-    uint32_t off;
     status_t status;
-    uint32_t primask;
+    uint32_t write_buffer[SECTOR_SIZE / 4];
     
     sfw_flash_read(REMAP_FLAG_ADDRESS, &s_remap_trailer, 32);
-    
-    primask = DisableGlobalIRQ();
-    status = sfw_flash_erase(FLASH_AREA_IMAGE_1_OFFSET - SECTOR_SIZE, SECTOR_SIZE);
-    
-    EnableGlobalIRQ(primask);
-    
+    mflash_drv_sector_erase(FLASH_AREA_IMAGE_1_OFFSET - SECTOR_SIZE);
     memset((void *)s_remap_trailer.magic, 0xff, IMAGE_TRAILER_SIZE - 16);
-
     s_remap_trailer.image_ok = 0xFF;
     s_remap_trailer.pad1[3] = 0x0;
-    
-    off = REMAP_FLAG_ADDRESS;
-
-    LogInfo(("Write OK flag: off = 0x%x\r\n", off));
-    
-    primask = DisableGlobalIRQ();
-    status = sfw_flash_write(off, (void *)&s_remap_trailer, IMAGE_TRAILER_SIZE);
+    memcpy(((uint8_t*)write_buffer) + FLASH_PAGE_SIZE - 32, &s_remap_trailer, 32);
+    status = mflash_drv_page_program(FLASH_AREA_IMAGE_1_OFFSET - FLASH_PAGE_SIZE, (uint32_t*)write_buffer);
     if (status) 
     {
         return -1;
     }
-    EnableGlobalIRQ(primask);
     return 0;
 }
 
@@ -214,115 +168,5 @@ void SBL_DisableRemap(void)
 }
 
 #else
-uint8_t read_ota_status(void)
-{
-    uint32_t off;
-    struct swap_trailer swap_trailer;
 
-    off = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - IMAGE_TRAILER_SIZE;
-    
-    sfw_flash_read(off, &swap_trailer, 32);
-
-    if (swap_trailer.copy_done == 0xFF)
-    {
-        return 0x00;
-    }
-    else if (swap_trailer.copy_done == 0x01)
-    {
-        return 0x01;
-    }
-    else
-    {
-        return 0xFF;
-    }      
-}
-
-struct swap_trailer s_swap_trailer;
-/* write the image trailer at the end of the flash partition */
-int enable_image(void)
-{
-    uint32_t off;
-    status_t status;
-    uint32_t primask;
-#ifdef SOC_LPC55S69_SERIES
-    /* The flash of LPC55xx have the limit of offset when do write operation*/
-    uint8_t write_buff[512];
-    memset(write_buff, 0xff, 512);
-#endif    
-    
-    memset((void *)&s_swap_trailer, 0xff, IMAGE_TRAILER_SIZE);
-    memcpy((void *)s_swap_trailer.magic, boot_img_magic, sizeof(boot_img_magic));
-
-#ifdef SOC_LPC55S69_SERIES
-    memcpy(&write_buff[512 - IMAGE_TRAILER_SIZE], (void *)&s_swap_trailer, IMAGE_TRAILER_SIZE);
-    off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - 512;
-#else
-    off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - IMAGE_TRAILER_SIZE;
-#endif
-
-    PRINTF("write magic number offset = 0x%x\r\n", off);
-
-    primask = DisableGlobalIRQ();
-#ifdef SOC_LPC55S69_SERIES
-    status = sfw_flash_write(off, write_buff, 512);
-#else
-    // FIXME
-    status = flexspi_nor_flash_program(EXAMPLE_FLEXSPI, off, (void *)&s_swap_trailer, IMAGE_TRAILER_SIZE);
-    // status = sfw_flash_write(off, (void *)&s_swap_trailer, IMAGE_TRAILER_SIZE);
-#endif
-    if (status) 
-    {
-        PRINTF("enable_image: failed to write trailer2\r\n");
-        return -1;
-    }
-    EnableGlobalIRQ(primask);
-    return 0;
-}
-int write_image_ok(void)
-{
-    uint32_t off;
-    status_t status;
-    uint32_t primask;
-#ifdef SOC_LPC55S69_SERIES
-    /* The flash of LPC55xx have the limit of offset when do write operation*/
-    static uint8_t write_buff[512];
-    memset(write_buff, 0xff, 512);
-#endif    
-    /* Erase update type flag */
-    primask = DisableGlobalIRQ();
-#if !defined(SOC_LPC55S69_SERIES)
-    status = sfw_flash_erase(FLASH_AREA_IMAGE_1_OFFSET - SECTOR_SIZE, SECTOR_SIZE);
-#endif
-    
-    EnableGlobalIRQ(primask);    
-
-    memset((void *)&s_swap_trailer, 0xff, IMAGE_TRAILER_SIZE);
-    memcpy((void *)s_swap_trailer.magic, boot_img_magic, sizeof(boot_img_magic));
-    
-    s_swap_trailer.image_ok= BOOT_FLAG_SET;
-
-#ifdef SOC_LPC55S69_SERIES
-    off = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - 512;
-    sfw_flash_read(off, write_buff, 512);
-    memcpy(&write_buff[512 - IMAGE_TRAILER_SIZE], (void *)&s_swap_trailer, IMAGE_TRAILER_SIZE);
-#else
-    off = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - IMAGE_TRAILER_SIZE;
-#endif
-
-    PRINTF("Write OK flag: off = 0x%x\r\n", off);
-    
-    primask = DisableGlobalIRQ();
-#ifdef SOC_LPC55S69_SERIES
-    sfw_flash_erase(off, 512);
-    status = sfw_flash_write(off, write_buff, 512);
-#else
-    status = sfw_flash_erase(FLASH_AREA_IMAGE_2_OFFSET - SECTOR_SIZE, SECTOR_SIZE);
-    status = sfw_flash_write(off, (void *)&s_swap_trailer, IMAGE_TRAILER_SIZE);
-#endif
-    if (status) 
-    {
-        return;
-    }
-    EnableGlobalIRQ(primask);
-}
 #endif

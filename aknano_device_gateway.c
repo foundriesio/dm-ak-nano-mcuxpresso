@@ -778,9 +778,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                             AKNANO_EVENT_SUCCESS_TRUE);
 
             LogInfo(("Requesting update on next boot (ReadyForTest)"));
-            enable_image();
-            LogInfo(("enabled image"));
-            set_boot_image_position(aknano_settings->image_position);
+            enable_image_and_set_boot_image_position(aknano_settings->image_position);
             isRebootRequired = true;
         } else {
             AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_COMPLETED,
