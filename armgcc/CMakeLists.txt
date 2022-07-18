@@ -147,109 +147,25 @@ include(middleware_mbedtls_port_ksdk_MIMXRT1062)
 
 include(middleware_mbedtls_rt_MIMXRT1062)
 
-include(middleware_freertos-aws_iot_demos_MIMXRT1062)
-
 include(middleware_freertos-aws_iot_demos_dev_mode_key_provisioning_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_demos_ota_mqtt_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_ota_for_aws_MIMXRT1062)
 
 include(middleware_freertos-aws_iot_vendor_nxp_secure_sockets_lwip_MIMXRT1062)
 
-include(middleware_freertos-aws_iot_vendor_nxp_ota_pal_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_abstractions_transport_MIMXRT1062)
-
 include(middleware_freertos-kernel_MIMXRT1062)
-
-#include(middleware_freertos-aws_iot_libraries_abstractions_secure_sockets_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_logging_MIMXRT1062)
-
-#include(middleware_freertos-aws_iot_libraries_coremqtt_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_3rdparty_mbedtls_config_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_3rdparty_pkcs11_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_abstractions_pkcs11_MIMXRT1062)
-
-#include(middleware_freertos-aws_iot_libraries_abstractions_pkcs11_mbedtls_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_vendor_nxp_pkcs11_MIMXRT1062)
 
 include(middleware_freertos-kernel_heap_4_MIMXRT1062)
 
-include(driver_clock_MIMXRT1062)
-
-include(driver_common_MIMXRT1062)
-
-include(device_MIMXRT1062_CMSIS_MIMXRT1062)
-
-include(component_lpuart_adapter_MIMXRT1062)
-
-include(component_serial_manager_MIMXRT1062)
-
-include(component_lists_MIMXRT1062)
-
-include(component_serial_manager_uart_MIMXRT1062)
-
-include(driver_lpuart_MIMXRT1062)
-
 include(device_MIMXRT1062_startup_MIMXRT1062)
 
-include(driver_iomuxc_MIMXRT1062)
-
-include(utility_assert_MIMXRT1062)
-
 include(driver_igpio_MIMXRT1062)
-
-include(driver_mdio-common_MIMXRT1062)
-
-include(CMSIS_Include_core_cm_MIMXRT1062)
-
-include(component_mflash_common_MIMXRT1062)
 
 include(driver_dcp_MIMXRT1062)
 
 include(driver_trng_MIMXRT1062)
 
-include(middleware_freertos-aws_iot_libraries_abstractions_platform_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_c_sdk_standard_common_MIMXRT1062)
-
-include(middleware_freertos-kernel_extension_MIMXRT1062)
-
 include(middleware_freertos-aws_iot_network_manager_MIMXRT1062)
 
 include(middleware_freertos-aws_iot_demos_ota_demo_helpers_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_corejason_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_3rdparty_tinycbor_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_abstractions_backoff_algorithm_MIMXRT1062)
-
-#include(middleware_freertos-aws_iot_libraries_abstractions_mqtt_agent_MIMXRT1062)
-
-#include(middleware_freertos-aws_iot_libraries_coremqtt-agent_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_pkcs11_helpers_MIMXRT1062)
-
-#include(middleware_freertos-aws_iot_demos_common_mqtt_subscription_manager_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_freertos_plus_standard_tls_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_3rdparty_mbedtls_utils_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_freertos_plus_standard_crypto_MIMXRT1062)
-
-include(middleware_freertos-aws_iot_libraries_freertos_plus_standard_utils_MIMXRT1062)
-
-include(utilities_misc_utilities_MIMXRT1062)
-
-include(device_MIMXRT1062_system_MIMXRT1062)
 
 include(middleware_freertos-aws_iot_demos_corehttp_MIMXRT1062) # added
 
