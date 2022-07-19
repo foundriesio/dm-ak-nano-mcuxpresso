@@ -379,7 +379,7 @@ status_t flexspi_nor_flash_program(FLEXSPI_Type *base, uint32_t dstAddr, const u
     return status;
 }
 
-status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src)
+status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint16_t write_size)
 {
     status_t status;
     flexspi_transfer_t flashXfer;
@@ -413,7 +413,7 @@ status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, co
     flashXfer.SeqNumber     = 1;
     flashXfer.seqIndex      = NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD;
     flashXfer.data          = (uint32_t *)src;
-    flashXfer.dataSize      = FLASH_PAGE_SIZE;
+    flashXfer.dataSize      = write_size;
     status                  = FLEXSPI_TransferBlocking(base, &flashXfer);
 
     if (status != kStatus_Success)
@@ -541,4 +541,162 @@ void flexspi_nor_flash_init(FLEXSPI_Type *base)
 #if defined(CACHE_MAINTAIN) && CACHE_MAINTAIN
     flexspi_nor_enable_cache(cacheStatus);
 #endif
+}
+
+
+
+// FIXME: set those in an appropriate header file
+// FLEXSPI
+#define FLASH_CONFIG_SECTORSIZE             4u * 1024u
+
+#define UPDATE_EXAMPLE_FLEXSPI                        FLEXSPI2
+#define UPDATE_FLASH_SIZE_KB                          (UPDATE_COMPONENT_FLASHIAP_SIZE/1024) //0x10000
+#define UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE              FlexSPI2_AMBA_BASE
+#define UPDATE_SECTOR_SIZE                            (FLASH_CONFIG_SECTORSIZE)  //0x40000
+#define UPDATE_EXAMPLE_FLEXSPI_CLOCK                  kCLOCK_FlexSpi2
+#define UPDATE_FLEXSPI_BASE_ADDRESS_MASK              (UPDATE_FLASH_SIZE_KB * 0x400 -1)
+#define UPDATE_FLASH_CONFIG_PAGESIZE               256
+#define UPDATE_COMPONENT_FLASHIAP_SIZE 4194304
+
+#define WINBOND_W25QxxxJV
+
+#if defined(Macronix_MX25UM51345G)||defined(Macronix_MX25UM51345G_2nd)
+status_t sfw_flash_read_ipc(uint32_t address, void *buffer, size_t length)
+{
+    status_t status;
+    flexspi_transfer_t flashXfer;
+
+    /* Read page. */
+    flashXfer.deviceAddress = address;
+    flashXfer.port          = FLASH_PORT;
+    flashXfer.cmdType       = kFLEXSPI_Read;
+    flashXfer.SeqNumber     = 1;
+    flashXfer.seqIndex      = NOR_CMD_LUT_SEQ_IDX_READ;
+    flashXfer.data          = (uint32_t *)(void *)buffer;
+    flashXfer.dataSize      = length;
+
+    status = FLEXSPI_TransferBlocking(EXAMPLE_FLEXSPI, &flashXfer);
+
+    return status;
+}
+#elif defined(ISSI_AT25SFxxxA)||defined(ISSI_IS25LPxxxA)||defined(ISSI_IS25WPxxxA)||defined(WINBOND_W25QxxxJV)
+status_t sfw_flash_read_ipc(uint32_t address, void *buffer, size_t length)
+{
+    status_t status;
+    flexspi_transfer_t flashXfer;
+
+    /* Prepare page program command */
+    flashXfer.deviceAddress = address & (~UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE);
+    flashXfer.port          = kFLEXSPI_PortA1;
+    flashXfer.cmdType       = kFLEXSPI_Read;
+    flashXfer.SeqNumber     = 1;
+    flashXfer.seqIndex      = NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD;
+    flashXfer.data          = (uint32_t *)(void *)buffer;
+    flashXfer.dataSize      = length;
+    status                  = FLEXSPI_TransferBlocking(UPDATE_EXAMPLE_FLEXSPI, &flashXfer);
+
+    if (status != kStatus_Success)
+    {
+        return status;
+    }
+
+    status = flexspi_nor_wait_bus_busy(UPDATE_EXAMPLE_FLEXSPI);
+
+    return status;
+}
+#endif
+
+status_t sfw_flash_erase(uint32_t address, size_t len)
+{
+	status_t status;
+
+	if ((address % UPDATE_SECTOR_SIZE) || (len % UPDATE_SECTOR_SIZE))
+		return -1;
+
+	for (; len > 0; len -= UPDATE_SECTOR_SIZE) {
+		/* Erase sectors. */
+		status = flexspi_nor_flash_erase_sector(UPDATE_EXAMPLE_FLEXSPI, address);
+		if (status != kStatus_Success)
+		{
+			return -1;
+		}
+
+		address += UPDATE_SECTOR_SIZE;
+	}
+
+	return 0;
+}
+
+
+/* Make sure the data address is 4 bytes aligned */
+static uint32_t flash_program_buffer[64];
+status_t sfw_flash_write(uint32_t dstAddr, const void *src, size_t len)
+{
+	status_t status;
+	uint8_t page_off = 0;
+	const uint8_t *src_addr = (const uint8_t *)src;
+	uint16_t write_size = 0;
+
+	if (((dstAddr + len) & UPDATE_FLEXSPI_BASE_ADDRESS_MASK) > (UPDATE_FLASH_SIZE_KB * 0x400))
+		return -1;
+
+	for (; len > 0;) {
+		page_off = dstAddr % FLASH_PAGE_SIZE;	/* An offset value in a page */
+		if ((page_off + len) <= FLASH_PAGE_SIZE)	/* Write the last page */
+			write_size = len;
+		else
+			write_size = FLASH_PAGE_SIZE - page_off;
+
+		memcpy(flash_program_buffer, src_addr, write_size);
+		status = flexspi_nor_flash_page_program(UPDATE_EXAMPLE_FLEXSPI, dstAddr, flash_program_buffer, write_size);
+		if (status != kStatus_Success)
+		{
+			return -1;
+		}
+		src_addr += write_size;
+		dstAddr += write_size;
+		len -= write_size;
+	}
+
+	return 0;
+}
+
+status_t sfw_flash_read(uint32_t dstAddr, void *buf, size_t len)
+{
+	uint32_t addr = dstAddr | UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE;
+
+//	DCACHE_CleanInvalidateByRange(addr, len);
+	memcpy(buf, (void *)addr, len);
+
+	return 0;
+}
+
+
+status_t sfw_flash_init(void)
+{
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+    bool DCacheEnableFlag = false;
+    /* Disable D cache. */
+    if (SCB_CCR_DC_Msk == (SCB_CCR_DC_Msk & SCB->CCR))
+    {
+        SCB_DisableDCache();
+        DCacheEnableFlag = true;
+    }
+#endif /* __DCACHE_PRESENT */
+
+    /* Update LUT table. */
+    FLEXSPI_UpdateLUT(EXAMPLE_FLEXSPI, 0, &customLUT[0], CUSTOM_LUT_LENGTH);
+
+    /* Do software reset. */
+    FLEXSPI_SoftwareReset(EXAMPLE_FLEXSPI);
+
+#if defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
+    if (DCacheEnableFlag)
+    {
+        /* Enable D cache. */
+        SCB_EnableDCache();
+    }
+#endif /* __DCACHE_PRESENT */
+
+    return kStatus_Success;
 }

@@ -20,6 +20,7 @@
 #include <time.h>
 
 #include "mcuboot_app_support.h"
+#include "ota_flag/sbl_ota_flag.h"
 /* Transport interface implementation include header for TLS. */
 #include "transport_secure_sockets.h"
 
@@ -171,6 +172,7 @@ struct aknano_settings {
     time_t boot_up_epoch;
     char ongoing_update_correlation_id[AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH];
     bool is_device_registered;
+    uint8_t image_position;
 };
 
 /* Context is not kept between iterations */

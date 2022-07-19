@@ -25,7 +25,7 @@
 // static uint8_t s_nor_read_buffer[256 * 4];
 
 extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
-extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src);
+extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint16_t write_size);
 extern status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
 extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
 extern status_t flexspi_nor_erase_chip(FLEXSPI_Type *base);
@@ -172,7 +172,7 @@ status_t UpdateFlashStoragePage(int offset, void *data)
          return -1;
     }
 
-    status = flexspi_nor_flash_page_program(EXAMPLE_FLEXSPI, AKNANO_STORAGE_FLASH_OFFSET + offset, data);
+    status = flexspi_nor_flash_page_program(EXAMPLE_FLEXSPI, AKNANO_STORAGE_FLASH_OFFSET + offset, data, FLASH_PAGE_SIZE);
     if (status != kStatus_Success)
     {
          PRINTF("Program sector failure !\r\n");

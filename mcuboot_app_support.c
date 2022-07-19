@@ -6,12 +6,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#define LIBRARY_LOG_LEVEL LOG_INFO
+
+#include "aknano_priv.h"
+
+
 #include <stdint.h>
 
 #include "mcuboot_app_support.h"
 #include "mflash_drv.h"
 
 #include "fsl_debug_console.h"
+#include "flexspi_flash_config.h"
 
 const uint32_t boot_img_magic[] = {
     0xf395c277,
@@ -55,70 +61,70 @@ static int boot_img_magic_check(uint8_t *p)
     return 0;
 }
 
-static status_t boot_swap_test(void)
-{
-    uint32_t off;
-    status_t status;
+// static status_t boot_swap_test(void)
+// {
+//     uint32_t off;
+//     status_t status;
 
-    uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
-    struct image_trailer *image_trailer_p =
-        (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
+//     uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
+//     struct image_trailer *image_trailer_p =
+//         (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
 
-    off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_PAGE_SIZE;
+//     off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_PAGE_SIZE;
 
-    memset(buf, 0xff, MFLASH_PAGE_SIZE);
-    memcpy(image_trailer_p->magic, boot_img_magic, sizeof(boot_img_magic));
+//     memset(buf, 0xff, MFLASH_PAGE_SIZE);
+//     memcpy(image_trailer_p->magic, boot_img_magic, sizeof(boot_img_magic));
 
-    PRINTF("write magic number offset = 0x%x\r\n", off);
+//     PRINTF("write magic number offset = 0x%x\r\n", off);
 
-    status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_SECTOR_SIZE);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_test: failed to erase trailer2\r\n");
-        return status;
-    }
+//     status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_SECTOR_SIZE);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_test: failed to erase trailer2\r\n");
+//         return status;
+//     }
 
-    status = mflash_drv_page_program(off, buf);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_test: failed to write trailer2\r\n");
-        return status;
-    }
+//     status = mflash_drv_page_program(off, buf);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_test: failed to write trailer2\r\n");
+//         return status;
+//     }
 
-    return status;
-}
+//     return status;
+// }
 
-static status_t boot_swap_perm(void)
-{
-    uint32_t off;
-    status_t status;
+// static status_t boot_swap_perm(void)
+// {
+//     uint32_t off;
+//     status_t status;
 
-    uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
-    struct image_trailer *image_trailer_p =
-        (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
+//     uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
+//     struct image_trailer *image_trailer_p =
+//         (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
 
-    off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_PAGE_SIZE;
+//     off = FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_PAGE_SIZE;
 
-    memset(buf, 0xff, MFLASH_PAGE_SIZE);
-    memcpy(image_trailer_p->magic, boot_img_magic, sizeof(boot_img_magic));
-    image_trailer_p->image_ok = BOOT_FLAG_SET;
+//     memset(buf, 0xff, MFLASH_PAGE_SIZE);
+//     memcpy(image_trailer_p->magic, boot_img_magic, sizeof(boot_img_magic));
+//     image_trailer_p->image_ok = BOOT_FLAG_SET;
 
-    status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_SECTOR_SIZE);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_perm: failed to erase trailer2\r\n");
-        return status;
-    }
+//     status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_2_OFFSET + FLASH_AREA_IMAGE_2_SIZE - MFLASH_SECTOR_SIZE);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_perm: failed to erase trailer2\r\n");
+//         return status;
+//     }
 
-    status = mflash_drv_page_program(off, buf);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_perm: failed to write trailer2\r\n");
-        return status;
-    }
+//     status = mflash_drv_page_program(off, buf);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_perm: failed to write trailer2\r\n");
+//         return status;
+//     }
 
-    return status;
-}
+//     return status;
+// }
 
 static status_t boot_swap_ok(void)
 {
@@ -175,14 +181,19 @@ static status_t boot_swap_ok(void)
     return status;
 }
 
-int32_t bl_verify_image(const uint8_t *data, uint32_t size)
+int32_t bl_verify_image(uint32_t addr, uint32_t size)
 {
-    struct image_header *ih;
-    struct image_tlv_info *it;
+    struct image_header *ih, iho;
+    struct image_tlv_info *it, ito;
     uint32_t decl_size;
     uint32_t tlv_size;
 
-    ih = (struct image_header *)data;
+
+    ih = &iho;
+    it = &ito;
+    sfw_flash_read_ipc(addr, (uint8_t*)ih, sizeof(*ih));
+
+    //ih = (struct image_header *)data;
 
     /* do we have at least the header */
     if (size < sizeof(struct image_header))
@@ -193,6 +204,7 @@ int32_t bl_verify_image(const uint8_t *data, uint32_t size)
     /* check magic number */
     if (ih->ih_magic != IMAGE_MAGIC)
     {
+        LogError(("Image validation failed with magic=0x%X != 0x%X", ih->ih_magic, IMAGE_MAGIC));
         return 0;
     }
 
@@ -200,6 +212,7 @@ int32_t bl_verify_image(const uint8_t *data, uint32_t size)
     decl_size = ih->ih_img_size + ih->ih_hdr_size + ih->ih_protect_tlv_size;
     if (size < decl_size)
     {
+        LogError(("Image validation failed size (%u) < decl_size (%u)", size, decl_size));
         return 0;
     }
 
@@ -208,11 +221,20 @@ int32_t bl_verify_image(const uint8_t *data, uint32_t size)
     {
         if (ih->ih_protect_tlv_size < sizeof(struct image_tlv_info))
         {
+            LogError(("Image validation failed  ih->ih_protect_tlv_size (%u) < sizeof(struct image_tlv_info) (%u)", 
+            ih->ih_protect_tlv_size, sizeof(struct image_tlv_info)));
             return 0;
         }
-        it = (struct image_tlv_info *)(data + ih->ih_img_size + ih->ih_hdr_size);
+        sfw_flash_read_ipc(addr + ih->ih_img_size + ih->ih_hdr_size, (uint8_t*)it, sizeof(*it));
+        // it = (struct image_tlv_info *)(data + ih->ih_img_size + ih->ih_hdr_size);
         if ((it->it_magic != IMAGE_TLV_PROT_INFO_MAGIC) || (it->it_tlv_tot != ih->ih_protect_tlv_size))
         {
+            if (it->it_magic != IMAGE_TLV_PROT_INFO_MAGIC)
+                LogError(("Image validation failed it->it_magic (%u) != IMAGE_TLV_PROT_INFO_MAGIC",  
+                    it->it_magic, IMAGE_TLV_PROT_INFO_MAGIC));
+            if (it->it_tlv_tot != ih->ih_protect_tlv_size)
+                LogError(("Image validation failed it->it_tlv_tot (%u) != ih->ih_protect_tlv_size",  
+                    it->it_tlv_tot, ih->ih_protect_tlv_size));
             return 0;
         }
     }
@@ -223,11 +245,17 @@ int32_t bl_verify_image(const uint8_t *data, uint32_t size)
     {
         if (tlv_size < sizeof(struct image_tlv_info))
         {
+            LogError(("Image validation failed tlv_size < sizeof(struct image_tlv_info)"));
             return 0;
         }
-        it = (struct image_tlv_info *)(data + decl_size);
+        sfw_flash_read_ipc(addr + decl_size, (uint8_t*)it, sizeof(*it));
+        // it = (struct image_tlv_info *)(data + decl_size);
         if ((it->it_magic != IMAGE_TLV_INFO_MAGIC) || (it->it_tlv_tot != tlv_size))
         {
+            if (it->it_magic != IMAGE_TLV_INFO_MAGIC)
+                LogError(("Image validation failed (it->it_magic != IMAGE_TLV_INFO_MAGIC) 0x%X 0x%X", it->it_magic, IMAGE_TLV_INFO_MAGIC));
+            if (it->it_tlv_tot != tlv_size)
+                LogError(("Image validation failed (it->it_tlv_tot != tlv_size) %u %u", it->it_tlv_tot, tlv_size));
             return 0;
         }
     }
@@ -235,37 +263,41 @@ int32_t bl_verify_image(const uint8_t *data, uint32_t size)
     return 1;
 }
 
-status_t bl_get_update_partition_info(partition_t *partition)
-{
-    memset(partition, 0x0, sizeof(*partition));
+// status_t bl_get_update_partition_info(partition_t *partition, uint8_t image_position)
+// {
+//     // memset(partition, 0x0, sizeof(*partition));
+//     if (image_position == 1)
+//         partition->start = BOOT_FLASH_ACT_APP;
+//         partition->size  = BOOT_FLASH_CAND_APP - BOOT_FLASH_ACT_APP;
+//     else {
+//         partition->start = BOOT_FLASH_CAND_APP;
+//         partition->size  = BOOT_FLASH_CAND_APP - BOOT_FLASH_ACT_APP;
+//     }
 
-    partition->start = BOOT_FLASH_CAND_APP;
-    partition->size  = BOOT_FLASH_CAND_APP - BOOT_FLASH_ACT_APP;
+//     return kStatus_Success;
+// }
 
-    return kStatus_Success;
-}
+// status_t bl_update_image_state(uint32_t state)
+// {
+//     status_t status;
 
-status_t bl_update_image_state(uint32_t state)
-{
-    status_t status;
+//     switch (state)
+//     {
+//         case kSwapType_ReadyForTest:
+//             status = boot_swap_test();
+//             break;
 
-    switch (state)
-    {
-        case kSwapType_ReadyForTest:
-            status = boot_swap_test();
-            break;
+//         case kSwapType_Permanent:
+//             status = boot_swap_ok();
+//             break;
 
-        case kSwapType_Permanent:
-            status = boot_swap_ok();
-            break;
+//         default:
+//             status = kStatus_InvalidArgument;
+//             break;
+//     }
 
-        default:
-            status = kStatus_InvalidArgument;
-            break;
-    }
-
-    return status;
-}
+//     return status;
+// }
 
 status_t bl_get_image_state(uint32_t *state)
 {
@@ -322,9 +354,9 @@ status_t bl_get_image_state(uint32_t *state)
     return kStatus_Success;
 }
 
-status_t bl_get_image_build_num(uint32_t *iv_build_num)
+status_t bl_get_image_build_num(uint32_t *iv_build_num, uint8_t image_position)
 {
-    struct image_header *ih = (void*)BOOT_FLASH_ACT_APP;
+    struct image_header *ih = image_position == 2? (void*)BOOT_FLASH_CAND_APP : (void*)BOOT_FLASH_ACT_APP;
     *iv_build_num = ih->ih_ver.iv_build_num;
     return kStatus_Success;
 }

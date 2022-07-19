@@ -10,11 +10,12 @@
 #include "transport_secure_sockets.h"
 
 #include "mcuboot_app_support.h"
+#include "image.h"
 #include "mflash_common.h"
 #include "mflash_drv.h"
 
 #include "aknano_priv.h"
-
+#include "flexspi_flash_config.h"
 
 #define AKNANO_DOWNLOAD_ENDPOINT "detsch.gobolinux.org"
 
@@ -176,10 +177,10 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
     return xStatus;
 }
 
-
 static int HandleReceivedData(const unsigned char* data, int offset, int dataLen, uint32_t partition_log_addr, uint32_t partition_size)
 {
-    LogInfo(("Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ]", offset, dataLen, data[0], data[1], data[2], data[3]));
+    LogInfo(("X Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ] partition_log_addr=0x%08X", offset, dataLen, data[0], data[1], data[2], data[3], partition_log_addr));
+
 #ifdef AKNANO_DRY_RUN
     LogInfo(("** Dry run mode, skipping flash operations"));
     return 0;
@@ -208,9 +209,15 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
     page_size   = MFLASH_PAGE_SIZE;
 
     /* Obtain physical address of FLASH to perform operations with */
-    partition_phys_addr = mflash_drv_log2phys((void *)partition_log_addr, partition_size);
-    if (partition_phys_addr == MFLASH_INVALID_ADDRESS)
+    // partition_phys_addr = mflash_drv_log2phys((void *)partition_log_addr, partition_size);
+    partition_phys_addr = partition_log_addr - BOOT_FLASH_BASE;
+    if (partition_phys_addr == MFLASH_INVALID_ADDRESS) {
+        LogError(("HandleReceivedData: Invalid partition_log_addr=0x%X", partition_log_addr));
         return -1;
+    }
+
+    LogInfo(("HandleReceivedData: partition_phys_addr=0x%X partition_log_addr=0x%X", 
+        partition_phys_addr, partition_log_addr));     vTaskDelay(20 / portTICK_PERIOD_MS);
 
 
     if (!mflash_drv_is_sector_aligned(partition_phys_addr) || !mflash_drv_is_sector_aligned(partition_size))
@@ -334,7 +341,7 @@ BaseType_t GetFileSize(size_t* pxFileSize, HTTPResponse_t *xResponse)
 
 static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                                  const TransportInterface_t * pxTransportInterface,
-                                           const char * pcPath )
+                                 const char * pcPath, uint8_t image_position)
 {
     /* Return value of this method. */
     BaseType_t xStatus = pdFAIL;
@@ -358,6 +365,16 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
     size_t xNumReqBytes = 0;
     /* xCurByte indicates which starting byte we want to download next. */
     size_t xCurByte = 0;
+    uint32_t dstAddr;
+    struct image_header ih;
+
+    if(image_position == 0x01) {
+        dstAddr = FLASH_AREA_IMAGE_2_OFFSET;
+    } else if(image_position == 0x02) {
+        dstAddr = FLASH_AREA_IMAGE_1_OFFSET;
+    } else {
+        dstAddr = FLASH_AREA_IMAGE_2_OFFSET;
+    }
 
     configASSERT( pcPath != NULL );
 
@@ -409,14 +426,7 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
 
 
-    partition_t update_partition;
     int32_t stored = 0;
-    if (bl_get_update_partition_info(&update_partition) != kStatus_Success)
-    {
-        /* Could not get update partition info */
-        LogError(("Could not get update partition info"));
-        return pdFAIL;
-    }
     
 
     /* Here we iterate sending byte range requests until the full file has been
@@ -478,8 +488,15 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             LogInfo( ( "Response Body Len: %d",
                        ( int32_t ) xResponse.bodyLen) );
 
+            // FIXME
+            #define MAX_FIRMWARE_SIZE 0x100000
+            if (HandleReceivedData(xResponse.pBody, xCurByte, xResponse.contentLength, dstAddr + BOOT_FLASH_BASE, MAX_FIRMWARE_SIZE) < 0)
+            {
+                LogError(("Error during HandleReceivedData"));
+                xStatus = pdFAIL;
+                break;
+            }
 
-            HandleReceivedData(xResponse.pBody, xCurByte, xResponse.contentLength, update_partition.start, update_partition.size);
             stored += xResponse.contentLength;
 
             /* We increment by the content length because the server may not
@@ -510,10 +527,12 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             //LogInfo(("Reconnecting"));
             vTaskDelay(50 / portTICK_PERIOD_MS);
             BaseType_t ret;
-            ret = prvConnectToDownloadServer(pxNetworkContext);
-            // LogInfo(("Reconnect result = %d", ret));
-            if (ret == pdPASS)
-                xHTTPStatus = HTTPSuccess;
+            if (xNumReqBytes > 0) {
+                ret = prvConnectToDownloadServer(pxNetworkContext);
+                // LogInfo(("Reconnect result = %d", ret));
+                if (ret == pdPASS)
+                    xHTTPStatus = HTTPSuccess;
+            }
         }
 
         if( xStatus != pdPASS )
@@ -526,17 +545,12 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
     if (( xStatus == pdPASS ) && ( xHTTPStatus == HTTPSuccess )) {
 #ifndef AKNANO_DRY_RUN
-        LogInfo(("Validating image of size %d", stored));
-
-        struct image_header *ih;
-        // struct image_tlv_info *it;
-        // uint32_t decl_size;
-        // uint32_t tlv_size;
-        ih = (struct image_header *)update_partition.start;
-        if (bl_verify_image((void *)update_partition.start, stored) <= 0)
+        LogInfo(("Validating image of size %d at dstAddr=%p", stored, dstAddr + BOOT_FLASH_BASE));
+        sfw_flash_read_ipc(dstAddr + BOOT_FLASH_BASE, (void*)&ih, sizeof(ih));
+        if (bl_verify_image(dstAddr + BOOT_FLASH_BASE, stored) <= 0)
         {
             /* Image validation failed */
-            LogError(("Image validation failed magic=0x%X", ih->ih_magic));
+            LogError(("Image validation failed magic=0x%X", ih.ih_magic));
             return false;
         } else {
             LogInfo(("Image validation succeded"));
@@ -554,7 +568,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
     TransportInterface_t xTransportInterface;
     /* The network context for the transport layer interface. */
     NetworkContext_t xNetworkContext = { 0 };
-    TransportSocketStatus_t xNetworkStatus;
     BaseType_t xIsConnectionEstablished = pdFALSE;
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
 
@@ -592,24 +605,12 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
         char *relative_path = aknano_context->aknano_json_data.selected_target.uri + strlen("https://") + strlen(AKNANO_DOWNLOAD_ENDPOINT);
         LogInfo(("Download relativepath=%s", relative_path));
         xDemoStatus = prvDownloadFile(&xNetworkContext, &xTransportInterface, 
-            relative_path);
+            relative_path, aknano_context->settings->image_position);
     }
 
     /**************************** Disconnect. ******************************/
 
     /* Close the network connection to clean up any system resources that the
         * demo may have consumed. */
-    if( xIsConnectionEstablished == pdTRUE )
-    {
-        /* Close the network connection.  */
-        xNetworkStatus = SecureSocketsTransport_Disconnect( &xNetworkContext );
-
-        if( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS )
-        {
-            xDemoStatus = pdFAIL;
-            LogError( ( "SecureSocketsTransport_Disconnect() failed to close the network connection. "
-                        "StatusCode=%d.", ( int ) xNetworkStatus ) );
-        }
-    }
     return xDemoStatus;
 }

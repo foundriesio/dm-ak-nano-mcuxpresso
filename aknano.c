@@ -1,6 +1,7 @@
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
 #include <time.h>
+#include <stdio.h>
 
 #include "lwip/opt.h"
 #include "lwip/apps/sntp.h"
@@ -9,6 +10,7 @@
 
 #include "aknano_priv.h"
 #include "aknano_secret.h"
+#include "flexspi_flash_config.h"
 
 
 /**
@@ -101,7 +103,11 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 
     // strcpy(aknano_settings->serial, "000000000000");
 
-    bl_get_image_build_num(&aknano_settings->running_version);
+    sfw_flash_read(REMAP_FLAG_ADDRESS, &aknano_settings->image_position, 1);
+
+    LogInfo(("AkNanoInitSettings: image_position=%u", aknano_settings->image_position));
+
+    bl_get_image_build_num(&aknano_settings->running_version, aknano_settings->image_position);
     LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%u",
              aknano_settings->running_version));
 
@@ -164,7 +170,6 @@ static void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
 {
     bool image_ok;
-    uint32_t currentStatus;
 
 #ifdef AKNANO_TEST_ROLLBACK
     #warning "Compiling broken image for rollback test"
@@ -173,27 +178,16 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
     NVIC_SystemReset();
 #endif
 
-    if (bl_get_image_state(&currentStatus) == kStatus_Success) {
-        if (currentStatus == kSwapType_Testing) {
-            LogInfo(("Current image state is Testing. Marking as permanent"));
-            bl_update_image_state(kSwapType_Permanent);
-            // AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_APPLIED, aknano_settings->running_version);
-        } else if (currentStatus == kSwapType_ReadyForTest) {
-            LogInfo(("Current image state is ReadyForTest"));
-        } else {
-            image_ok = true;
-            LogInfo(("Current image state is Permanent"));
-            // TODO: Only send on Testing image
-            // AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_APPLIED, aknano_settings->running_version);
-        }
-    } else {
-        LogWarn(("Erro getting image state"));
+    image_ok = is_image_confirmed();
+    if (image_ok) {
         image_ok = true;
+        LogInfo(("Current image state is Permanent"));
+    }
+    else {
+        LogInfo(("Current image state is Testing. Marking as permanent"));
+        write_image_ok();
     }
 
-    // ret = boot_write_img_confirmed_multi(1);
-    // LOG_INF("Confirmed image 1 %d", ret);
-    // image_ok = boot_is_img_confirmed();
     LogInfo(("Image is%s confirmed OK", image_ok ? "" : " not"));
 
     LogInfo(("aknano_settings.ongoing_update_correlation_id='%s'", aknano_settings->ongoing_update_correlation_id));
