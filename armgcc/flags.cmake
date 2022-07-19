@@ -3,19 +3,10 @@ SET(CMAKE_ASM_FLAGS_FLEXSPI_NOR_DEBUG " \
     -D__STARTUP_CLEAR_BSS \
     -DDEBUG \
     -D__STARTUP_INITIALIZE_NONCACHEDATA \
-    -g \
     -mcpu=cortex-m7 \
-    -Wall \
     -mfloat-abi=hard \
     -mfpu=fpv5-d16 \
     -mthumb \
-    -fno-common \
-    -ffunction-sections \
-    -fdata-sections \
-    -ffreestanding \
-    -fno-builtin \
-    -mapcs \
-    -std=gnu99 \
 ")
 SET(CMAKE_ASM_FLAGS_FLEXSPI_NOR_RELEASE " \
     ${CMAKE_ASM_FLAGS_FLEXSPI_NOR_RELEASE} \
@@ -23,17 +14,9 @@ SET(CMAKE_ASM_FLAGS_FLEXSPI_NOR_RELEASE " \
     -DNDEBUG \
     -D__STARTUP_INITIALIZE_NONCACHEDATA \
     -mcpu=cortex-m7 \
-    -Wall \
     -mfloat-abi=hard \
     -mfpu=fpv5-d16 \
     -mthumb \
-    -fno-common \
-    -ffunction-sections \
-    -fdata-sections \
-    -ffreestanding \
-    -fno-builtin \
-    -mapcs \
-    -std=gnu99 \
 ")
 SET(CMAKE_C_FLAGS_FLEXSPI_NOR_DEBUG " \
     ${CMAKE_C_FLAGS_FLEXSPI_NOR_DEBUG} \
@@ -41,17 +24,20 @@ SET(CMAKE_C_FLAGS_FLEXSPI_NOR_DEBUG " \
     -DXIP_BOOT_HEADER_ENABLE=1 \
     -DDEBUG \
     -DLWIP_TIMEVAL_PRIVATE=0 \
-    -DCPU_MIMXRT1062DVL6A \
+    -DCPU_MIMXRT1176DVMAA_cm7 \
     -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
+    -DLWIP_ENET_FLEXIBLE_CONFIGURATION \
     -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
     -DUSE_RTOS=1 \
+    -DMFLASH_FILE_BASEADDR=14221312 \
     -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
-    -DMFLASH_FILE_BASEADDR=7340032 \
     -DSDK_OS_FREE_RTOS \
     -DSERIAL_PORT_TYPE_UART=1 \
+    -DCRYPTO_USE_DRIVER_CAAM \
+    -DCACHE_MODE_WRITE_THROUGH=1 \
     -DMCUXPRESSO_SDK \
+    -Og \
     -g \
-    -O0 \
     -fomit-frame-pointer \
     -Wno-unused-function \
     -mcpu=cortex-m7 \
@@ -75,14 +61,17 @@ SET(CMAKE_C_FLAGS_FLEXSPI_NOR_RELEASE " \
     -DXIP_BOOT_HEADER_ENABLE=1 \
     -DNDEBUG \
     -DLWIP_TIMEVAL_PRIVATE=0 \
-    -DCPU_MIMXRT1062DVL6A \
+    -DCPU_MIMXRT1176DVMAA_cm7 \
     -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
+    -DLWIP_ENET_FLEXIBLE_CONFIGURATION \
     -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
     -DUSE_RTOS=1 \
+    -DMFLASH_FILE_BASEADDR=14221312 \
     -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
-    -DMFLASH_FILE_BASEADDR=7340032 \
     -DSDK_OS_FREE_RTOS \
     -DSERIAL_PORT_TYPE_UART=1 \
+    -DCRYPTO_USE_DRIVER_CAAM \
+    -DCACHE_MODE_WRITE_THROUGH=1 \
     -DMCUXPRESSO_SDK \
     -Os \
     -fomit-frame-pointer \
@@ -105,7 +94,7 @@ SET(CMAKE_C_FLAGS_FLEXSPI_NOR_RELEASE " \
 SET(CMAKE_CXX_FLAGS_FLEXSPI_NOR_DEBUG " \
     ${CMAKE_CXX_FLAGS_FLEXSPI_NOR_DEBUG} \
     -DDEBUG \
-    -DCPU_MIMXRT1062DVL6A \
+    -DCPU_MIMXRT1176DVMAA_cm7 \
     -DSERIAL_PORT_TYPE_UART=1 \
     -DMCUXPRESSO_SDK \
     -g \
@@ -129,7 +118,7 @@ SET(CMAKE_CXX_FLAGS_FLEXSPI_NOR_DEBUG " \
 SET(CMAKE_CXX_FLAGS_FLEXSPI_NOR_RELEASE " \
     ${CMAKE_CXX_FLAGS_FLEXSPI_NOR_RELEASE} \
     -DNDEBUG \
-    -DCPU_MIMXRT1062DVL6A \
+    -DCPU_MIMXRT1176DVMAA_cm7 \
     -DSERIAL_PORT_TYPE_UART=1 \
     -DMCUXPRESSO_SDK \
     -Os \
@@ -179,7 +168,7 @@ SET(CMAKE_EXE_LINKER_FLAGS_FLEXSPI_NOR_DEBUG " \
     --defsym=__stack_size__=0x200 \
     -Xlinker \
     --defsym=__heap_size__=0x200 \
-    -T${ProjDirPath}/linker/MIMXRT1062xxxxx_flexspi_nor.ld -static \
+    -T${ProjDirPath}/MIMXRT1176xxxxx_cm7_flexspi_nor.ld -static \
 ")
 SET(CMAKE_EXE_LINKER_FLAGS_FLEXSPI_NOR_RELEASE " \
     ${CMAKE_EXE_LINKER_FLAGS_FLEXSPI_NOR_RELEASE} \
@@ -210,5 +199,5 @@ SET(CMAKE_EXE_LINKER_FLAGS_FLEXSPI_NOR_RELEASE " \
     --defsym=__stack_size__=0x200 \
     -Xlinker \
     --defsym=__heap_size__=0x200 \
-    -T${ProjDirPath}/linker/MIMXRT1062xxxxx_flexspi_nor.ld -static \
+    -T${ProjDirPath}/MIMXRT1176xxxxx_cm7_flexspi_nor.ld -static \
 ")

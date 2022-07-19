@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 NXP
+ * Copyright 2018-2022 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -23,27 +23,19 @@
 /* Get debug console frequency. */
 uint32_t BOARD_DebugConsoleSrcFreq(void)
 {
-    uint32_t freq;
-
-    /* To make it simple, we assume default PLL and divider settings, and the only variable
-       from application is use PLL3 source or OSC source */
-    if (CLOCK_GetMux(kCLOCK_UartMux) == 0) /* PLL3 div6 80M */
-    {
-        freq = (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
-    }
-    else
-    {
-        freq = CLOCK_GetOscFreq() / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
-    }
-
-    return freq;
+#if DEBUG_CONSOLE_UART_INDEX == 1
+    return CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1);
+#elif DEBUG_CONSOLE_UART_INDEX == 12
+    return CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart12);
+#else
+    return CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart2);
+#endif
 }
 
 /* Initialize debug console. */
 void BOARD_InitDebugConsole(void)
 {
     uint32_t uartClkSrcFreq = BOARD_DebugConsoleSrcFreq();
-
     DbgConsole_Init(BOARD_DEBUG_UART_INSTANCE, BOARD_DEBUG_UART_BAUDRATE, BOARD_DEBUG_UART_TYPE, uartClkSrcFreq);
 }
 
@@ -197,9 +189,15 @@ status_t BOARD_Codec_I2C_Receive(
 
 void BOARD_Camera_I2C_Init(void)
 {
-    CLOCK_SetMux(kCLOCK_Lpi2cMux, BOARD_CAMERA_I2C_CLOCK_SOURCE_SELECT);
-    CLOCK_SetDiv(kCLOCK_Lpi2cDiv, BOARD_CAMERA_I2C_CLOCK_SOURCE_DIVIDER);
-    BOARD_LPI2C_Init(BOARD_CAMERA_I2C_BASEADDR, BOARD_CAMERA_I2C_CLOCK_FREQ);
+    const clock_root_config_t lpi2cClockConfig = {
+        .clockOff = false,
+        .mux      = BOARD_CAMERA_I2C_CLOCK_SOURCE,
+        .div      = BOARD_CAMERA_I2C_CLOCK_DIVIDER,
+    };
+
+    CLOCK_SetRootClock(BOARD_CAMERA_I2C_CLOCK_ROOT, &lpi2cClockConfig);
+
+    BOARD_LPI2C_Init(BOARD_CAMERA_I2C_BASEADDR, CLOCK_GetRootClockFreq(BOARD_CAMERA_I2C_CLOCK_ROOT));
 }
 
 status_t BOARD_Camera_I2C_Send(
@@ -230,21 +228,37 @@ status_t BOARD_Camera_I2C_ReceiveSCCB(
                                    rxBuffSize);
 }
 
-status_t BOARD_Touch_I2C_Send(
-    uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, const uint8_t *txBuff, uint8_t txBuffSize)
+void BOARD_MIPIPanelTouch_I2C_Init(void)
 {
-    return BOARD_LPI2C_Send(BOARD_TOUCH_I2C_BASEADDR, deviceAddress, subAddress, subAddressSize, (uint8_t *)txBuff,
-                            txBuffSize);
+    const clock_root_config_t lpi2cClockConfig = {
+        .clockOff = false,
+        .mux      = BOARD_MIPI_PANEL_TOUCH_I2C_CLOCK_SOURCE,
+        .div      = BOARD_MIPI_PANEL_TOUCH_I2C_CLOCK_DIVIDER,
+    };
+
+    CLOCK_SetRootClock(BOARD_MIPI_PANEL_TOUCH_I2C_CLOCK_ROOT, &lpi2cClockConfig);
+
+    BOARD_LPI2C_Init(BOARD_MIPI_PANEL_TOUCH_I2C_BASEADDR,
+                     CLOCK_GetRootClockFreq(BOARD_MIPI_PANEL_TOUCH_I2C_CLOCK_ROOT));
 }
 
-status_t BOARD_Touch_I2C_Receive(
+status_t BOARD_MIPIPanelTouch_I2C_Send(
+    uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, const uint8_t *txBuff, uint8_t txBuffSize)
+{
+    return BOARD_LPI2C_Send(BOARD_MIPI_PANEL_TOUCH_I2C_BASEADDR, deviceAddress, subAddress, subAddressSize,
+                            (uint8_t *)txBuff, txBuffSize);
+}
+
+status_t BOARD_MIPIPanelTouch_I2C_Receive(
     uint8_t deviceAddress, uint32_t subAddress, uint8_t subAddressSize, uint8_t *rxBuff, uint8_t rxBuffSize)
 {
-    return BOARD_LPI2C_Receive(BOARD_TOUCH_I2C_BASEADDR, deviceAddress, subAddress, subAddressSize, rxBuff, rxBuffSize);
+    return BOARD_LPI2C_Receive(BOARD_MIPI_PANEL_TOUCH_I2C_BASEADDR, deviceAddress, subAddress, subAddressSize, rxBuff,
+                               rxBuffSize);
 }
 #endif /* SDK_I2C_BASED_COMPONENT_USED */
 
 /* MPU configuration. */
+#if __CORTEX_M == 7
 void BOARD_ConfigMPU(void)
 {
 #if defined(__CC_ARM) || defined(__ARMCC_VERSION)
@@ -257,10 +271,17 @@ void BOARD_ConfigMPU(void)
                         0 :
                         ((uint32_t)Image$$RW_m_ncache_unused$$ZI$$Limit - nonCacheStart);
 #elif defined(__MCUXPRESSO)
+#if defined(__USE_SHMEM)
+    extern uint32_t __base_rpmsg_sh_mem;
+    extern uint32_t __top_rpmsg_sh_mem;
+    uint32_t nonCacheStart = (uint32_t)(&__base_rpmsg_sh_mem);
+    uint32_t size          = (uint32_t)(&__top_rpmsg_sh_mem) - nonCacheStart;
+#else
     extern uint32_t __base_NCACHE_REGION;
     extern uint32_t __top_NCACHE_REGION;
     uint32_t nonCacheStart = (uint32_t)(&__base_NCACHE_REGION);
     uint32_t size          = (uint32_t)(&__top_NCACHE_REGION) - nonCacheStart;
+#endif
 #elif defined(__ICCARM__) || defined(__GNUC__)
     extern uint32_t __NCACHE_REGION_START[];
     extern uint32_t __NCACHE_REGION_SIZE[];
@@ -269,15 +290,19 @@ void BOARD_ConfigMPU(void)
 #endif
     volatile uint32_t i = 0;
 
+#if defined(__ICACHE_PRESENT) && __ICACHE_PRESENT
     /* Disable I cache and D cache */
     if (SCB_CCR_IC_Msk == (SCB_CCR_IC_Msk & SCB->CCR))
     {
         SCB_DisableICache();
     }
+#endif
+#if defined(__DCACHE_PRESENT) && __DCACHE_PRESENT
     if (SCB_CCR_DC_Msk == (SCB_CCR_DC_Msk & SCB->CCR))
     {
         SCB_DisableDCache();
     }
+#endif
 
     /* Disable MPU */
     ARM_MPU_Disable();
@@ -293,7 +318,7 @@ void BOARD_ConfigMPU(void)
      *      Use MACROS defined in mpu_armv7.h:
      * ARM_MPU_AP_NONE/ARM_MPU_AP_PRIV/ARM_MPU_AP_URO/ARM_MPU_AP_FULL/ARM_MPU_AP_PRO/ARM_MPU_AP_RO
      * Combine TypeExtField/IsShareable/IsCacheable/IsBufferable to configure MPU memory access attributes.
-     *  TypeExtField  IsShareable  IsCacheable  IsBufferable   Memory Attribtue    Shareability        Cache
+     *  TypeExtField  IsShareable  IsCacheable  IsBufferable   Memory Attribute    Shareability        Cache
      *     0             x           0           0             Strongly Ordered    shareable
      *     0             x           0           1              Device             shareable
      *     0             0           1           0              Normal             not shareable   Outer and inner write
@@ -338,35 +363,53 @@ void BOARD_ConfigMPU(void)
     MPU->RBAR = ARM_MPU_RBAR(2, 0x60000000U);
     MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_512MB);
 
-#if defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1)
-    /* Region 3 setting: Memory with Normal type, not shareable, outer/inner write back. */
-    MPU->RBAR = ARM_MPU_RBAR(3, 0x60000000U);
-    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_RO, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_8MB);
-#endif
-
-    /* Region 4 setting: Memory with Device type, not shareable, non-cacheable. */
-    MPU->RBAR = ARM_MPU_RBAR(4, 0x00000000U);
+    /* Region 3 setting: Memory with Device type, not shareable, non-cacheable. */
+    MPU->RBAR = ARM_MPU_RBAR(3, 0x00000000U);
     MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_1GB);
 
-    /* Region 5 setting: Memory with Normal type, not shareable, outer/inner write back */
-    MPU->RBAR = ARM_MPU_RBAR(5, 0x00000000U);
-    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_128KB);
-
-    /* Region 6 setting: Memory with Normal type, not shareable, outer/inner write back */
-    MPU->RBAR = ARM_MPU_RBAR(6, 0x20000000U);
-    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_128KB);
-
-    /* Region 7 setting: Memory with Normal type, not shareable, outer/inner write back */
-    MPU->RBAR = ARM_MPU_RBAR(7, 0x20200000U);
-    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_512KB);
-
-    /* Region 8 setting: Memory with Normal type, not shareable, outer/inner write back */
-    MPU->RBAR = ARM_MPU_RBAR(8, 0x20280000U);
+    /* Region 4 setting: Memory with Normal type, not shareable, outer/inner write back */
+    MPU->RBAR = ARM_MPU_RBAR(4, 0x00000000U);
     MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_256KB);
 
+    /* Region 5 setting: Memory with Normal type, not shareable, outer/inner write back */
+    MPU->RBAR = ARM_MPU_RBAR(5, 0x20000000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_256KB);
+
+#if defined(CACHE_MODE_WRITE_THROUGH) && CACHE_MODE_WRITE_THROUGH
+    /* Region 6 setting: Memory with Normal type, not shareable, write through */
+    MPU->RBAR = ARM_MPU_RBAR(6, 0x20200000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 0, 0, ARM_MPU_REGION_SIZE_1MB);
+
+    /* Region 7 setting: Memory with Normal type, not shareable, write trough */
+    MPU->RBAR = ARM_MPU_RBAR(7, 0x20300000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 0, 0, ARM_MPU_REGION_SIZE_512KB);
+#else
+    /* Region 6 setting: Memory with Normal type, not shareable, outer/inner write back */
+    MPU->RBAR = ARM_MPU_RBAR(6, 0x20200000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_1MB);
+
+    /* Region 7 setting: Memory with Normal type, not shareable, outer/inner write back */
+    MPU->RBAR = ARM_MPU_RBAR(7, 0x20300000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_512KB);
+#endif
+
+#if defined(XIP_EXTERNAL_FLASH) && (XIP_EXTERNAL_FLASH == 1)
+    /* Region 8 setting: Memory with Normal type, not shareable, outer/inner write back. */
+    MPU->RBAR = ARM_MPU_RBAR(8, 0x30000000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_RO, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_16MB);
+#endif
+
+#ifdef USE_SDRAM
+#if defined(CACHE_MODE_WRITE_THROUGH) && CACHE_MODE_WRITE_THROUGH
+    /* Region 9 setting: Memory with Normal type, not shareable, write trough */
+    MPU->RBAR = ARM_MPU_RBAR(9, 0x80000000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 0, 0, ARM_MPU_REGION_SIZE_64MB);
+#else
     /* Region 9 setting: Memory with Normal type, not shareable, outer/inner write back */
     MPU->RBAR = ARM_MPU_RBAR(9, 0x80000000U);
-    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_32MB);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 1, 0, ARM_MPU_REGION_SIZE_64MB);
+#endif
+#endif
 
     while ((size >> i) > 0x1U)
     {
@@ -385,18 +428,241 @@ void BOARD_ConfigMPU(void)
         MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 1, 0, 0, 0, 0, i - 1);
     }
 
-    /* Region 10 setting: Memory with Device type, not shareable, non-cacheable */
+    /* Region 11 setting: Memory with Device type, not shareable, non-cacheable */
     MPU->RBAR = ARM_MPU_RBAR(11, 0x40000000);
-    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_4MB);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_16MB);
 
     /* Region 12 setting: Memory with Device type, not shareable, non-cacheable */
-    MPU->RBAR = ARM_MPU_RBAR(12, 0x42000000);
+    MPU->RBAR = ARM_MPU_RBAR(12, 0x41000000);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_2MB);
+
+    /* Region 13 setting: Memory with Device type, not shareable, non-cacheable */
+    MPU->RBAR = ARM_MPU_RBAR(13, 0x41400000);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_1MB);
+
+    /* Region 14 setting: Memory with Device type, not shareable, non-cacheable */
+    MPU->RBAR = ARM_MPU_RBAR(14, 0x41800000);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_2MB);
+
+    /* Region 15 setting: Memory with Device type, not shareable, non-cacheable */
+    MPU->RBAR = ARM_MPU_RBAR(15, 0x42000000);
     MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, ARM_MPU_REGION_SIZE_1MB);
 
     /* Enable MPU */
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
 
     /* Enable I cache and D cache */
+#if defined(__DCACHE_PRESENT) && __DCACHE_PRESENT
     SCB_EnableDCache();
+#endif
+#if defined(__ICACHE_PRESENT) && __ICACHE_PRESENT
     SCB_EnableICache();
+#endif
+}
+#elif __CORTEX_M == 4
+void BOARD_ConfigMPU(void)
+{
+#if defined(__CC_ARM) || defined(__ARMCC_VERSION)
+    extern uint32_t Image$$RW_m_ncache$$Base[];
+    /* RW_m_ncache_unused is a auxiliary region which is used to get the whole size of noncache section */
+    extern uint32_t Image$$RW_m_ncache_unused$$Base[];
+    extern uint32_t Image$$RW_m_ncache_unused$$ZI$$Limit[];
+    uint32_t nonCacheStart = (uint32_t)Image$$RW_m_ncache$$Base;
+    uint32_t nonCacheSize = ((uint32_t)Image$$RW_m_ncache_unused$$Base == nonCacheStart) ?
+                                0 :
+                                ((uint32_t)Image$$RW_m_ncache_unused$$ZI$$Limit - nonCacheStart);
+#elif defined(__MCUXPRESSO)
+    extern uint32_t __base_NCACHE_REGION;
+    extern uint32_t __top_NCACHE_REGION;
+    uint32_t nonCacheStart = (uint32_t)(&__base_NCACHE_REGION);
+    uint32_t nonCacheSize  = (uint32_t)(&__top_NCACHE_REGION) - nonCacheStart;
+#elif defined(__ICCARM__) || defined(__GNUC__)
+    extern uint32_t __NCACHE_REGION_START[];
+    extern uint32_t __NCACHE_REGION_SIZE[];
+    uint32_t nonCacheStart = (uint32_t)__NCACHE_REGION_START;
+    uint32_t nonCacheSize  = (uint32_t)__NCACHE_REGION_SIZE;
+#endif
+#if defined(__USE_SHMEM)
+#if defined(__CC_ARM) || defined(__ARMCC_VERSION)
+    extern uint32_t Image$$RPMSG_SH_MEM$$Base[];
+    /* RPMSG_SH_MEM_unused is a auxiliary region which is used to get the whole size of RPMSG_SH_MEM section */
+    extern uint32_t Image$$RPMSG_SH_MEM_unused$$Base[];
+    extern uint32_t Image$$RPMSG_SH_MEM_unused$$ZI$$Limit[];
+    uint32_t rpmsgShmemStart = (uint32_t)Image$$RPMSG_SH_MEM$$Base;
+    uint32_t rpmsgShmemSize = (uint32_t)Image$$RPMSG_SH_MEM_unused$$ZI$$Limit - rpmsgShmemStart;
+#elif defined(__MCUXPRESSO)
+    extern uint32_t __base_rpmsg_sh_mem;
+    extern uint32_t __top_rpmsg_sh_mem;
+    uint32_t rpmsgShmemStart = (uint32_t)(&__base_rpmsg_sh_mem);
+    uint32_t rpmsgShmemSize  = (uint32_t)(&__top_rpmsg_sh_mem) - rpmsgShmemStart;
+#elif defined(__ICCARM__) || defined(__GNUC__)
+    extern uint32_t __RPMSG_SH_MEM_START[];
+    extern uint32_t __RPMSG_SH_MEM_SIZE[];
+    uint32_t rpmsgShmemStart = (uint32_t)__RPMSG_SH_MEM_START;
+    uint32_t rpmsgShmemSize  = (uint32_t)__RPMSG_SH_MEM_SIZE;
+#endif
+#endif
+    uint32_t i = 0;
+
+    /* Only config non-cacheable region on system bus */
+    assert(nonCacheStart >= 0x20000000);
+
+    /* Disable code bus cache */
+    if (LMEM_PCCCR_ENCACHE_MASK == (LMEM_PCCCR_ENCACHE_MASK & LMEM->PCCCR))
+    {
+        /* Enable the processor code bus to push all modified lines. */
+        LMEM->PCCCR |= LMEM_PCCCR_PUSHW0_MASK | LMEM_PCCCR_PUSHW1_MASK | LMEM_PCCCR_GO_MASK;
+        /* Wait until the cache command completes. */
+        while ((LMEM->PCCCR & LMEM_PCCCR_GO_MASK) != 0U)
+        {
+        }
+        /* As a precaution clear the bits to avoid inadvertently re-running this command. */
+        LMEM->PCCCR &= ~(LMEM_PCCCR_PUSHW0_MASK | LMEM_PCCCR_PUSHW1_MASK);
+        /* Now disable the cache. */
+        LMEM->PCCCR &= ~LMEM_PCCCR_ENCACHE_MASK;
+    }
+
+    /* Disable system bus cache */
+    if (LMEM_PSCCR_ENCACHE_MASK == (LMEM_PSCCR_ENCACHE_MASK & LMEM->PSCCR))
+    {
+        /* Enable the processor system bus to push all modified lines. */
+        LMEM->PSCCR |= LMEM_PSCCR_PUSHW0_MASK | LMEM_PSCCR_PUSHW1_MASK | LMEM_PSCCR_GO_MASK;
+        /* Wait until the cache command completes. */
+        while ((LMEM->PSCCR & LMEM_PSCCR_GO_MASK) != 0U)
+        {
+        }
+        /* As a precaution clear the bits to avoid inadvertently re-running this command. */
+        LMEM->PSCCR &= ~(LMEM_PSCCR_PUSHW0_MASK | LMEM_PSCCR_PUSHW1_MASK);
+        /* Now disable the cache. */
+        LMEM->PSCCR &= ~LMEM_PSCCR_ENCACHE_MASK;
+    }
+
+    /* Disable MPU */
+    ARM_MPU_Disable();
+
+#if defined(CACHE_MODE_WRITE_THROUGH) && CACHE_MODE_WRITE_THROUGH
+    /* Region 0 setting: Memory with Normal type, not shareable, write trough */
+    MPU->RBAR = ARM_MPU_RBAR(0, 0x20200000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 0, 0, ARM_MPU_REGION_SIZE_1MB);
+
+    /* Region 1 setting: Memory with Normal type, not shareable, write through */
+    MPU->RBAR = ARM_MPU_RBAR(1, 0x20300000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 0, 0, ARM_MPU_REGION_SIZE_512KB);
+
+    /* Region 2 setting: Memory with Normal type, not shareable, write through */
+    MPU->RBAR = ARM_MPU_RBAR(2, 0x80000000U);
+    MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 0, 0, 1, 0, 0, ARM_MPU_REGION_SIZE_64MB);
+
+    while ((nonCacheSize >> i) > 0x1U)
+    {
+        i++;
+    }
+
+    if (i != 0)
+    {
+        /* The MPU region size should be 2^N, 5<=N<=32, region base should be multiples of size. */
+        assert(!(nonCacheStart % nonCacheSize));
+        assert(nonCacheSize == (uint32_t)(1 << i));
+        assert(i >= 5);
+
+        /* Region 3 setting: Memory with device type, not shareable, non-cacheable */
+        MPU->RBAR = ARM_MPU_RBAR(3, nonCacheStart);
+        MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, i - 1);
+    }
+
+#if defined(__USE_SHMEM)
+    i = 0;
+
+    while ((rpmsgShmemSize >> i) > 0x1U)
+    {
+        i++;
+    }
+
+    if (i != 0)
+    {
+        /* The MPU region size should be 2^N, 5<=N<=32, region base should be multiples of size. */
+        assert(!(rpmsgShmemStart % rpmsgShmemSize));
+        assert(rpmsgShmemSize == (uint32_t)(1 << i));
+        assert(i >= 5);
+
+        /* Region 4 setting: Memory with device type, not shareable, non-cacheable */
+        MPU->RBAR = ARM_MPU_RBAR(4, rpmsgShmemStart);
+        MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, i - 1);
+    }
+#endif
+#else
+    while ((nonCacheSize >> i) > 0x1U)
+    {
+        i++;
+    }
+
+    if (i != 0)
+    {
+        /* The MPU region size should be 2^N, 5<=N<=32, region base should be multiples of size. */
+        assert(!(nonCacheStart % nonCacheSize));
+        assert(nonCacheSize == (uint32_t)(1 << i));
+        assert(i >= 5);
+
+        /* Region 0 setting: Memory with device type, not shareable, non-cacheable */
+        MPU->RBAR = ARM_MPU_RBAR(0, nonCacheStart);
+        MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, i - 1);
+    }
+
+#if defined(__USE_SHMEM)
+    i = 0;
+
+    while ((rpmsgShmemSize >> i) > 0x1U)
+    {
+        i++;
+    }
+
+    if (i != 0)
+    {
+        /* The MPU region size should be 2^N, 5<=N<=32, region base should be multiples of size. */
+        assert(!(rpmsgShmemStart % rpmsgShmemSize));
+        assert(rpmsgShmemSize == (uint32_t)(1 << i));
+        assert(i >= 5);
+
+        /* Region 1 setting: Memory with device type, not shareable, non-cacheable */
+        MPU->RBAR = ARM_MPU_RBAR(1, rpmsgShmemStart);
+        MPU->RASR = ARM_MPU_RASR(0, ARM_MPU_AP_FULL, 2, 0, 0, 0, 0, i - 1);
+    }
+#endif
+#endif
+
+    /* Enable MPU */
+    ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
+
+    /* Enables the processor system bus to invalidate all lines in both ways.
+    and Initiate the processor system bus cache command. */
+    LMEM->PSCCR |= LMEM_PSCCR_INVW0_MASK | LMEM_PSCCR_INVW1_MASK | LMEM_PSCCR_GO_MASK;
+    /* Wait until the cache command completes */
+    while ((LMEM->PSCCR & LMEM_PSCCR_GO_MASK) != 0U)
+    {
+    }
+    /* As a precaution clear the bits to avoid inadvertently re-running this command. */
+    LMEM->PSCCR &= ~(LMEM_PSCCR_INVW0_MASK | LMEM_PSCCR_INVW1_MASK);
+    /* Now enable the system bus cache. */
+    LMEM->PSCCR |= LMEM_PSCCR_ENCACHE_MASK;
+
+    /* Enables the processor code bus to invalidate all lines in both ways.
+    and Initiate the processor code bus code cache command. */
+    LMEM->PCCCR |= LMEM_PCCCR_INVW0_MASK | LMEM_PCCCR_INVW1_MASK | LMEM_PCCCR_GO_MASK;
+    /* Wait until the cache command completes. */
+    while ((LMEM->PCCCR & LMEM_PCCCR_GO_MASK) != 0U)
+    {
+    }
+    /* As a precaution clear the bits to avoid inadvertently re-running this command. */
+    LMEM->PCCCR &= ~(LMEM_PCCCR_INVW0_MASK | LMEM_PCCCR_INVW1_MASK);
+    /* Now enable the code bus cache. */
+    LMEM->PCCCR |= LMEM_PCCCR_ENCACHE_MASK;
+}
+#endif
+
+void BOARD_SD_Pin_Config(uint32_t speed, uint32_t strength)
+{
+}
+
+void BOARD_MMC_Pin_Config(uint32_t speed, uint32_t strength)
+{
 }
