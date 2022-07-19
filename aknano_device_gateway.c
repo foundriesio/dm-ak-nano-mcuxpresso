@@ -410,27 +410,70 @@ static void serial_string_to_uuid_string(const char* serial, char *uuid)
     }
 }
 
-#include "drivers/fsl_trng.h"
+#include "fsl_caam.h"
+
+#define RNG_EXAMPLE_RANDOM_NUMBERS     (4U)
+#define RNG_EXAMPLE_RANDOM_BYTES       (16U)
+#define RNG_EXAMPLE_RANDOM_NUMBER_BITS (RNG_EXAMPLE_RANDOM_NUMBERS * 8U * sizeof(uint32_t))
+
+static bool randomInitialized = false;
+static CAAM_Type *base = CAAM;
+static caam_handle_t caamHandle;
+static caam_config_t caamConfig;
+
+/*! @brief CAAM job ring interface 0 in system memory. */
+static caam_job_ring_interface_t s_jrif0;
+/*! @brief CAAM job ring interface 1 in system memory. */
+static caam_job_ring_interface_t s_jrif1;
+/*! @brief CAAM job ring interface 2 in system memory. */
+static caam_job_ring_interface_t s_jrif2;
+/*! @brief CAAM job ring interface 3 in system memory. */
+static caam_job_ring_interface_t s_jrif3;
+
+
+void initRandom() {
+    /* Get default configuration. */
+    CAAM_GetDefaultConfig(&caamConfig);
+
+    /* setup memory for job ring interfaces. Can be in system memory or CAAM's secure memory.
+     * Although this driver example only uses job ring interface 0, example setup for job ring interface 1 is also
+     * shown.
+     */
+    caamConfig.jobRingInterface[0] = &s_jrif0;
+    caamConfig.jobRingInterface[1] = &s_jrif1;
+    caamConfig.jobRingInterface[2] = &s_jrif2;
+    caamConfig.jobRingInterface[3] = &s_jrif3;
+
+    /* Init CAAM driver, including CAAM's internal RNG */
+    if (CAAM_Init(base, &caamConfig) != kStatus_Success)
+    {
+        /* Make sure that RNG is not already instantiated (reset otherwise) */
+        LogError(("- failed to init CAAM&RNG!"));
+    }
+
+    /* in this driver example, requests for CAAM jobs use job ring 0 */
+    LogInfo(("*CAAM Job Ring 0* :"));
+    caamHandle.jobRing = kCAAM_JobRing0;
+
+}
+
 status_t AkNanoGenRandomBytes(char *output, size_t size)
 {
-    trng_config_t trng_config;
-    int status = TRNG_GetDefaultConfig(&trng_config);
-    if (status != kStatus_Success)
+    if (!randomInitialized) 
     {
-        return status;
+        initRandom();
+        randomInitialized = true;
     }
-    // Set sample mode of the TRNG ring oscillator to Von Neumann, for better random data.
-    trng_config.sampleMode = kTRNG_SampleModeVonNeumann;
-    status = TRNG_Init(TRNG, &trng_config);
-    if (status != kStatus_Success)
-    {
-        return status;
-    }
-    status = TRNG_GetRandomData(TRNG, output, size);
-    if (status != kStatus_Success)
-    {
-        return status;
-    }
+
+    status_t status = kStatus_Fail;
+    uint32_t number;
+    uint32_t data[RNG_EXAMPLE_RANDOM_NUMBERS] = {0};
+
+    LogInfo(("RNG : "));
+
+    LogInfo(("Generate %u-bit random number: ", RNG_EXAMPLE_RANDOM_NUMBER_BITS));
+    status = CAAM_RNG_GetRandomData(base, &caamHandle, kCAAM_RngStateHandle0, output, RNG_EXAMPLE_RANDOM_BYTES,
+                                    kCAAM_RngDataAny, NULL);
     return kStatus_Success;
 }
 
