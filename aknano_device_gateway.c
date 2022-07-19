@@ -531,8 +531,8 @@ static bool fill_event_payload(char *payload,
             snprintf(details, sizeof(details), "Rollback to v%d after failed update to v%d.",
                 old_version, aknano_settings->last_applied_version);
         } else {
-            snprintf(details, sizeof(details), "Updated from v%d to v%d. Image confirmed.",
-                old_version, new_version);
+            snprintf(details, sizeof(details), "Updated from v%d to v%d. Image confirmed. Running on %s slot.",
+                old_version, new_version, aknano_settings->image_position == 1? "PRIMARY" : "SECONDARY");
         }
     } else {
         snprintf(details, sizeof(details), "Updating from v%d to v%d tag: %s.",
