@@ -22,7 +22,7 @@ SET(EXECUTABLE_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 SET(LIBRARY_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 
 # SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fdiagnostics-color")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fdiagnostics-color -DUSE_FLASH=1")
 
 project(ota_demo_enet)
 
@@ -73,6 +73,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/src/unity.c"
 "${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/fixture/src/unity_fixture.c"
 "${ProjDirPath}/../../../../../rtos/freertos/tests/common/aws_test_framework.c"
+"${ProjDirPath}/../evkmimxrt1170_connect_cm4_cm7side.jlinkscript"
 )
 
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
@@ -82,8 +83,9 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../tests
     ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/src/
     ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/fixture/src/
-    ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/memory/src/
     ${ProjDirPath}/../../../../../rtos/freertos/tests/include/
+    ${ProjDirPath}/../../../../../rtos/freertos/libraries/3rdparty/CMock/vendor/unity/extras/memory/src/
+    ${ProjDirPath}/../../../../../components/phy/device/phyrtl8211f/
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
@@ -102,16 +104,18 @@ endif(CMAKE_AKNANO_TEST EQUAL 1)
 set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../../../components/phy/mdio/enet
     ${ProjDirPath}/../../../../../components/phy/device/phyksz8081
-    ${ProjDirPath}/../../../../../devices/MIMXRT1062/drivers
+    ${ProjDirPath}/../../../../../components/phy/device/phyrtl8211f
+    ${ProjDirPath}/../../../../../devices/MIMXRT1176/drivers/cm7
+    ${ProjDirPath}/../../../../../devices/MIMXRT1176/drivers
     ${ProjDirPath}/../../../../../middleware/lwip
     ${ProjDirPath}/../../../../../components/phy
-    ${ProjDirPath}/../../../../../devices/MIMXRT1062/utilities
+    ${ProjDirPath}/../../../../../devices/MIMXRT1176    
+    ${ProjDirPath}/../../../../../devices/MIMXRT1176/utilities
     ${ProjDirPath}/../../../../../components/flash/mflash
-    ${ProjDirPath}/../../../../../components/flash/mflash/mimxrt1062
+    ${ProjDirPath}/../../../../../components/flash/mflash/mimxrt1170
     ${ProjDirPath}/../../../../../middleware/mbedtls
     ${ProjDirPath}/../../../../../rtos/freertos
     ${ProjDirPath}/../../../../../rtos/freertos/freertos_kernel
-    ${ProjDirPath}/../../../../../devices/MIMXRT1062
     ${ProjDirPath}/../../../../../components/uart
     ${ProjDirPath}/../../../../../components/serial_manager
     ${ProjDirPath}/../../../../../components/lists
@@ -119,57 +123,63 @@ set(CMAKE_MODULE_PATH
 )
 
 # include modules
-include(driver_mdio-enet_MIMXRT1062)
+include(driver_mdio-enet_MIMXRT1176_cm7)
 
-include(driver_phy-device-ksz8081_MIMXRT1062)
+include(driver_phy-device-ksz8081_MIMXRT1176_cm7)
 
-include(driver_cache_armv7_m7_MIMXRT1062)
+include(driver_cache_armv7_m7_MIMXRT1176_cm7)
 
-include(driver_flexspi_MIMXRT1062)
+include(driver_flexspi_MIMXRT1176_cm7)
 
-include(middleware_lwip_enet_ethernetif_MIMXRT1062)
+include(middleware_lwip_enet_ethernetif_MIMXRT1176_cm7)
 
-include(middleware_lwip_MIMXRT1062)
+include(middleware_lwip_MIMXRT1176_cm7)
 
-include(driver_phy-common_MIMXRT1062)
+include(driver_phy-common_MIMXRT1176_cm7)
 
-include(driver_enet_MIMXRT1062)
+include(driver_enet_MIMXRT1176_cm7)
 
-include(utility_debug_console_MIMXRT1062)
+include(utility_debug_console_MIMXRT1176_cm7)
 
-include(component_mflash_file_MIMXRT1062)
+include(component_mflash_file_MIMXRT1176_cm7)
 
-include(component_mflash_rt1060_MIMXRT1062)
+include(component_mflash_rt1170_MIMXRT1176_cm7)
 
-include(middleware_mbedtls_MIMXRT1062)
+include(middleware_mbedtls_MIMXRT1176_cm7)
 
-include(middleware_mbedtls_port_ksdk_MIMXRT1062)
+include(middleware_mbedtls_port_ksdk_MIMXRT1176_cm7)
 
-include(middleware_mbedtls_rt_MIMXRT1062)
+include(middleware_mbedtls_rt2_MIMXRT1176_cm7)
 
-include(middleware_freertos-aws_iot_demos_dev_mode_key_provisioning_MIMXRT1062)
+include(middleware_freertos-aws_iot_demos_dev_mode_key_provisioning_MIMXRT1176_cm7)
 
-include(middleware_freertos-aws_iot_vendor_nxp_secure_sockets_lwip_MIMXRT1062)
+include(middleware_freertos-aws_iot_vendor_nxp_secure_sockets_lwip_MIMXRT1176_cm7)
 
-include(middleware_freertos-kernel_MIMXRT1062)
+include(middleware_freertos-kernel_MIMXRT1176_cm7)
 
-include(middleware_freertos-kernel_heap_4_MIMXRT1062)
+include(middleware_freertos-kernel_heap_4_MIMXRT1176_cm7)
 
-include(device_MIMXRT1062_startup_MIMXRT1062)
+include(device_MIMXRT1176_startup_MIMXRT1176_cm7)
 
-include(driver_igpio_MIMXRT1062)
+include(driver_igpio_MIMXRT1176_cm7)
 
-include(driver_dcp_MIMXRT1062)
+# include(driver_dcp_MIMXRT1176_cm7)
 
-include(driver_trng_MIMXRT1062)
+# include(driver_trng_MIMXRT1176_cm7)
 
-include(middleware_freertos-aws_iot_network_manager_MIMXRT1062)
+include(middleware_freertos-aws_iot_network_manager_MIMXRT1176_cm7)
 
-include(middleware_freertos-aws_iot_demos_ota_demo_helpers_MIMXRT1062)
+include(middleware_freertos-aws_iot_demos_ota_demo_helpers_MIMXRT1176_cm7)
 
-include(middleware_freertos-aws_iot_demos_corehttp_MIMXRT1062) # added
+include(driver_caam_MIMXRT1176_cm7)
 
-include(middleware_freertos-aws_iot_libraries_corehttp_MIMXRT1062) # added
+include(driver_dcdc_soc_MIMXRT1176_cm7)
+
+include(driver_phy-device-rtl8211f_MIMXRT1176_cm7)
+
+include(middleware_freertos-aws_iot_demos_corehttp_MIMXRT1176_cm7) # added
+
+include(middleware_freertos-aws_iot_libraries_corehttp_MIMXRT1176_cm7) # added
 
 TARGET_LINK_LIBRARIES(${MCUX_SDK_PROJECT_NAME} PRIVATE -Wl,--start-group)
 
