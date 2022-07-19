@@ -285,9 +285,9 @@ status_t flexspi_nor_set_read_parameter(
 // FLEXSPI
 #define FLASH_CONFIG_SECTORSIZE             4u * 1024u
 
-#define UPDATE_EXAMPLE_FLEXSPI                        FLEXSPI
+#define UPDATE_EXAMPLE_FLEXSPI                        FLEXSPI1
 #define UPDATE_FLASH_SIZE_KB                          (UPDATE_COMPONENT_FLASHIAP_SIZE/1024) //0x10000
-#define UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE              FlexSPI_AMBA_BASE
+#define UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE              FlexSPI1_AMBA_BASE
 #define UPDATE_SECTOR_SIZE                            (FLASH_CONFIG_SECTORSIZE)  //0x40000
 #define UPDATE_EXAMPLE_FLEXSPI_CLOCK                  kCLOCK_FlexSpi
 #define UPDATE_FLEXSPI_BASE_ADDRESS_MASK              (UPDATE_FLASH_SIZE_KB * 0x400 -1)
