@@ -179,7 +179,8 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
 
 static int HandleReceivedData(const unsigned char* data, int offset, int dataLen, uint32_t partition_log_addr, uint32_t partition_size)
 {
-    LogInfo(("X Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ] partition_log_addr=0x%08X", offset, dataLen, data[0], data[1], data[2], data[3], partition_log_addr));
+    LogInfo(("X Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ] partition_log_addr=0x%08X", 
+        offset, dataLen, data[0], data[1], data[2], data[3], (int)partition_log_addr));
 
 #ifdef AKNANO_DRY_RUN
     LogInfo(("** Dry run mode, skipping flash operations"));
@@ -212,12 +213,12 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
     // partition_phys_addr = mflash_drv_log2phys((void *)partition_log_addr, partition_size);
     partition_phys_addr = partition_log_addr - BOOT_FLASH_BASE;
     if (partition_phys_addr == MFLASH_INVALID_ADDRESS) {
-        LogError(("HandleReceivedData: Invalid partition_log_addr=0x%X", partition_log_addr));
+        LogError(("HandleReceivedData: Invalid partition_log_addr=0x%X", (int)partition_log_addr));
         return -1;
     }
 
     LogInfo(("HandleReceivedData: partition_phys_addr=0x%X partition_log_addr=0x%X", 
-        partition_phys_addr, partition_log_addr));     vTaskDelay(20 / portTICK_PERIOD_MS);
+        (int) partition_phys_addr, (int) partition_log_addr));     vTaskDelay(20 / portTICK_PERIOD_MS);
 
 
     if (!mflash_drv_is_sector_aligned(partition_phys_addr) || !mflash_drv_is_sector_aligned(partition_size))
@@ -258,7 +259,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
                 mflash_result = mflash_drv_sector_erase(next_erase_addr);
                 if (mflash_result != 0)
                 {
-                    LogError(("store_update_image: Error erasing sector %d", mflash_result));
+                    LogError(("store_update_image: Error erasing sector %ld", mflash_result));
                     break;
                 }
                 next_erase_addr += MFLASH_SECTOR_SIZE;
@@ -274,7 +275,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
             mflash_result = mflash_drv_page_program(chunk_flash_addr, (uint32_t*)page_buffer);
             if (mflash_result != 0)
             {
-                LogError(("store_update_image: Error storing page %d", mflash_result));
+                LogError(("store_update_image: Error storing page %ld", mflash_result));
                 break;
             }
 
@@ -285,7 +286,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
         }
 
     } while (chunk_len == page_size);
-    LogInfo(("Chunk writen. offset=%d len=%d total_processed=%d", offset, dataLen, total_processed));
+    LogInfo(("Chunk writen. offset=%d len=%d total_processed=%ld", offset, dataLen, total_processed));
     return retval;
 }
 
@@ -329,11 +330,11 @@ BaseType_t GetFileSize(size_t* pxFileSize, HTTPResponse_t *xResponse)
     if( ( *pxFileSize == 0 ) || ( *pxFileSize == UINT32_MAX ) )
     {
         LogError( ( "Error using strtoul to get the file size from %s: xFileSize=%d.",
-                    pcFileSizeStr, ( int32_t ) *pxFileSize ) );
+                    pcFileSizeStr, ( int ) *pxFileSize ) );
         return pdFAIL;
     }
 
-    LogInfo( ( "The file is %d bytes long.", ( int32_t ) *pxFileSize ) );
+    LogInfo( ( "The file is %d bytes long.", ( int ) *pxFileSize ) );
     return pdPASS;
 }
 
@@ -454,11 +455,11 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
         if( xHTTPStatus == HTTPSuccess )
         {
             LogInfo( ( ANSI_COLOR_GREEN "Downloading new image. Retrieving bytes %d-%d of %d" ANSI_COLOR_RESET,
-                       ( int32_t ) ( xCurByte ),
-                       ( int32_t ) ( xCurByte + xNumReqBytes - 1 ),
-                       ( int32_t ) xFileSize == FILE_SIZE_UNSET? -1 : xFileSize));
+                       ( int ) ( xCurByte ),
+                       ( int ) ( xCurByte + xNumReqBytes - 1 ),
+                       ( int ) xFileSize == FILE_SIZE_UNSET? -1 : xFileSize));
             LogDebug( ( "Request Headers:\n%.*s",
-                        ( int32_t ) xRequestHeaders.headersLen,
+                        ( int ) xRequestHeaders.headersLen,
                         ( char * ) xRequestHeaders.pBuffer ) );
             xHTTPStatus = HTTPClient_Send( pxTransportInterface,
                                            &xRequestHeaders,
@@ -483,10 +484,10 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             LogInfo( ( "Received HTTP response from %s %s...",
                         "binary download server", pcPath ) );
             LogDebug( ( "Response Headers:\n%.*s",
-                        ( int32_t ) xResponse.headersLen,
+                        ( int ) xResponse.headersLen,
                         xResponse.pHeaders ) );
             LogInfo( ( "Response Body Len: %d",
-                       ( int32_t ) xResponse.bodyLen) );
+                       ( int ) xResponse.bodyLen) );
 
             // FIXME
             #define MAX_FIRMWARE_SIZE 0x100000
@@ -545,12 +546,12 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
     if (( xStatus == pdPASS ) && ( xHTTPStatus == HTTPSuccess )) {
 #ifndef AKNANO_DRY_RUN
-        LogInfo(("Validating image of size %d at dstAddr=%p", stored, dstAddr + BOOT_FLASH_BASE));
+        LogInfo(("Validating image of size %ld at dstAddr=%p", stored, (void*)dstAddr + BOOT_FLASH_BASE));
         sfw_flash_read_ipc(dstAddr + BOOT_FLASH_BASE, (void*)&ih, sizeof(ih));
         if (bl_verify_image(dstAddr + BOOT_FLASH_BASE, stored) <= 0)
         {
             /* Image validation failed */
-            LogError(("Image validation failed magic=0x%X", ih.ih_magic));
+            LogError(("Image validation failed magic=0x%lX", ih.ih_magic));
             return false;
         } else {
             LogInfo(("Image validation succeded"));
@@ -581,7 +582,7 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
     //                                                     &xNetworkContext );
 
 
-    LogInfo(("AkNanoDownloadAndFlashImage: prvConnectToServer Result: %d", xDemoStatus));
+    LogInfo(("AkNanoDownloadAndFlashImage: prvConnectToServer Result: %ld", xDemoStatus));
     if( xDemoStatus == pdPASS )
     {
         /* Define the transport interface. */

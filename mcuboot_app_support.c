@@ -126,60 +126,60 @@ static int boot_img_magic_check(uint8_t *p)
 //     return status;
 // }
 
-static status_t boot_swap_ok(void)
-{
-    uint32_t off;
-    status_t status;
+// static status_t boot_swap_ok(void)
+// {
+//     uint32_t off;
+//     status_t status;
 
-    uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
-    struct image_trailer *image_trailer_p =
-        (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
+//     uint32_t buf[MFLASH_PAGE_SIZE / 4]; /* ensure the buffer is word aligned */
+//     struct image_trailer *image_trailer_p =
+//         (struct image_trailer *)((uint8_t *)buf + MFLASH_PAGE_SIZE - sizeof(struct image_trailer));
 
-    off = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_PAGE_SIZE;
+//     off = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_PAGE_SIZE;
 
-    status = mflash_drv_read(off, buf, MFLASH_PAGE_SIZE);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_ok: failed to read trailer\r\n");
-        return status;
-    }
+//     status = mflash_drv_read(off, buf, MFLASH_PAGE_SIZE);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_ok: failed to read trailer\r\n");
+//         return status;
+//     }
 
-    if ((boot_img_magic_check(image_trailer_p->magic) == 0) || (image_trailer_p->copy_done != 0x01))
-    {
-        /* the image in the slot is likely incomplete (or none) */
-        PRINTF("boot_setstate_ok: there is no image awaiting confirmation\r\n");
-        status = kStatus_NoData;
-        return status;
-    }
+//     if ((boot_img_magic_check(image_trailer_p->magic) == 0) || (image_trailer_p->copy_done != 0x01))
+//     {
+//         /* the image in the slot is likely incomplete (or none) */
+//         PRINTF("boot_setstate_ok: there is no image awaiting confirmation\r\n");
+//         status = kStatus_Fail; //kStatus_NoData;
+//         return status;
+//     }
 
-    if (image_trailer_p->image_ok == BOOT_FLAG_SET)
-    {
-        /* nothing to be done, report it and return */
-        PRINTF("boot_setstate_ok: image already confirmed\r\n");
-        return status;
-    }
+//     if (image_trailer_p->image_ok == BOOT_FLAG_SET)
+//     {
+//         /* nothing to be done, report it and return */
+//         PRINTF("boot_setstate_ok: image already confirmed\r\n");
+//         return status;
+//     }
 
-    /* mark image ok */
-    image_trailer_p->image_ok = BOOT_FLAG_SET;
+//     /* mark image ok */
+//     image_trailer_p->image_ok = BOOT_FLAG_SET;
 
-    /* erase trailer */
-    status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_SECTOR_SIZE);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_ok: failed to erase trailer\r\n");
-        return status;
-    }
+//     /* erase trailer */
+//     status = mflash_drv_sector_erase(FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - MFLASH_SECTOR_SIZE);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_ok: failed to erase trailer\r\n");
+//         return status;
+//     }
 
-    /* write trailer */
-    status = mflash_drv_page_program(off, buf);
-    if (status != kStatus_Success)
-    {
-        PRINTF("boot_setstate_ok: failed to write trailer\r\n");
-        return status;
-    }
+//     /* write trailer */
+//     status = mflash_drv_page_program(off, buf);
+//     if (status != kStatus_Success)
+//     {
+//         PRINTF("boot_setstate_ok: failed to write trailer\r\n");
+//         return status;
+//     }
 
-    return status;
-}
+//     return status;
+// }
 
 int32_t bl_verify_image(uint32_t addr, uint32_t size)
 {
@@ -204,7 +204,7 @@ int32_t bl_verify_image(uint32_t addr, uint32_t size)
     /* check magic number */
     if (ih->ih_magic != IMAGE_MAGIC)
     {
-        LogError(("Image validation failed with magic=0x%X != 0x%X", ih->ih_magic, IMAGE_MAGIC));
+        LogError(("Image validation failed with magic=0x%X != 0x%X", (int)ih->ih_magic, IMAGE_MAGIC));
         return 0;
     }
 
@@ -212,7 +212,7 @@ int32_t bl_verify_image(uint32_t addr, uint32_t size)
     decl_size = ih->ih_img_size + ih->ih_hdr_size + ih->ih_protect_tlv_size;
     if (size < decl_size)
     {
-        LogError(("Image validation failed size (%u) < decl_size (%u)", size, decl_size));
+        LogError(("Image validation failed size (%lu) < decl_size (%lu)", size, decl_size));
         return 0;
     }
 
@@ -230,10 +230,10 @@ int32_t bl_verify_image(uint32_t addr, uint32_t size)
         if ((it->it_magic != IMAGE_TLV_PROT_INFO_MAGIC) || (it->it_tlv_tot != ih->ih_protect_tlv_size))
         {
             if (it->it_magic != IMAGE_TLV_PROT_INFO_MAGIC)
-                LogError(("Image validation failed it->it_magic (%u) != IMAGE_TLV_PROT_INFO_MAGIC",  
-                    it->it_magic, IMAGE_TLV_PROT_INFO_MAGIC));
+                LogError(("Image validation failed it->it_magic (%X) != IMAGE_TLV_PROT_INFO_MAGIC (%X)",  
+                    (int)it->it_magic, IMAGE_TLV_PROT_INFO_MAGIC));
             if (it->it_tlv_tot != ih->ih_protect_tlv_size)
-                LogError(("Image validation failed it->it_tlv_tot (%u) != ih->ih_protect_tlv_size",  
+                LogError(("Image validation failed it->it_tlv_tot (%u) != ih->ih_protect_tlv_size (%u)",  
                     it->it_tlv_tot, ih->ih_protect_tlv_size));
             return 0;
         }
@@ -255,7 +255,7 @@ int32_t bl_verify_image(uint32_t addr, uint32_t size)
             if (it->it_magic != IMAGE_TLV_INFO_MAGIC)
                 LogError(("Image validation failed (it->it_magic != IMAGE_TLV_INFO_MAGIC) 0x%X 0x%X", it->it_magic, IMAGE_TLV_INFO_MAGIC));
             if (it->it_tlv_tot != tlv_size)
-                LogError(("Image validation failed (it->it_tlv_tot != tlv_size) %u %u", it->it_tlv_tot, tlv_size));
+                LogError(("Image validation failed (it->it_tlv_tot != tlv_size) %u %lu", it->it_tlv_tot, tlv_size));
             return 0;
         }
     }

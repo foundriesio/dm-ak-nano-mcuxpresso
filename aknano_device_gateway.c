@@ -70,7 +70,7 @@ static BaseType_t prvConnectToDevicesGateway( NetworkContext_t * pxNetworkContex
      * the HTTP server as specified in democonfigAWS_IOT_ENDPOINT and
      * democonfigAWS_HTTP_PORT in http_demo_mutual_auth_config.h. */
     LogInfo( ( "Establishing a TLS session to %.*s:%d.",
-               ( int32_t ) xServerInfo.hostNameLength,
+               ( int ) xServerInfo.hostNameLength,
                xServerInfo.pHostName,
                xServerInfo.port ) );
 
@@ -193,21 +193,21 @@ static BaseType_t prvSendHttpRequest( const TransportInterface_t * pxTransportIn
     if( xHTTPStatus == HTTPSuccess )
     {
         LogInfo( ( "Received HTTP response from %.*s%.*s. Status Code=%u",
-                   ( int32_t ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
-                   ( int32_t ) xRequestInfo.pathLen, xRequestInfo.pPath, pxResponse->statusCode ) );
+                   ( int ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
+                   ( int ) xRequestInfo.pathLen, xRequestInfo.pPath, pxResponse->statusCode ) );
         LogDebug( ( "Response Headers:\n%.*s\n",
-                    ( int32_t ) pxResponse->headersLen, pxResponse->pHeaders ) );
+                    ( int ) pxResponse->headersLen, pxResponse->pHeaders ) );
         // LogInfo( ( "Status Code: %u",
         //             pxResponse->statusCode ) );
         LogDebug( ( "Response Body:\n%.*s",
-                    ( int32_t ) pxResponse->bodyLen, pxResponse->pBody ) );
+                    ( int ) pxResponse->bodyLen, pxResponse->pBody ) );
     }
     else
     {
         LogError( ( "Failed to send HTTP %.*s request to %.*s%.*s: Error=%s.",
-                    ( int32_t ) xRequestInfo.methodLen, xRequestInfo.pMethod,
-                    ( int32_t ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
-                    ( int32_t ) xRequestInfo.pathLen, xRequestInfo.pPath,
+                    ( int ) xRequestInfo.methodLen, xRequestInfo.pMethod,
+                    ( int ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
+                    ( int ) xRequestInfo.pathLen, xRequestInfo.pPath,
                     HTTPClient_strerror( xHTTPStatus ) ) );
     }
 
@@ -379,7 +379,7 @@ static void get_time_str(time_t boot_up_epoch, char *output)
         tm->tm_hour, tm->tm_min, tm->tm_sec,
         0);
 
-    LogInfo(("get_time_str: %s (boot_up_epoch=%d)", output, boot_up_epoch));
+    LogInfo(("get_time_str: %s (boot_up_epoch=%lld)", output, boot_up_epoch));
 }
 
 
@@ -465,14 +465,15 @@ status_t AkNanoGenRandomBytes(char *output, size_t size)
         randomInitialized = true;
     }
 
-    status_t status = kStatus_Fail;
-    uint32_t number;
-    uint32_t data[RNG_EXAMPLE_RANDOM_NUMBERS] = {0};
+    // status_t status; // = kStatus_Fail;
+    // uint32_t number;
+    // uint32_t data[RNG_EXAMPLE_RANDOM_NUMBERS] = {0};
 
     LogInfo(("RNG : "));
 
     LogInfo(("Generate %u-bit random number: ", RNG_EXAMPLE_RANDOM_NUMBER_BITS));
-    status = CAAM_RNG_GetRandomData(base, &caamHandle, kCAAM_RngStateHandle0, output, RNG_EXAMPLE_RANDOM_BYTES,
+    // TODO: verify return code
+    CAAM_RNG_GetRandomData(base, &caamHandle, kCAAM_RngStateHandle0, output, RNG_EXAMPLE_RANDOM_BYTES,
                                     kCAAM_RngDataAny, NULL);
     return kStatus_Success;
 }
@@ -708,7 +709,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
     off_t offset = 0;
     struct aknano_settings *aknano_settings = aknano_context->settings;
 
-    LogInfo(("AkNanoPoll. Version=%u  Tag=%s", aknano_settings->running_version, aknano_settings->tag));
+    LogInfo(("AkNanoPoll. Version=%lu  Tag=%s", aknano_settings->running_version, aknano_settings->tag));
 
     /* Upon return, pdPASS will indicate a successful demo execution.
     * pdFAIL will indicate some failures occurred during execution. The
@@ -732,7 +733,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
             if (aknano_context->aknano_json_data.selected_target.version == 0) {
                 LogInfo(("* No matching target found in manifest"));
             } else {
-                LogInfo(("* Manifest data parsing result: highest version=%u  last unconfirmed applied=%d  running version=%d",
+                LogInfo(("* Manifest data parsing result: highest version=%ld  last unconfirmed applied=%d  running version=%ld",
                     aknano_context->aknano_json_data.selected_target.version,
                     aknano_settings->last_applied_version,
                     aknano_settings->running_version));
@@ -741,7 +742,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                     LogInfo(("* Same version was already applied (and failed). Do not retrying it"));
 
                 } else if (aknano_context->settings->running_version != aknano_context->aknano_json_data.selected_target.version) {
-                    LogInfo((ANSI_COLOR_GREEN "* Update required: %u -> %u" ANSI_COLOR_RESET,
+                    LogInfo((ANSI_COLOR_GREEN "* Update required: %lu -> %ld" ANSI_COLOR_RESET,
                             aknano_context->settings->running_version,
                             aknano_context->aknano_json_data.selected_target.version));
                     isUpdateRequired = true;

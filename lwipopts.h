@@ -15,9 +15,9 @@
 
 void sntp_set_system_time(unsigned long sec);
 #define SNTP_SET_SYSTEM_TIME sntp_set_system_time
+#define  USE_RTOS 1
 
 #if USE_RTOS
-
 /**
  * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
  * critical regions during buffer allocation, deallocation and memory
