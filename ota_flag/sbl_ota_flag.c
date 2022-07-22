@@ -103,7 +103,7 @@ bool is_image_confirmed(void)
 int enable_image_and_set_boot_image_position(uint8_t imagePosition)
 {
     status_t status;
-    uint32_t primask;
+    // uint32_t primask;
     uint32_t write_buffer[FLASH_PAGE_SIZE / 4];
 
     memset(write_buffer, 0xFF, sizeof(write_buffer));

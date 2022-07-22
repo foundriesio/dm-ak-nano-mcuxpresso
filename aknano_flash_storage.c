@@ -123,8 +123,8 @@ const uint32_t customLUT[CUSTOM_LUT_LENGTH] = {
 status_t InitFlashStorage()
 {
     // return kStatus_Success;
-    status_t status;
-    uint8_t vendorID = 0;
+    // status_t status;
+    // uint8_t vendorID = 0;
 
     int mflash_result = mflash_drv_init();
     if (mflash_result != 0)

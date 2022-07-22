@@ -48,23 +48,23 @@ long unsigned int AkNanoGetTime(void)
 
 /*-----------------------------------------------------------*/
 
-static uint32_t prvGetTimeMs( void )
-{
-    TickType_t xTickCount = 0;
-    uint32_t ulTimeMs = 0UL;
+// static uint32_t prvGetTimeMs( void )
+// {
+//     TickType_t xTickCount = 0;
+//     uint32_t ulTimeMs = 0UL;
 
-    /* Get the current tick count. */
-    xTickCount = xTaskGetTickCount();
+//     /* Get the current tick count. */
+//     xTickCount = xTaskGetTickCount();
 
-    /* Convert the ticks to milliseconds. */
-    ulTimeMs = ( uint32_t ) xTickCount * MILLISECONDS_PER_TICK;
+//     /* Convert the ticks to milliseconds. */
+//     ulTimeMs = ( uint32_t ) xTickCount * MILLISECONDS_PER_TICK;
 
-    /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
-     * elapsed time in the application. */
-    ulTimeMs = ( uint32_t ) ( ulTimeMs - ulGlobalEntryTimeMs );
+//     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
+//      * elapsed time in the application. */
+//     ulTimeMs = ( uint32_t ) ( ulTimeMs - ulGlobalEntryTimeMs );
 
-    return ulTimeMs;
-}
+//     return ulTimeMs;
+// }
 /*-----------------------------------------------------------*/
 
 void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
@@ -103,7 +103,7 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: image_position=%u", aknano_settings->image_position));
 
     bl_get_image_build_num(&aknano_settings->running_version, aknano_settings->image_position);
-    LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%u",
+    LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%lu",
              aknano_settings->running_version));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate,
@@ -259,7 +259,7 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         AkNanoUpdateSettingsInFlash(aknano_settings);
 
-        LogInfo(("Updating aknano_settings->running_version in flash (%d -> %d)", 
+        LogInfo(("Updating aknano_settings->running_version in flash (%d -> %lu)", 
                  aknano_settings->last_confirmed_version, aknano_settings->running_version));
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         // strcpy(aknano_settings->ongoing_update_correlation_id, "ABCDEFGHIJKLMNOPQRSTUVXYZ");
@@ -336,7 +336,7 @@ void sntp_set_system_time(u32_t sec)
     //xaknano_settings.boot_up_epoch_ms = (sec * 1000);// - xTaskGetTickCount();
     xaknano_settings.boot_up_epoch = sec;// - xTaskGetTickCount();
 
-    LogInfo(("SNTP time: %s  sec=%d xaknano_settings.boot_up_epoch=%d xTaskGetTickCount()=%llu\n", 
+    LogInfo(("SNTP time: %s  sec=%lu xaknano_settings.boot_up_epoch=%lld xTaskGetTickCount()=%lu\n", 
              buf, sec, xaknano_settings.boot_up_epoch, xTaskGetTickCount()));
     vTaskDelay(50 / portTICK_PERIOD_MS);
 
@@ -450,3 +450,9 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
     return 0;
 }
 
+
+unsigned long long PKCS11_PAL_DestroyObject( unsigned long long xHandle )
+{
+    LogError(("PKCS11_PAL_DestroyObject not implemented"));
+    return -1;
+}

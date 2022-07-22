@@ -141,7 +141,7 @@ static BaseType_t prvConnectToRestApiServer( NetworkContext_t * pxNetworkContext
      * the HTTP server as specified in democonfigAWS_IOT_ENDPOINT and
      * democonfigAWS_HTTP_PORT in http_demo_mutual_auth_config.h. */
     LogInfo( ( "Establishing a TLS session to %.*s:%d.",
-               ( int32_t ) xServerInfo.hostNameLength,
+               ( int ) xServerInfo.hostNameLength,
                xServerInfo.pHostName,
                xServerInfo.port ) );
 
@@ -244,21 +244,21 @@ static BaseType_t prvSendHttpRequest( const TransportInterface_t * pxTransportIn
     if( xHTTPStatus == HTTPSuccess )
     {
         LogInfo( ( "Received HTTP response from %.*s%.*s. Status Code=%u",
-                   ( int32_t ) AKNANO_REST_API_ENDPOINT_LEN, AKNANO_REST_API_ENDPOINT,
-                   ( int32_t ) xRequestInfo.pathLen, xRequestInfo.pPath, pxResponse->statusCode ) );
+                   ( int ) AKNANO_REST_API_ENDPOINT_LEN, AKNANO_REST_API_ENDPOINT,
+                   ( int ) xRequestInfo.pathLen, xRequestInfo.pPath, pxResponse->statusCode ) );
         LogDebug( ( "Response Headers:\n%.*s\n",
-                    ( int32_t ) pxResponse->headersLen, pxResponse->pHeaders ) );
+                    ( int ) pxResponse->headersLen, pxResponse->pHeaders ) );
         // LogInfo( ( "Status Code: %u",
         //             pxResponse->statusCode ) );
         LogInfo( ( "Response Body:\n%.*s",
-                    ( int32_t ) pxResponse->bodyLen, pxResponse->pBody ) );
+                    ( int ) pxResponse->bodyLen, pxResponse->pBody ) );
     }
     else
     {
         LogError( ( "Failed to send HTTP %.*s request to %.*s%.*s: Error=%s.",
-                    ( int32_t ) xRequestInfo.methodLen, xRequestInfo.pMethod,
-                    ( int32_t ) AKNANO_REST_API_ENDPOINT_LEN, AKNANO_REST_API_ENDPOINT,
-                    ( int32_t ) xRequestInfo.pathLen, xRequestInfo.pPath,
+                    ( int ) xRequestInfo.methodLen, xRequestInfo.pMethod,
+                    ( int ) AKNANO_REST_API_ENDPOINT_LEN, AKNANO_REST_API_ENDPOINT,
+                    ( int ) xRequestInfo.pathLen, xRequestInfo.pPath,
                     HTTPClient_strerror( xHTTPStatus ) ) );
     }
 
