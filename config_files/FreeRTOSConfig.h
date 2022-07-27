@@ -99,6 +99,8 @@
 #define INCLUDE_xSemaphoreGetMutexHolder             1
 #define INCLUDE_uxTaskGetStackHighWaterMark          1
 
+#define INCLUDE_xTaskAbortDelay    1
+#define INCLUDE_xTaskGetCurrentTaskHandle 1
 
 /* Normal assert() semantics without relying on the provision of an assert.h
  * header file. */
