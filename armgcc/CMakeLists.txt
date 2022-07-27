@@ -156,16 +156,16 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${FreeRtosKernelPath}/timers.c"
 
 ## "${FreeRtosAwsPath}/libraries/3rdparty/lwip_osal/src/sys_arch.c" # -> this file lacks a few functions
-"${ProjDirPath}/../../../3rdparty/middleware/freertos/lwip_osal/src/sys_arch.c"
-"${ProjDirPath}/../../../3rdparty/middleware/nxp/lwip_ethernet/enet_ethernetif_kinetis.c"
-"${ProjDirPath}/../../../3rdparty/middleware/nxp/lwip_ethernet/enet_ethernetif.c"
-"${ProjDirPath}/../../../3rdparty/middleware/nxp/mbedtls_port/ksdk/aes_alt.c"
-"${ProjDirPath}/../../../3rdparty/middleware/nxp/mbedtls_port/ksdk/ecp_alt.c"
-"${ProjDirPath}/../../../3rdparty/middleware/nxp/mbedtls_port/ksdk/ecp_curves_alt.c"
-"${ProjDirPath}/../../../3rdparty/middleware/nxp/mbedtls_port/ksdk/ksdk_mbedtls.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/src/sys_arch.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/lwip_ethernet/enet_ethernetif_kinetis.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/lwip_ethernet/enet_ethernetif.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/aes_alt.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/ecp_alt.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/ecp_curves_alt.c"
+"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/ksdk_mbedtls.c"
 
-"${ProjDirPath}/../../../3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
-"${ProjDirPath}/../../../3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
+"${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
+"${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
 
 "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1171/drivers/fsl_clock.c"
 "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_anatop_ai.c"
@@ -352,9 +352,9 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
 
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
-    ${ProjDirPath}/../../../3rdparty/middleware/freertos/lwip_osal/include/
-    ${ProjDirPath}/../../../3rdparty/middleware/nxp/lwip_ethernet/
-    ${ProjDirPath}/../../../3rdparty/middleware/nxp/mbedtls_port/ksdk/
+    ${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/include/
+    ${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/lwip_ethernet/
+    ${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/
     ${ProjDirPath}/../../../middleware/freertos/backoffAlgorithm/source/include/
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/include/
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/interface/
