@@ -14,7 +14,7 @@
 
 #include "aknano_priv.h"
 #include "aknano_secret.h"
-#include "flexspi_flash_config.h"
+// #include "flexspi_flash_config.h"
 
 
 /**

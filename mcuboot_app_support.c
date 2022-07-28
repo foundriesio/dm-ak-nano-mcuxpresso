@@ -17,7 +17,7 @@
 #include "mflash_drv.h"
 
 #include "fsl_debug_console.h"
-#include "flexspi_flash_config.h"
+// #include "flexspi_flash_config.h"
 
 const uint32_t boot_img_magic[] = {
     0xf395c277,
