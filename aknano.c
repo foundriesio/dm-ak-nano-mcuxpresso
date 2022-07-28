@@ -46,27 +46,6 @@ long unsigned int AkNanoGetTime(void)
 }
 
 
-/*-----------------------------------------------------------*/
-
-// static uint32_t prvGetTimeMs( void )
-// {
-//     TickType_t xTickCount = 0;
-//     uint32_t ulTimeMs = 0UL;
-
-//     /* Get the current tick count. */
-//     xTickCount = xTaskGetTickCount();
-
-//     /* Convert the ticks to milliseconds. */
-//     ulTimeMs = ( uint32_t ) xTickCount * MILLISECONDS_PER_TICK;
-
-//     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
-//      * elapsed time in the application. */
-//     ulTimeMs = ( uint32_t ) ( ulTimeMs - ulGlobalEntryTimeMs );
-
-//     return ulTimeMs;
-// }
-/*-----------------------------------------------------------*/
-
 void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
 {
     char flashPageBuffer[256];
