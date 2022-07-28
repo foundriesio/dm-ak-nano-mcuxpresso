@@ -17,7 +17,6 @@
 
 
 #include "fsl_debug_console.h"
-#include "flash_info.h"
 #include "sbl_ota_flag.h"
 #if defined(SOC_LPC55S69_SERIES)
 #include "iap_flash_ops.h"
