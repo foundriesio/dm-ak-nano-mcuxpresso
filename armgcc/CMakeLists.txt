@@ -103,17 +103,9 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../config_files/aws_iot_network_config.h"
 "${ProjDirPath}/../main_enet.c"
 "${ProjDirPath}/../lwipopts.h"
-"${ProjDirPath}/../pin_mux.c"
-"${ProjDirPath}/../pin_mux.h"
 "${ProjDirPath}/../mcuboot_app_support.c"
 "${ProjDirPath}/../mcuboot_app_support.h"
 "${ProjDirPath}/../flash_partitioning.h"
-"${ProjDirPath}/../board.c"
-"${ProjDirPath}/../board.h"
-"${ProjDirPath}/../clock_config.c"
-"${ProjDirPath}/../clock_config.h"
-"${ProjDirPath}/../dcd.c"
-"${ProjDirPath}/../dcd.h"
 "${ProjDirPath}/../read_button_task.c"
 "${ProjDirPath}/../aknano_device_gateway.c"
 "${ProjDirPath}/../aknano_targets_manifest.c"
@@ -124,7 +116,16 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../ota_flag/sbl_ota_flag.c"
 "${ProjDirPath}/../tests/aknano_test.c"
-"${ProjDirPath}/../evkmimxrt1170_connect_cm4_cm7side.jlinkscript"
+
+"${ProjDirPath}/../board/pin_mux.c"
+"${ProjDirPath}/../board/pin_mux.h"
+"${ProjDirPath}/../board/board.c"
+"${ProjDirPath}/../board/board.h"
+"${ProjDirPath}/../board/clock_config.c"
+"${ProjDirPath}/../board/clock_config.h"
+"${ProjDirPath}/../board/dcd.c"
+"${ProjDirPath}/../board/dcd.h"
+"${ProjDirPath}/../board/evkmimxrt1170_connect_cm4_cm7side.jlinkscript"
 
 "${FreeRtosAwsPath}/demos/demo_runner/iot_demo_freertos.c"
 "${FreeRtosAwsPath}/demos/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c"
@@ -347,6 +348,7 @@ endif(CMAKE_AKNANO_TEST EQUAL 1)
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
     ${ProjDirPath}/../../..
+    ${ProjDirPath}/../board
     ${ProjDirPath}/../config_files
     ${ProjDirPath}/../tests
 
