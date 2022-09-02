@@ -137,6 +137,8 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 
     LogInfo(("AkNanoInitSettings: device_name=%s",
              aknano_settings->device_name));
+
+    aknano_settings->hwid = CONFIG_BOARD;
 }
 
 // #define AKNANO_TEST_ROLLBACK

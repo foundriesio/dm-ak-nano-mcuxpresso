@@ -3,6 +3,8 @@
 /*Include backoff algorithm header for retry logic.*/
 // #include "backoff_algorithm.h"
 
+#include "mbedtls/sha256.h"
+
 /* Transport interface include. */
 #include "transport_interface.h"
 
@@ -342,7 +344,7 @@ BaseType_t GetFileSize(size_t* pxFileSize, HTTPResponse_t *xResponse)
 
 static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                                  const TransportInterface_t * pxTransportInterface,
-                                 const char * pcPath, uint8_t image_position)
+                                 const char * pcPath, uint8_t image_position, struct aknano_context *aknano_context)
 {
     /* Return value of this method. */
     BaseType_t xStatus = pdFAIL;
@@ -368,6 +370,7 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
     size_t xCurByte = 0;
     uint32_t dstAddr;
     struct image_header ih;
+    uint8_t sha256_bytes[AKNANO_SHA256_LEN];
 
     if(image_position == 0x01) {
         dstAddr = FLASH_AREA_IMAGE_2_OFFSET;
@@ -428,7 +431,9 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
 
     int32_t stored = 0;
-    
+    /* Initialize SHA256 calculation for FW image */
+    mbedtls_sha256_init(&aknano_context->sha256_context);
+    mbedtls_sha256_starts(&aknano_context->sha256_context, 0);
 
     /* Here we iterate sending byte range requests until the full file has been
      * downloaded. We keep track of the next byte to download with xCurByte, and
@@ -479,6 +484,16 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             if (xFileSize == FILE_SIZE_UNSET && GetFileSize(&pxFileSize, &xResponse) == pdPASS) {
                 xFileSize = pxFileSize;
                 LogInfo( ( "Setting xFileSize=%d", xFileSize));
+                if (aknano_context->selected_target.expected_size > 0) {
+                    if (xFileSize != aknano_context->selected_target.expected_size) {
+                        LogInfo( ( ANSI_COLOR_MAGENTA "Actual file size (%ld bytes) does not match expected size (%ld bytes)" ANSI_COLOR_RESET, xFileSize, aknano_context->selected_target.expected_size));
+                        xStatus = pdFAIL;
+                    } else {
+                        LogInfo( ( ANSI_COLOR_MAGENTA "Actual file size (%ld bytes) matches expected size (%ld bytes)" ANSI_COLOR_RESET, xFileSize, aknano_context->selected_target.expected_size));
+                    }
+                } else {
+                    LogInfo( ( ANSI_COLOR_MAGENTA "Expected file size is not set" ANSI_COLOR_RESET));
+                }
             }
 
             LogInfo( ( "Received HTTP response from %s %s...",
@@ -488,25 +503,28 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                         xResponse.pHeaders ) );
             LogInfo( ( "Response Body Len: %d",
                        ( int ) xResponse.bodyLen) );
+            if (xStatus == pdPASS) {
+                // FIXME
+                #define MAX_FIRMWARE_SIZE 0x100000
 
-            // FIXME
-            #define MAX_FIRMWARE_SIZE 0x100000
-            if (HandleReceivedData(xResponse.pBody, xCurByte, xResponse.contentLength, dstAddr + BOOT_FLASH_BASE, MAX_FIRMWARE_SIZE) < 0)
-            {
-                LogError(("Error during HandleReceivedData"));
-                xStatus = pdFAIL;
-                break;
-            }
+                mbedtls_sha256_update(&aknano_context->sha256_context, xResponse.pBody, xResponse.contentLength);
+                if (HandleReceivedData(xResponse.pBody, xCurByte, xResponse.contentLength, dstAddr + BOOT_FLASH_BASE, MAX_FIRMWARE_SIZE) < 0)
+                {
+                    LogError(("Error during HandleReceivedData"));
+                    xStatus = pdFAIL;
+                    break;
+                }
 
-            stored += xResponse.contentLength;
+                stored += xResponse.contentLength;
 
-            /* We increment by the content length because the server may not
-             * have sent us the range we requested. */
-            xCurByte += xResponse.contentLength;
+                /* We increment by the content length because the server may not
+                * have sent us the range we requested. */
+                xCurByte += xResponse.contentLength;
 
-            if( ( xFileSize - xCurByte ) < xNumReqBytes )
-            {
-                xNumReqBytes = xFileSize - xCurByte;
+                if( ( xFileSize - xCurByte ) < xNumReqBytes )
+                {
+                    xNumReqBytes = xFileSize - xCurByte;
+                }
             }
 
             xStatus = ( xResponse.statusCode == httpexampleHTTP_STATUS_CODE_PARTIAL_CONTENT ) ? pdPASS : pdFAIL;
@@ -545,6 +563,14 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
     }
 
     if (( xStatus == pdPASS ) && ( xHTTPStatus == HTTPSuccess )) {
+        mbedtls_sha256_finish_ret(&aknano_context->sha256_context, sha256_bytes);
+        if (memcmp(&aknano_context->selected_target.expected_hash, sha256_bytes, sizeof(sha256_bytes))) {
+            LogInfo((ANSI_COLOR_RED "Downloaded image SHA256 does not match the expected value" ANSI_COLOR_RESET));
+            return false;
+        } else {
+            LogInfo(("Downloaded image SHA256 matches the expected value"));
+        }
+
 #ifndef AKNANO_DRY_RUN
         LogInfo(("Validating image of size %ld at dstAddr=%p", stored, (void*)dstAddr + BOOT_FLASH_BASE));
         sfw_flash_read_ipc(dstAddr + BOOT_FLASH_BASE, (void*)&ih, sizeof(ih));
@@ -599,10 +625,10 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
 
     if( xDemoStatus == pdPASS )
     {
-        char *relative_path = aknano_context->aknano_json_data.selected_target.uri + strlen("https://") + strlen(AKNANO_DOWNLOAD_ENDPOINT);
+        char *relative_path = aknano_context->selected_target.uri + strlen("https://") + strlen(AKNANO_DOWNLOAD_ENDPOINT);
         LogInfo(("Download relativepath=%s", relative_path));
         xDemoStatus = prvDownloadFile(&xNetworkContext, &xTransportInterface, 
-            relative_path, aknano_context->settings->image_position);
+            relative_path, aknano_context->settings->image_position, aknano_context);
     }
 
     /**************************** Disconnect. ******************************/

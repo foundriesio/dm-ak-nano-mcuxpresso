@@ -7,156 +7,157 @@
 #include <stdio.h>
 #include "core_json.h"
 
+#include "libtufnano.h"
 
 #define JSON_ARRAY_LIMIT_COUNT 10
 
-static int handle_json_data(struct aknano_context *aknano_context, char *data, size_t len)
+static int hex_to_bin(const unsigned char *s, unsigned char *dst, size_t len)
 {
-    bool foundMatch = false;
-    char *outValue, *outSubValue;//, *uri;
-    unsigned int outValueLength, outSubValueLength;
-    int i;
-    uint32_t version;
+    size_t i, j, k;
 
-    // LogInfo(("handle_json_data: Parsing target data with len=%d", len));
-    JSONStatus_t result = JSON_Validate(data, len );
-    if( result != JSONSuccess )
+    memset( dst, 0, len );
+    for( i = 0; i < len * 2; i++, s++ )
     {
-        LogWarn(("handle_json_data: Got invalid targets JSON: %s", data));
-        return -1;
+        if( *s >= '0' && *s <= '9' ) j = *s - '0'; else
+        if( *s >= 'A' && *s <= 'F' ) j = *s - '7'; else
+        if( *s >= 'a' && *s <= 'f' ) j = *s - 'W'; else
+            return( -1 );
+
+        k = ( ( i & 1 ) != 0 ) ? j : j << 4;
+
+        dst[i >> 1] = (unsigned char)( dst[i >> 1] | k );
     }
 
-    foundMatch = false;
-    result = JSON_Search(data, len, "custom.version", strlen("custom.version"), &outValue, &outValueLength);
-    if (result == JSONSuccess) {
-        // LogInfo(("handle_json_data: custom.version=%.*s", outValueLength, outValue));
-        sscanf(outValue, "%lu", &version);
-        if (version <= aknano_context->aknano_json_data.selected_target.version) {
-            return 0;
-        }
-    } else {
-        LogWarn(("handle_json_data: custom.version not found"));
-        return -2;
-    }
-
-    result = JSON_Search(data, len, "custom.hardwareIds", strlen("custom.hardwareIds"), &outValue, &outValueLength);
-    if (result == JSONSuccess) {
-        // LogInfo(("handle_json_data: custom.hardwareIds=%.*s", outValueLength, outValue));
-
-        for (i=0; i<JSON_ARRAY_LIMIT_COUNT; i++) {
-            char s[10];
-            snprintf(s, sizeof(s), "[%d]", i);
-            if (JSON_Search(outValue, outValueLength, s, strlen(s), &outSubValue, &outSubValueLength) != JSONSuccess)
-                    break;
-            if (strncmp(outSubValue, CONFIG_BOARD, outSubValueLength) == 0) {
-                // LogInfo(("Found matching hardwareId" ));
-                foundMatch = true;
-            }
-        }
-    } else {
-        LogWarn(("handle_json_data: custom.hardwareIds not found"));
-        return -2;
-    }
-    if (!foundMatch) {
-        // LogInfo(("Matching hardwareId not found (%s)", CONFIG_BOARD));
-        return 0;
-    }
-
-    foundMatch = false;
-    result = JSON_Search((char*)data, len, "custom.tags", strlen("custom.tags"), &outValue, &outValueLength);
-    if (result == JSONSuccess) {
-        // LogInfo(("handle_json_data: custom.tags=%.*s", outValueLength, outValue));
-
-        for (i=0; i<JSON_ARRAY_LIMIT_COUNT; i++) {
-            char s[10];
-            snprintf(s, sizeof(s), "[%d]", i);
-            if (JSON_Search(outValue, outValueLength, s, strlen(s), &outSubValue, &outSubValueLength) != JSONSuccess)
-                break;
-            if (strncmp(outSubValue, aknano_context->settings->tag, outSubValueLength) == 0) {
-                // LogInfo(("Found matching tag" ));
-                foundMatch = true;
-            }
-        }
-    } else {
-        LogWarn(("handle_json_data: custom.tags not found"));
-        return -2;
-    }
-    if (!foundMatch) {
-        // LogInfo(("Matching tag not found (%s)", aknano_context->settings->tag));
-        return 0;
-    }
-
-    // result = JSON_Search(data, len, "custom.updatedAt", strlen("custom.updatedAt"), &outValue, &outValueLength);
-    // if (result == JSONSuccess) {
-    //         LogInfo(("handle_json_data: custom.updatedAt=%.*s", outValueLength, outValue));
-    // } else {
-    //         LogWarn(("handle_json_data: custom.updatedAt not found"));
-    //         return -2;
-    // }
-
-    result = JSON_Search(data, len, "custom.uri", strlen("custom.uri"), &outValue, &outValueLength);
-    if (result == JSONSuccess) {
-        // LogInfo(("handle_json_data: custom.uri=%.*s", outValueLength, outValue));
-    } else {
-        LogWarn(("handle_json_data: custom.uri not found"));
-        return -2;
-    }
-
-    // LogInfo(("Updating highest version to %u %.*s", version, outValueLength, outValue));
-
-    aknano_context->aknano_json_data.selected_target.version = version;
-    strncpy(aknano_context->aknano_json_data.selected_target.uri, outValue, outValueLength);
-    return 0;
+    return( 0 );
 }
 
-void aknano_handle_manifest_data(struct aknano_context *context,
-                                uint8_t *dst, off_t *offset,
-                                uint8_t *src, size_t len)
+/*
+ * TODO: Is there an actual advantage on calling this external function for each target? Or should all targets be parsed at once?
+ * Calling the function for each individual target may be more appropriate when processing data as stream, which we do not do yet, and may never do
+ */
+int tuf_parse_single_target(const char *target_key, size_t target_key_len, const char *data, size_t len, void *application_context)
 {
-    static bool trunc_wrn_printed = false;
-    bool is_relevant_data;
-    uint8_t *p = src;
+	struct aknano_context *aknano_context = (struct aknano_context *)application_context;
 
-    /*
-     * Based on current format, counting brackets ({ and }) is enough
-     * to determine when a "target" section starts and ends.
-     * We should process all data that is inside the 4th bracket level.
-     * And a target section is known to end every time we go back to the
-     * 1st bracket level.
-     */
-    const int reference_bracket_level = 4;
-    is_relevant_data = context->json_pasring_bracket_level >= reference_bracket_level;
+	bool found_match = false;
+	const char *out_value, *out_sub_value;
+	size_t out_value_len, out_sub_value_len;
+	int i;
+        struct aknano_target target;
 
-    while (p < src + len) {
-        switch (*p) {
-        case '{':
-            context->json_pasring_bracket_level++;
-            is_relevant_data = context->json_pasring_bracket_level >= reference_bracket_level;
-            break;
-        case '}':
-            context->json_pasring_bracket_level--;
-            break;
+        memset(&target, 0, sizeof(target));
+
+        LogInfo(("tuf_client_parse_single_target: %.*s", target_key_len, target_key));
+	// LogInfo(("handle_json_data: Parsing target data with len=%d", len));
+	JSONStatus_t result = JSON_Validate(data, len);
+	if (result != JSONSuccess) {
+		log_info(("handle_json_data: Got invalid targets JSON: %s\n", data));
+		return -1;
+	}
+
+        LogDebug(("tuf_parse_single_target: handling target"));
+	found_match = false;
+	result = JSON_SearchConst(data, len, "custom/version", strlen("custom/version"), &out_value, &out_value_len, NULL);
+	if (result == JSONSuccess) {
+		sscanf(out_value, "%u", &target.version);
+                // LogInfo(("tuf_parse_single_target: version=%d selected_version=%d\n", version, aknano_context->selected_target.version));
+		if (target.version <= aknano_context->selected_target.version)
+			return 0;
+	} else {
+		log_info(("handle_json_data: custom/version not found\n"));
+		return 0;
+	}
+
+
+	result = JSON_SearchConst(data, len, "custom/hardwareIds", strlen("custom/hardwareIds"), &out_value, &out_value_len, NULL);
+	if (result == JSONSuccess) {
+		// LogInfo(("handle_json_data: custom.hardwareIds=%.*s", out_value_len, out_value));
+
+		for (i = 0; i < JSON_ARRAY_LIMIT_COUNT; i++) {
+			char s[10];
+			snprintf(s, sizeof(s), "[%d]", i);
+			if (JSON_SearchConst(out_value, out_value_len, s, strnlen(s, sizeof(s)), &out_sub_value, &out_sub_value_len, NULL) != JSONSuccess)
+				break;
+			if (strncmp(out_sub_value, aknano_context->settings->hwid, out_sub_value_len) == 0) {
+				// LogInfo(("Found matching hardwareId" ));
+				found_match = true;
+                        }
+		}
+	} else {
+		log_info(("handle_json_data: custom/hardwareIds not found\n"));
+		return 0;
+	}
+	if (!found_match) {
+		log_info(("Matching hardwareId not found (%s)", aknano_context->settings->hwid));
+		return 0;
         }
-        if (is_relevant_data) {
-            if (*offset < RESPONSE_BUFFER_SIZE) {
-                *(dst + *offset) = *p;
-                (*offset)++;
-            } else if (!trunc_wrn_printed) {
-                LogWarn(("Truncating incomming data"
-                        " (target description limit is %d)",
-                        RESPONSE_BUFFER_SIZE));
-                trunc_wrn_printed = true;
-            }
 
-            if (context->json_pasring_bracket_level == reference_bracket_level-1) {
-                *(dst + *offset) = '\0';
-                /* A complete target section was received. Process it */
-                handle_json_data(context, (char*)dst, *offset);
-                is_relevant_data = false;
-                trunc_wrn_printed = false;
-                *offset = 0;
-            }
+	found_match = false;
+	result = JSON_SearchConst((char *)data, len, "custom/tags", strlen("custom/tags"), &out_value, &out_value_len, NULL);
+	if (result == JSONSuccess) {
+		// LogInfo(("handle_json_data: custom.tags=%.*s", out_value_len, out_value));
+
+		for (i = 0; i < JSON_ARRAY_LIMIT_COUNT; i++) {
+			char s[10];
+			snprintf(s, sizeof(s), "[%d]", i);
+			if (JSON_SearchConst(out_value, out_value_len, s, strlen(s), &out_sub_value, &out_sub_value_len, NULL) != JSONSuccess)
+				break;
+			if (strncmp(out_sub_value, aknano_context->settings->tag, out_sub_value_len) == 0)
+				// LogInfo(("Found matching tag" ));
+				found_match = true;
+		}
+	} else {
+		log_info(("handle_json_data: custom/tags not found\n"));
+		return 0;
+	}
+	if (!found_match) {
+		LogInfo(("Matching tag not found (%s)", aknano_context->settings->tag));
+		return 0;
         }
-        p++;
-    }
+
+	// result = JSON_SearchConst(data, len, "custom.updatedAt", strlen("custom.updatedAt"), &out_value, &out_value_len);
+	// if (result == JSONSuccess) {
+	//		 LogInfo(("handle_json_data: custom.updatedAt=%.*s", out_value_len, out_value));
+	// } else {
+	//		 LogWarn(("handle_json_data: custom.updatedAt not found"));
+	//		 return -2;
+	// }
+
+	/* Handle custom/uri */
+	result = JSON_SearchConst(data, len, "custom/uri", strlen("custom/uri"), &out_value, &out_value_len, NULL);
+	if (result != JSONSuccess) {
+		log_info(("handle_json_data: custom/uri not found\n"));
+		return 0;
+	}
+	strncpy(target.uri, out_value, out_value_len);
+        target.uri[out_value_len] = 0;
+
+	/* Handle hashes/sha256 */
+        result = JSON_SearchConst(data, len, "hashes/sha256", strlen("hashes/sha256"), &out_value, &out_value_len, NULL);
+	if (result != JSONSuccess) {
+		log_info(("handle_json_data: hashes/sha256 not found\n"));
+		return 0;
+	}
+        if (out_value_len != AKNANO_SHA256_LEN * 2) {
+		log_info(("handle_json_data: hashes/sha256 string has invalid length: %d\n", out_value_len));
+		return 0;
+        }
+        if (hex_to_bin(out_value, &target.expected_hash, AKNANO_SHA256_LEN)) {
+		log_info(("handle_json_data: hashes/sha256 string is not a valid hex value: '%.*s'\n", out_value_len, out_value));
+		return 0;
+        }
+
+	/* Handle length */
+	result = JSON_SearchConst(data, len, "length", strlen("length"), &out_value, &out_value_len, NULL);
+	if (result != JSONSuccess) {
+		log_info(("handle_json_data: length not found\n"));
+		return 0;
+	}
+        sscanf(out_value, "%ld", &target.expected_size);
+
+        /* All good, update selected_target */
+        memcpy(&aknano_context->selected_target, &target, sizeof(aknano_context->selected_target));
+
+	// LogInfo(("Updating highest version to %u %.*s", version, out_value_len, out_value));
+	return 0;
 }
