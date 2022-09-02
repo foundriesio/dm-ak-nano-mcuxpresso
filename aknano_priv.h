@@ -14,6 +14,8 @@
 #ifndef __AKNANO_PRIV_H__
 #define __AKNANO_PRIV_H__
 
+#include "mbedtls/sha256.h"
+
 #include "board.h"
 
 #include "fsl_common.h"
@@ -58,6 +60,7 @@
 
 #define AKNANO_SLEEP_LENGTH 8
 
+#define AKNANO_SHA256_LEN 32
 
 #define CANCEL_BASE_SIZE 50
 #define RECV_BUFFER_SIZE 1640
@@ -137,14 +140,16 @@ enum aknano_response {
 struct aknano_target {
     char updatedAt[AKNANO_MAX_UPDATE_AT_LENGTH];
     char uri[AKNANO_MAX_URI_LENGTH];
+    size_t expected_size;
     int32_t version;
+    uint8_t expected_hash[AKNANO_SHA256_LEN];
 };
 
-struct aknano_json_data {
-    size_t offset;
-    uint8_t data[AKNANO_JSON_BUFFER_SIZE];
-    struct aknano_target selected_target;
-};
+// struct aknano_json_data {
+//     size_t offset;
+//     uint8_t data[AKNANO_JSON_BUFFER_SIZE];
+//     struct aknano_target selected_target;
+// };
 
 struct aknano_download {
     int download_status;
@@ -173,6 +178,7 @@ struct aknano_settings {
     char ongoing_update_correlation_id[AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH];
     bool is_device_registered;
     uint8_t image_position;
+    const char *	hwid;
 };
 
 /* Context is not kept between iterations */
@@ -180,7 +186,7 @@ struct aknano_context {
     int sock;
     int32_t action_id;
     uint8_t response_data[RESPONSE_BUFFER_SIZE];
-    struct aknano_json_data aknano_json_data;
+    // struct aknano_json_data aknano_json_data;
     int32_t json_action_id;
     size_t url_buffer_size;
     size_t status_buffer_size;
@@ -194,6 +200,14 @@ struct aknano_context {
     
     int json_pasring_bracket_level;
     struct aknano_settings *settings; /* TODO: may not always be set yet */
+
+    struct aknano_target selected_target;
+
+    /* Connection to the device gateway */
+    TransportInterface_t xTransportInterface;
+    HTTPResponse_t xResponse;
+
+    mbedtls_sha256_context sha256_context;
 };
 
 

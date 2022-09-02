@@ -63,7 +63,7 @@ SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
     -std=gnu99 \
 ")
 
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C")
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C -DJSON_QUERY_KEY_SEPARATOR=\\'/\\'")
 
 project(ota_demo_enet)
 
@@ -116,6 +116,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../ota_flag/sbl_ota_flag.c"
 "${ProjDirPath}/../tests/aknano_test.c"
+"${ProjDirPath}/../../libtufnano/libtufnano.c"
 
 "${ProjDirPath}/../board/pin_mux.c"
 "${ProjDirPath}/../board/pin_mux.h"
@@ -351,7 +352,8 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../board
     ${ProjDirPath}/../config_files
     ${ProjDirPath}/../tests
-
+    ${ProjDirPath}/../../libtufnano
+    
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
     ${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/include/
