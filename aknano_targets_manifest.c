@@ -32,10 +32,12 @@ static int hex_to_bin(const unsigned char *s, unsigned char *dst, size_t len)
 }
 
 /*
- * TODO: Is there an actual advantage on calling this external function for each target? Or should all targets be parsed at once?
- * Calling the function for each individual target may be more appropriate when processing data as stream, which we do not do yet, and may never do
+ * We might want call this function from within libtufnano if we switch to a
+ * stream approach.
+ *
+ * That's why we use void* as parameter type.
  */
-int tuf_parse_single_target(const char *target_key, size_t target_key_len, const char *data, size_t len, void *application_context)
+static int tuf_parse_single_target(const char *target_key, size_t target_key_len, const char *data, size_t len, void *application_context)
 {
 	struct aknano_context *aknano_context = (struct aknano_context *)application_context;
 
@@ -67,7 +69,6 @@ int tuf_parse_single_target(const char *target_key, size_t target_key_len, const
 		log_info(("handle_json_data: custom/version not found\n"));
 		return 0;
 	}
-
 
 	result = JSON_SearchConst(data, len, "custom/hardwareIds", strlen("custom/hardwareIds"), &out_value, &out_value_len, NULL);
 	if (result == JSONSuccess) {
@@ -159,5 +160,42 @@ int tuf_parse_single_target(const char *target_key, size_t target_key_len, const
         memcpy(&aknano_context->selected_target, &target, sizeof(aknano_context->selected_target));
 
 	// LogInfo(("Updating highest version to %u %.*s", version, out_value_len, out_value));
+	return 0;
+}
+
+
+int parse_targets_metadata(const char *data, int len, void *application_context)
+{
+	JSONStatus_t result;
+	int ret;
+
+	const char *out_value;
+	size_t out_value_len;
+	size_t start, next;
+	JSONPair_t pair;
+
+	result = JSON_Validate(data, len);
+	if (result != JSONSuccess) {
+		log_error(("parse_targets_metadata: Got invalid JSON: %s", data));
+		return TUF_ERROR_INVALID_METADATA;
+	}
+
+	result = JSON_SearchConst(data, len, "signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets", strlen("signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets"), &out_value, &out_value_len, NULL);
+	if (result != JSONSuccess) {
+		log_error(("parse_targets_metadata: \"signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets\" not found"));
+		return TUF_ERROR_FIELD_MISSING;
+	}
+
+	/* Iterate over each target */
+	start = 0;
+	next = 0;
+	while ((result = JSON_Iterate(out_value, out_value_len, &start, &next, &pair)) == JSONSuccess) {
+		ret = tuf_parse_single_target(pair.key, pair.keyLength, pair.value, pair.valueLength, application_context);
+		if (ret < 0) {
+			log_error(("Error processing target %.*s", (int)pair.keyLength, pair.key));
+			break;
+		}
+	}
+
 	return 0;
 }
