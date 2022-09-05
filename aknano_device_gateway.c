@@ -263,7 +263,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
     if( result == JSONSuccess )
     {
         result = JSON_Search( config_data, buffer_len,
-                             "tag.Value", strlen("tag.Value"),
+                             "tag" TUF_JSON_QUERY_KEY_SEPARATOR "Value", strlen("tag" TUF_JSON_QUERY_KEY_SEPARATOR "Value"),
                               &value, &valueLength );
 
         if( result == JSONSuccess ) {
@@ -283,7 +283,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
         }
 
         result = JSON_Search( config_data, buffer_len,
-                             "polling_interval.Value", strlen("polling_interval.Value"),
+                             "polling_interval" TUF_JSON_QUERY_KEY_SEPARATOR "Value", strlen("polling_interval" TUF_JSON_QUERY_KEY_SEPARATOR "Value"),
                               &value, &valueLength );
 
         if( result == JSONSuccess ) {
@@ -308,7 +308,7 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
         }
 
         result = JSON_Search( config_data, buffer_len,
-                             "btn_polling_interval.Value", strlen("btn_polling_interval.Value"),
+                             "btn_polling_interval" TUF_JSON_QUERY_KEY_SEPARATOR "Value", strlen("btn_polling_interval" TUF_JSON_QUERY_KEY_SEPARATOR "Value"),
                               &value, &valueLength );
 
         if( result == JSONSuccess ) {
