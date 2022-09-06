@@ -1,18 +1,17 @@
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
-#include <time.h>
-#include <stdio.h>
-
-#include "lwip/opt.h"
-#include "lwip/apps/sntp.h"
-#include "sntp_example.h"
-#include "lwip/netif.h"
-
 #include "aknano_priv.h"
 #include "aknano_secret.h"
-#include "flexspi_flash_config.h"
 
+#include "flexspi_flash_config.h"
 #include "fsl_caam.h"
+#include "lwip/opt.h"
+#include "lwip/apps/sntp.h"
+#include "lwip/netif.h"
+#include "sntp_example.h"
+
+#include <time.h>
+#include <stdio.h>
 
 /*
  * Random numbers generator
@@ -35,8 +34,8 @@ static caam_job_ring_interface_t s_jrif2;
 /*! @brief CAAM job ring interface 3 in system memory. */
 static caam_job_ring_interface_t s_jrif3;
 
-
-void initRandom() {
+void initRandom()
+{
     /* Get default configuration. */
     CAAM_GetDefaultConfig(&caamConfig);
 
@@ -86,10 +85,6 @@ status_t AkNanoGenRandomBytes(char *output, size_t size)
 /*
  * Time
  */
-#include "compile_epoch.h"
-#ifndef BUILD_EPOCH_MS
-#define BUILD_EPOCH_MS 1637778974000
-#endif
 
 static time_t boot_up_epoch;
 void sntp_set_system_time(u32_t sec)
@@ -168,6 +163,7 @@ int initTime()
         return 0;
 }
 
+/* Storage */
 int initStorage()
 {
         return InitFlashStorage();
