@@ -305,73 +305,11 @@ void vDevModeKeyProvisioning_new(uint8_t *client_key, uint8_t *client_certificat
 }
 
 
-void sntp_set_system_time(u32_t sec)
-{
-    LogInfo(("SNTP sntp_set_system_time"));
-    char buf[32];
-    struct tm current_time_val;
-    time_t current_time = (time_t)sec;
-
-    localtime_r(&current_time, &current_time_val);
-    strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", &current_time_val);
-    //xaknano_settings.boot_up_epoch_ms = (sec * 1000);// - xTaskGetTickCount();
-    xaknano_settings.boot_up_epoch = sec;// - xTaskGetTickCount();
-
-    LogInfo(("SNTP time: %s  sec=%lu xaknano_settings.boot_up_epoch=%lld xTaskGetTickCount()=%lu\n", 
-             buf, sec, xaknano_settings.boot_up_epoch, xTaskGetTickCount()));
-    vTaskDelay(50 / portTICK_PERIOD_MS);
-
-    // LOCK_TCPIP_CORE();
-    sntp_stop();
-    // UNLOCK_TCPIP_CORE();
-}
-
-void sntp_example_init(void)
-{
-    ip4_addr_t ip_sntp_server;
-
-    /* Using a.time.steadfast.net */
-    IP4_ADDR(&ip_sntp_server, 208, 100, 4, 52);
-
-    LOCK_TCPIP_CORE();
-
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-
-    sntp_setserver(0, &ip_sntp_server);
-
-    sntp_init();
-    UNLOCK_TCPIP_CORE();
-    LogInfo(("SNTP Initialized"));
-}
-
-static void SNTPRequest()
-{
-    sntp_example_init();
-
-    int i;
-    for(i=0; i<5; i++) {
-        vTaskDelay( pdMS_TO_TICKS( 1000 ) );
-        if (xaknano_settings.boot_up_epoch) {
-            vTaskDelay( pdMS_TO_TICKS( 500 ) );
-            break;
-        }
-    }
-    if (i == 5) {
-        // LOCK_TCPIP_CORE();
-        sntp_stop();
-        // UNLOCK_TCPIP_CORE();
-        vTaskDelay( pdMS_TO_TICKS( 500 ) );
-    }
-
-    LogInfo(("Proceeding after sntp"));
-}
-
 static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
-    InitFlashStorage();
     AkNanoInitSettings(aknano_settings);
 
-    SNTPRequest();
+    // SNTPRequest();
 
     vDevModeKeyProvisioning_new((uint8_t*)xaknano_settings.device_priv_key,
                                 (uint8_t*)xaknano_settings.device_certificate );

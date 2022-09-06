@@ -230,6 +230,8 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
                         void * pNetworkServerInfo,
                         void * pNetworkCredentialInfo,
                         const IotNetworkInterface_t * pxNetworkInterface );
+int initTime();
+int initStorage();
 
 void vApplicationDaemonTaskStartupHook(void)
 {
@@ -249,6 +251,8 @@ void vApplicationDaemonTaskStartupHook(void)
         }
         else
         {
+            initTime();
+            initStorage();
 
 #ifdef AKNANO_TEST
             LogInfo(("AKNano RunAkNanoDemoTest Begin"));

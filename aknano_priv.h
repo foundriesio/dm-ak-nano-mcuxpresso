@@ -299,7 +299,7 @@ BaseType_t AkNano_GetTargets(TransportInterface_t *pTransportInterface,
 
 /**/
 
-void InitFlashStorage();
+status_t InitFlashStorage();
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
 status_t UpdateFlashStoragePage(int offset, void *data);
 
