@@ -147,7 +147,7 @@ TEST( Full_AKNano, akNano_TestDeviceGatewayGetTargets )
 int RunAkNanoTest( void )
 {
 
-    InitFlashStorage();
+    // InitFlashStorage();
 
     int status = -1;
 

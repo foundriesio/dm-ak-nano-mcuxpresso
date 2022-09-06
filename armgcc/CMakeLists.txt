@@ -112,6 +112,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../aknano_flash_storage.c"
 "${ProjDirPath}/../aknano_image_download.c"
 "${ProjDirPath}/../aknano_rest_api.c"
+"${ProjDirPath}/../aknano_client.c"
 "${ProjDirPath}/../aknano.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../ota_flag/sbl_ota_flag.c"

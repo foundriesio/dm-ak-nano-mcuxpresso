@@ -324,54 +324,43 @@ static void parse_config(char* config_data, int buffer_len, struct aknano_settin
     }
 }
 
-#include "compile_epoch.h"
-#ifndef BUILD_EPOCH_MS
-#define BUILD_EPOCH_MS 1637778974000
-#endif
 
-static void get_pseudo_time_str(time_t boot_up_epoch, char *output, const char* event_type, int success)
-{
-    int event_delta = 0;
-    int base_delta = 180;
+// static void get_pseudo_time_str(time_t boot_up_epoch, char *output, const char* event_type, int success)
+// {
+//     int event_delta = 0;
+//     int base_delta = 180;
 
-    if (boot_up_epoch == 0)
-        boot_up_epoch = BUILD_EPOCH_MS / 1000;
+//     if (boot_up_epoch == 0)
+//         boot_up_epoch = BUILD_EPOCH_MS / 1000;
 
 
-    if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_STARTED)) {
-        event_delta = 1;
-    } else if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_COMPLETED)) {
-        event_delta = 20;
-    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_STARTED)) {
-        event_delta = 21;
-    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_APPLIED)) {
-        event_delta = 22;
-    } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
-        if (success == AKNANO_EVENT_SUCCESS_TRUE)
-            event_delta = 42;
-        else
-            event_delta = 242;
-    }
+//     if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_STARTED)) {
+//         event_delta = 1;
+//     } else if (!strcmp(event_type, AKNANO_EVENT_DOWNLOAD_COMPLETED)) {
+//         event_delta = 20;
+//     } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_STARTED)) {
+//         event_delta = 21;
+//     } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_APPLIED)) {
+//         event_delta = 22;
+//     } else if (!strcmp(event_type, AKNANO_EVENT_INSTALLATION_COMPLETED)) {
+//         if (success == AKNANO_EVENT_SUCCESS_TRUE)
+//             event_delta = 42;
+//         else
+//             event_delta = 242;
+//     }
 
-    // time_t current_epoch_ms = boot_up_epoch_ms + base_delta + event_delta;
-    time_t current_epoch_sec = boot_up_epoch + base_delta + event_delta;
-    struct tm *tm = gmtime(&current_epoch_sec);
+//     // time_t current_epoch_ms = boot_up_epoch_ms + base_delta + event_delta;
+//     time_t current_epoch_sec = boot_up_epoch + base_delta + event_delta;
+//     struct tm *tm = gmtime(&current_epoch_sec);
 
-    sprintf(output, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
-        tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-        tm->tm_hour, tm->tm_min, tm->tm_sec,
-        0);
+//     sprintf(output, "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
+//         tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+//         tm->tm_hour, tm->tm_min, tm->tm_sec,
+//         0);
 
-    LogInfo(("get_pseudo_time_str: %s", output));
-}
+//     LogInfo(("get_pseudo_time_str: %s", output));
+// }
 
-time_t get_current_epoch(time_t boot_up_epoch)
-{
-    if (boot_up_epoch == 0)
-        boot_up_epoch = 1637778974; // 2021-11-24
-
-    return boot_up_epoch + (xTaskGetTickCount() / 1000);
-}
 
 static void get_time_str(time_t boot_up_epoch, char *output)
 {
@@ -414,73 +403,6 @@ static void serial_string_to_uuid_string(const char* serial, char *uuid)
     }
 }
 
-#include "fsl_caam.h"
-
-#define RNG_EXAMPLE_RANDOM_NUMBERS     (4U)
-#define RNG_EXAMPLE_RANDOM_BYTES       (16U)
-#define RNG_EXAMPLE_RANDOM_NUMBER_BITS (RNG_EXAMPLE_RANDOM_NUMBERS * 8U * sizeof(uint32_t))
-
-static bool randomInitialized = false;
-static CAAM_Type *base = CAAM;
-static caam_handle_t caamHandle;
-static caam_config_t caamConfig;
-
-/*! @brief CAAM job ring interface 0 in system memory. */
-static caam_job_ring_interface_t s_jrif0;
-/*! @brief CAAM job ring interface 1 in system memory. */
-static caam_job_ring_interface_t s_jrif1;
-/*! @brief CAAM job ring interface 2 in system memory. */
-static caam_job_ring_interface_t s_jrif2;
-/*! @brief CAAM job ring interface 3 in system memory. */
-static caam_job_ring_interface_t s_jrif3;
-
-
-void initRandom() {
-    /* Get default configuration. */
-    CAAM_GetDefaultConfig(&caamConfig);
-
-    /* setup memory for job ring interfaces. Can be in system memory or CAAM's secure memory.
-     * Although this driver example only uses job ring interface 0, example setup for job ring interface 1 is also
-     * shown.
-     */
-    caamConfig.jobRingInterface[0] = &s_jrif0;
-    caamConfig.jobRingInterface[1] = &s_jrif1;
-    caamConfig.jobRingInterface[2] = &s_jrif2;
-    caamConfig.jobRingInterface[3] = &s_jrif3;
-
-    /* Init CAAM driver, including CAAM's internal RNG */
-    if (CAAM_Init(base, &caamConfig) != kStatus_Success)
-    {
-        /* Make sure that RNG is not already instantiated (reset otherwise) */
-        LogError(("- failed to init CAAM&RNG!"));
-    }
-
-    /* in this driver example, requests for CAAM jobs use job ring 0 */
-    LogInfo(("*CAAM Job Ring 0* :"));
-    caamHandle.jobRing = kCAAM_JobRing0;
-
-}
-
-status_t AkNanoGenRandomBytes(char *output, size_t size)
-{
-    if (!randomInitialized) 
-    {
-        initRandom();
-        randomInitialized = true;
-    }
-
-    // status_t status; // = kStatus_Fail;
-    // uint32_t number;
-    // uint32_t data[RNG_EXAMPLE_RANDOM_NUMBERS] = {0};
-
-    LogInfo(("RNG : "));
-
-    LogInfo(("Generate %u-bit random number: ", RNG_EXAMPLE_RANDOM_NUMBER_BITS));
-    // TODO: verify return code
-    CAAM_RNG_GetRandomData(base, &caamHandle, kCAAM_RngStateHandle0, output, RNG_EXAMPLE_RANDOM_BYTES,
-                                    kCAAM_RngDataAny, NULL);
-    return kStatus_Success;
-}
 
 int aknano_gen_serial_and_uuid(char *uuid_string, char *serial_string)
 {
@@ -544,10 +466,10 @@ static bool fill_event_payload(char *payload,
             old_version, new_version, aknano_settings->tag);
     }
 
-    if (aknano_settings->boot_up_epoch)
+    // if (aknano_settings->boot_up_epoch)
         get_time_str(aknano_settings->boot_up_epoch, current_time_str);
-    else
-        get_pseudo_time_str(aknano_settings->boot_up_epoch, current_time_str, event_type, success);
+    // else
+    //     get_pseudo_time_str(aknano_settings->boot_up_epoch, current_time_str, event_type, success);
 
     LogInfo(("fill_event_payload: current_time_str=%s", current_time_str));
     LogInfo(("fill_event_payload: old_version=%d", old_version));
