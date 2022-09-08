@@ -115,6 +115,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../aknano_client.c"
 "${ProjDirPath}/../aknano_tuf_client.c"
 "${ProjDirPath}/../aknano.c"
+"${ProjDirPath}/../aknano_net.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../ota_flag/sbl_ota_flag.c"
 "${ProjDirPath}/../tests/aknano_test.c"

@@ -71,7 +71,7 @@ int tuf_client_read_local_file(enum tuf_role role, unsigned char *target_buffer,
 
 int tuf_client_write_local_file(enum tuf_role role, const unsigned char *data, size_t len, void *application_context)
 {
-    int i;
+    // int i;
     int initial_offset;
     status_t ret;
 
@@ -88,24 +88,26 @@ int tuf_client_fetch_file(const char *file_base_name, unsigned char *target_buff
     struct aknano_context *aknano_context = application_context;
     BaseType_t ret;
 
-    snprintf(aknano_context->url_buffer, sizeof(aknano_context->url_buffer), "/repo/%s", file_base_name);
-    ret = prvSendHttpRequest( &aknano_context->xTransportInterface, HTTP_METHOD_GET,
-                    (char*)aknano_context->url_buffer, "", 0,
-                    &aknano_context->xResponse, aknano_context->settings);
+    snprintf((char*)aknano_context->url_buffer, sizeof(aknano_context->url_buffer), "/repo/%s", file_base_name);
+    ret = AkNano_SendHttpRequest(
+            aknano_context->dg_network_context,
+            HTTP_METHOD_GET,
+            (char*)aknano_context->url_buffer, "", 0,
+            aknano_context->settings);
 
     if (ret == pdPASS) {
-        LogInfo(("tuf_client_fetch_file: %s HTTP operation return code %d. Body length=%ld ", file_base_name, aknano_context->xResponse.statusCode, aknano_context->xResponse.bodyLen));
-        if ((aknano_context->xResponse.statusCode / 100) == 2) {
-            if (aknano_context->xResponse.bodyLen > target_buffer_len) {
-                LogError(("tuf_client_fetch_file: %s retrieved file is too big. Maximum %ld, got %ld", file_base_name, target_buffer_len, aknano_context->xResponse.bodyLen));
+        LogInfo(("tuf_client_fetch_file: %s HTTP operation return code %d. Body length=%ld ", file_base_name, aknano_context->dg_network_context->reply_http_code, aknano_context->dg_network_context->reply_body_len));
+        if ((aknano_context->dg_network_context->reply_http_code / 100) == 2) {
+            if (aknano_context->dg_network_context->reply_body_len > target_buffer_len) {
+                LogError(("tuf_client_fetch_file: %s retrieved file is too big. Maximum %ld, got %ld", file_base_name, target_buffer_len, aknano_context->dg_network_context->reply_body_len));
                 return TUF_ERROR_DATA_EXCEEDS_BUFFER_SIZE;
             }
-            *file_size = aknano_context->xResponse.bodyLen;
-            memcpy(target_buffer, aknano_context->xResponse.pBody, aknano_context->xResponse.bodyLen);
-            target_buffer[aknano_context->xResponse.bodyLen] = '\0';
+            *file_size = aknano_context->dg_network_context->reply_body_len;
+            memcpy(target_buffer, aknano_context->dg_network_context->reply_body, aknano_context->dg_network_context->reply_body_len);
+            target_buffer[aknano_context->dg_network_context->reply_body_len] = '\0';
             return TUF_SUCCESS;
         } else {
-            return -aknano_context->xResponse.statusCode;
+            return -aknano_context->dg_network_context->reply_http_code;
         }
     } else {
         LogInfo(("tuf_client_fetch_file: %s HTTP operation failed", file_base_name));

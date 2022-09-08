@@ -181,6 +181,8 @@ struct aknano_settings {
     const char *	hwid;
 };
 
+struct aknano_network_context;
+
 /* Context is not kept between iterations */
 struct aknano_context {
     int sock;
@@ -204,8 +206,7 @@ struct aknano_context {
     struct aknano_target selected_target;
 
     /* Connection to the device gateway */
-    TransportInterface_t xTransportInterface;
-    HTTPResponse_t xResponse;
+    struct aknano_network_context *dg_network_context;
 
     mbedtls_sha256_context sha256_context;
 };
@@ -289,12 +290,7 @@ BaseType_t AkNano_GetRootMetadata(TransportInterface_t *pTransportInterface,
                                 HTTPResponse_t *pResponse);
 
 extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
-BaseType_t AkNano_ConnectToDevicesGateway(NetworkContext_t *pNetworkContext,
-                                        TransportInterface_t *pTransportInterface);
-
-BaseType_t AkNano_GetTargets(TransportInterface_t *pTransportInterface,
-                                struct aknano_settings *aknano_settings,
-                                HTTPResponse_t *pResponse);
+BaseType_t AkNano_ConnectToDevicesGateway(struct aknano_network_context *network_context);
 
 
 /**/
@@ -303,5 +299,56 @@ status_t InitFlashStorage();
 status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
 status_t UpdateFlashStoragePage(int offset, void *data);
 
+struct aknano_network_context
+{
+    /* Platform specific fields */
+    TransportInterface_t xTransportInterface;
+    /* The network context for the transport layer interface. */
+    NetworkContext_t xNetworkContext;
+    TransportSocketStatus_t xNetworkStatus;
+    // BaseType_t xIsConnectionEstablished = pdFALSE;
+    SecureSocketsTransportParams_t secureSocketsTransportParams;
+    HTTPResponse_t xResponse;
+
+    /* Platform independent fields */
+    const unsigned char *reply_body;
+    size_t reply_body_len;
+    int reply_http_code;
+};
+
+int init_network_context(struct aknano_network_context *network_context);
+
+BaseType_t aknano_mtls_connect(
+        struct aknano_network_context *network_context,
+        const char *hostname,
+        size_t hostname_len,
+        uint16_t port,
+        const char *server_root_ca,
+        size_t server_root_ca_len
+    );
+BaseType_t aknano_mtls_send_http_request(
+        struct aknano_network_context *network_context,
+        const char *hostname,
+        size_t hostname_len,
+        const char * pcMethod,
+        const char * pcPath,
+        const char * pcBody,
+        size_t xBodyLen,
+        char *buffer,
+        size_t buffer_len,
+        const char **header_keys,
+        const char **header_values,
+        size_t **header_len
+);
+
+BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_context,
+                                      const char * pcMethod,
+                                      const char * pcPath,
+                                      const char * pcBody,
+                                      size_t xBodyLen,
+                                      struct aknano_settings *aknano_settings
+                                      );
+
+void aknano_mtls_disconnect(struct aknano_network_context *network_context);
 
 #endif /* __AKNANO_PRIV_H__ */

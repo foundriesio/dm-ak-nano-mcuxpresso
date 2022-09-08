@@ -30,7 +30,7 @@ uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
  * chances of overflow for the 32 bit unsigned integer used for holding the
  * timestamp.
  */
-static uint32_t ulGlobalEntryTimeMs;
+// static uint32_t ulGlobalEntryTimeMs;
 
 static struct aknano_settings xaknano_settings;
 static struct aknano_context xaknano_context;
