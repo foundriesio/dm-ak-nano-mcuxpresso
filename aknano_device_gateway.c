@@ -1,25 +1,3 @@
-/*
- * FreeRTOS V202107.00
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 /**
  * @file ota_demo_core_mqtt.c
  * @brief OTA update example using coreMQTT.
@@ -38,192 +16,14 @@
 #include "aknano_secret.h"
 #include "libtufnano.h"
 
-#define AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN ( ( uint16_t ) ( sizeof( AKNANO_DEVICE_GATEWAY_ENDPOINT ) - 1 ) )
-
-static const uint32_t akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN = sizeof( AKNANO_DEVICE_GATEWAY_CERTIFICATE );
-
-static BaseType_t prvConnectToDevicesGateway( NetworkContext_t * pxNetworkContext )
-{
-    // LogInfo( ( "prvConnectToDevicesGateway: BEGIN") );
-    // vTaskDelay( pdMS_TO_TICKS( 100 ) );
-
-    ServerInfo_t xServerInfo = { 0 };
-    SocketsConfig_t xSocketsConfig = { 0 };
-    BaseType_t xStatus = pdPASS;
-    TransportSocketStatus_t xNetworkStatus = TRANSPORT_SOCKET_STATUS_SUCCESS;
-
-    /* Initializer server information. */
-    xServerInfo.pHostName = AKNANO_DEVICE_GATEWAY_ENDPOINT;
-    xServerInfo.hostNameLength = AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN;
-    xServerInfo.port = AKNANO_DEVICE_GATEWAY_PORT;
-
-    /* Configure credentials for TLS mutual authenticated session. */
-    xSocketsConfig.enableTls = true;
-    xSocketsConfig.pAlpnProtos = NULL;
-    xSocketsConfig.maxFragmentLength = 0;
-    xSocketsConfig.disableSni = false;
-    xSocketsConfig.pRootCa = AKNANO_DEVICE_GATEWAY_CERTIFICATE;
-    xSocketsConfig.rootCaSize = akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN;
-    xSocketsConfig.sendTimeoutMs = 3000;
-    xSocketsConfig.recvTimeoutMs = 3000;
-
-    /* Establish a TLS session with the HTTP server. This example connects to
-     * the HTTP server as specified in democonfigAWS_IOT_ENDPOINT and
-     * democonfigAWS_HTTP_PORT in http_demo_mutual_auth_config.h. */
-    LogInfo( ( "Establishing a TLS session to %.*s:%d.",
-               ( int ) xServerInfo.hostNameLength,
-               xServerInfo.pHostName,
-               xServerInfo.port ) );
-
-    vTaskDelay( pdMS_TO_TICKS( 100 ) );
-
-    /* Attempt to create a mutually authenticated TLS connection. */
-    xNetworkStatus = SecureSocketsTransport_Connect( pxNetworkContext,
-                                                     &xServerInfo,
-                                                     &xSocketsConfig );
-
-
-    if( xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS )
-    {
-        LogError(("Error connecting to device gateway. result=%d", xNetworkStatus));
-        xStatus = pdFAIL;
-    }
-
-    LogInfo(("TLS session to device gatweway established"));
-    return xStatus;
-}
-
-
-
-static BaseType_t prvSendHttpRequest( const TransportInterface_t * pxTransportInterface,
-                                      const char * pcMethod,
-                                      const char * pcPath,
-                                      const char * pcBody,
-                                      size_t xBodyLen,
-                                      HTTPResponse_t *pxResponse,
-                                      struct aknano_settings *aknano_settings
-                                      )
-{
-    /* Return value of this method. */
-    BaseType_t xStatus = pdPASS;
-
-    /* Configurations of the initial request headers that are passed to
-     * #HTTPClient_InitializeRequestHeaders. */
-    HTTPRequestInfo_t xRequestInfo;
-    /* Represents a response returned from an HTTP server. */
-    // HTTPResponse_t xResponse;
-    /* Represents header data that will be sent in an HTTP request. */
-    HTTPRequestHeaders_t xRequestHeaders;
-
-    /* Return value of all methods from the HTTP Client library API. */
-    HTTPStatus_t xHTTPStatus = HTTPSuccess;
-
-    configASSERT( pcMethod != NULL );
-    configASSERT( pcPath != NULL );
-
-    /* Initialize all HTTP Client library API structs to 0. */
-    ( void ) memset( &xRequestInfo, 0, sizeof( xRequestInfo ) );
-    ( void ) memset( pxResponse, 0, sizeof( *pxResponse ) );
-    ( void ) memset( &xRequestHeaders, 0, sizeof( xRequestHeaders ) );
-
-    pxResponse->getTime = AkNanoGetTime; //nondet_boot();// ? NULL : GetCurrentTimeStub;
-
-    /* Initialize the request object. */
-    xRequestInfo.pHost = AKNANO_DEVICE_GATEWAY_ENDPOINT;
-    xRequestInfo.hostLen = AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN;
-    xRequestInfo.pMethod = pcMethod;
-    xRequestInfo.methodLen = strlen(pcMethod);
-    xRequestInfo.pPath = pcPath;
-    xRequestInfo.pathLen = strlen(pcPath);
-
-    /* Set "Connection" HTTP header to "keep-alive" so that multiple requests
-     * can be sent over the same established TCP connection. */
-    xRequestInfo.reqFlags = HTTP_REQUEST_KEEP_ALIVE_FLAG;
-
-    /* Set the buffer used for storing request headers. */
-    xRequestHeaders.pBuffer = ucUserBuffer;
-    xRequestHeaders.bufferLen = democonfigUSER_BUFFER_LENGTH;
-
-    xHTTPStatus = HTTPClient_InitializeRequestHeaders( &xRequestHeaders,
-                                                       &xRequestInfo );
-
-    char *tag = aknano_settings->tag;
-    char *factory_name = aknano_settings->factory_name;
-    int version = aknano_settings->running_version;
-
-    char active_target[200];
-    snprintf(active_target, sizeof(active_target), "%s-%d", factory_name, version);
-
-    /* LogInfo(("HTTP_GET tag='%s'  target='%s'", tag, active_target)); */
-    /* AkNano: Headers only required for HTTP GET root.json */
-    HTTPClient_AddHeader(&xRequestHeaders, "x-ats-tags", strlen("x-ats-tags"), tag, strlen(tag));
-    HTTPClient_AddHeader(&xRequestHeaders, "x-ats-target", strlen("x-ats-target"), active_target, strlen(active_target));
-
-    if( xHTTPStatus == HTTPSuccess )
-    {
-        /* Initialize the response object. The same buffer used for storing
-         * request headers is reused here. */
-        pxResponse->pBuffer = ucUserBuffer;
-        pxResponse->bufferLen = democonfigUSER_BUFFER_LENGTH;
-
-        // LogInfo( ( "Sending HTTP %.*s request to %.*s%.*s...",
-        //            ( int32_t ) xRequestInfo.methodLen, xRequestInfo.pMethod,
-        //            ( int32_t ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
-        //            ( int32_t ) xRequestInfo.pathLen, xRequestInfo.pPath ) );
-        // LogDebug( ( "Request Headers:\n%.*s\n"
-        //             "Request Body:\n%.*s\n",
-        //             ( int32_t ) xRequestHeaders.headersLen,
-        //             ( char * ) xRequestHeaders.pBuffer,
-        //             ( int32_t ) xBodyLen, pcBody ) );
-
-        /* Send the request and receive the response. */
-        xHTTPStatus = HTTPClient_Send( pxTransportInterface,
-                                       &xRequestHeaders,
-                                       ( uint8_t * ) pcBody,
-                                       xBodyLen,
-                                       pxResponse,
-                                       0 );
-    }
-    else
-    {
-        LogError( ( "Failed to initialize HTTP request headers: Error=%s.",
-                    HTTPClient_strerror( xHTTPStatus ) ) );
-    }
-
-    if( xHTTPStatus == HTTPSuccess )
-    {
-        LogInfo( ( "Received HTTP response from %.*s%.*s. Status Code=%u",
-                   ( int ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
-                   ( int ) xRequestInfo.pathLen, xRequestInfo.pPath, pxResponse->statusCode ) );
-        LogDebug( ( "Response Headers:\n%.*s\n",
-                    ( int ) pxResponse->headersLen, pxResponse->pHeaders ) );
-        // LogInfo( ( "Status Code: %u",
-        //             pxResponse->statusCode ) );
-        LogDebug( ( "Response Body:\n%.*s",
-                    ( int ) pxResponse->bodyLen, pxResponse->pBody ) );
-    }
-    else
-    {
-        LogError( ( "Failed to send HTTP %.*s request to %.*s%.*s: Error=%s.",
-                    ( int ) xRequestInfo.methodLen, xRequestInfo.pMethod,
-                    ( int ) AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN, AKNANO_DEVICE_GATEWAY_ENDPOINT,
-                    ( int ) xRequestInfo.pathLen, xRequestInfo.pPath,
-                    HTTPClient_strerror( xHTTPStatus ) ) );
-    }
-
-    if( xHTTPStatus != HTTPSuccess )
-    {
-        xStatus = pdFAIL;
-    }
-
-    return xStatus;
-}
-
 //#include "netif.h"
 #include "netif/ethernet.h"
 #include "enet_ethernetif.h"
 #include "lwip/netifapi.h"
 
+#define AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN ( ( uint16_t ) ( sizeof( AKNANO_DEVICE_GATEWAY_ENDPOINT ) - 1 ) )
+
+static const uint32_t akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN = sizeof( AKNANO_DEVICE_GATEWAY_CERTIFICATE );
 
 static char bodyBuffer[500];
 extern struct netif netif;
@@ -245,13 +45,9 @@ static void fill_network_info(char* output, size_t max_length)
     LogInfo(("fill_network_info: %s", output));
 }
 
-// size_t aknano_write_to_nvs(int id, void *data, size_t len)
-// {
-//     return 0;
-// }
 void UpdateSettingValue(const char*, int);
 
-static void parse_config(char* config_data, int buffer_len, struct aknano_settings *aknano_settings)
+static void parse_config(const char* config_data, int buffer_len, struct aknano_settings *aknano_settings)
 {
     JSONStatus_t result = JSON_Validate( config_data, buffer_len );
     char * value;
@@ -502,17 +298,70 @@ static bool fill_event_payload(char *payload,
     return true;
 }
 
+BaseType_t AkNano_ConnectToDevicesGateway(struct aknano_network_context *network_context)
+{
+    BaseType_t ret;
+
+    init_network_context(network_context);
+    ret = aknano_mtls_connect(network_context,
+                                        AKNANO_DEVICE_GATEWAY_ENDPOINT,
+                                        AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN,
+                                        AKNANO_DEVICE_GATEWAY_PORT,
+                                        AKNANO_DEVICE_GATEWAY_CERTIFICATE,
+                                        akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN);
+
+    // LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
+    if(ret != pdPASS)
+    {
+        /* Log error to indicate connection failure after all
+            * reconnect attempts are over. */
+        LogError( ( "Failed to connect to HTTP server") );
+        return pdFAIL;
+    }
+    return pdPASS;
+}
+
+BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_context,
+                                      const char * pcMethod,
+                                      const char * pcPath,
+                                      const char * pcBody,
+                                      size_t xBodyLen,
+                                      struct aknano_settings *aknano_settings
+                                      )
+{
+    char *tag = aknano_settings->tag;
+    char *factory_name = aknano_settings->factory_name;
+    int version = aknano_settings->running_version;
+
+    char active_target[200];
+    snprintf(active_target, sizeof(active_target), "%s-%d", factory_name, version);
+
+    char *header_keys[] = { "x-ats-tags", "x-ats-target" };
+    char *header_values[] = { tag, active_target };
+
+    BaseType_t ret = aknano_mtls_send_http_request(
+        network_context,
+        AKNANO_DEVICE_GATEWAY_ENDPOINT,
+        AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN,
+        pcMethod,
+        pcPath,
+        pcBody,
+        xBodyLen,
+        ucUserBuffer,
+        democonfigUSER_BUFFER_LENGTH,
+        header_keys,
+        header_values,
+        2);
+
+    return ret;
+}
+
+
 bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
                     const char* event_type,
                     int version, int success)
 {
-    TransportInterface_t xTransportInterface;
-    /* The network context for the transport layer interface. */
-    NetworkContext_t xNetworkContext = { 0 };
-    TransportSocketStatus_t xNetworkStatus;
-    // BaseType_t xIsConnectionEstablished = pdFALSE;
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-    HTTPResponse_t xResponse;
+    struct aknano_network_context network_context;
 
     if (!aknano_settings->is_device_registered) {
         LogInfo(("AkNanoSendEvent: Device is not registered. Skipping send of event %s", event_type));
@@ -520,108 +369,32 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
     }
 
     LogInfo(("AkNanoSendEvent BEGIN %s", event_type));
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
     BaseType_t xDemoStatus = pdPASS;
 
-    xNetworkContext.pParams = &secureSocketsTransportParams;
-    xDemoStatus = prvConnectToDevicesGateway(&xNetworkContext);
+    xDemoStatus = AkNano_ConnectToDevicesGateway(&network_context);
+    if (xDemoStatus != pdPASS)
+        return TRUE;
 
-    // LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
-    if( xDemoStatus == pdPASS )
-    {
-        /* Set a flag indicating that a TLS connection exists. */
-        // xIsConnectionEstablished = pdTRUE;
+    fill_event_payload(bodyBuffer, aknano_settings, event_type, version, success);
 
-        /* Define the transport interface. */
-        xTransportInterface.pNetworkContext = &xNetworkContext;
-        xTransportInterface.send = SecureSocketsTransport_Send;
-        xTransportInterface.recv = SecureSocketsTransport_Recv;
-    }
-    else
-    {
-        /* Log error to indicate connection failure after all
-            * reconnect attempts are over. */
-        LogError( ( "Failed to connect to HTTP server") );
-    }
+    LogInfo((ANSI_COLOR_YELLOW "Sending %s event" ANSI_COLOR_RESET,
+            event_type));
+    LogInfo(("Event payload: %.80s (...)", bodyBuffer));
 
-    if( xDemoStatus == pdPASS )
-    {
-        fill_event_payload(bodyBuffer, aknano_settings, event_type, version, success);
+    AkNano_SendHttpRequest(
+        &network_context,
+        HTTP_METHOD_POST,
+        "/events",
+        bodyBuffer,
+        strlen(bodyBuffer),
+        aknano_settings);
 
-        LogInfo((ANSI_COLOR_YELLOW "Sending %s event" ANSI_COLOR_RESET,
-                event_type));
-        LogInfo(("Event payload: %.80s (...)", bodyBuffer));
-
-        prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_POST,
-                            "/events",
-                            bodyBuffer, strlen(bodyBuffer),
-                            &xResponse, aknano_settings);
-
-    }
 
     /* Close the network connection.  */
-    xNetworkStatus = SecureSocketsTransport_Disconnect( &xNetworkContext );
-    if (xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS)
-        LogError(("AkNanoSendEvent Disconnection error: %d", xNetworkStatus));
-
+    aknano_mtls_disconnect(&network_context);
     LogInfo(("AkNanoSendEvent END %s", event_type));
-
     return TRUE;
 }
-
-
-uint8_t single_target_buffer[2000];
-
-
-void AkNano_InitializeTransportInterface(TransportInterface_t *pTransportInterface,
-                                        NetworkContext_t *pNetworkContext)
-{
-    /* Define the transport interface. */
-    pTransportInterface->pNetworkContext = pNetworkContext;
-    pTransportInterface->send = SecureSocketsTransport_Send;
-    pTransportInterface->recv = SecureSocketsTransport_Recv;
-}
-
-BaseType_t AkNano_ConnectToDevicesGateway(NetworkContext_t *pNetworkContext,
-                                        TransportInterface_t *pTransportInterface)
-{
-    BaseType_t xDemoStatus;
-    
-    xDemoStatus = prvConnectToDevicesGateway(pNetworkContext);
-    // LogInfo(("prvConnectToServer Result: %d", xDemoStatus));
-    if( xDemoStatus == pdPASS )
-    {
-        AkNano_InitializeTransportInterface(pTransportInterface, pNetworkContext);
-    }
-    else
-    {
-        /* Log error to indicate connection failure after all
-            * reconnect attempts are over. */
-        LogError( ( "Failed to connect to HTTP server") );
-    }
-    return xDemoStatus;
-}
-
-BaseType_t AkNano_GetRootMetadata(TransportInterface_t *pTransportInterface,
-                                struct aknano_settings *aknano_settings,
-                                HTTPResponse_t *pResponse)
-{
-    return prvSendHttpRequest( pTransportInterface, HTTP_METHOD_GET,
-                        "/repo/99999.root.json", "", 0,
-                        pResponse, aknano_settings);
-}
-
-BaseType_t AkNano_GetTargets(TransportInterface_t *pTransportInterface,
-                                struct aknano_settings *aknano_settings,
-                                HTTPResponse_t *pResponse)
-{
-    return prvSendHttpRequest( pTransportInterface, HTTP_METHOD_GET,
-                            "/repo/targets.json", "", 0,
-                            pResponse, aknano_settings);
-}
-
 
 #define TUF_DATA_BUFFER_LEN 10 * 1024
 static unsigned char tuf_data_buffer[TUF_DATA_BUFFER_LEN];
@@ -629,11 +402,7 @@ int parse_targets_metadata(const char *data, int len, void *application_context)
 
 int AkNanoPoll(struct aknano_context *aknano_context)
 {
-    // TransportInterface_t xTransportInterface;
-    /* The network context for the transport layer interface. */
-    NetworkContext_t xNetworkContext = { 0 };
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-    // HTTPResponse_t xResponse;
+    struct aknano_network_context network_context;
     BaseType_t xDemoStatus;
     bool isUpdateRequired = false;
     bool isRebootRequired = false;
@@ -642,27 +411,24 @@ int AkNanoPoll(struct aknano_context *aknano_context)
 
     LogInfo(("AkNanoPoll. Version=%lu  Tag=%s", aknano_settings->running_version, aknano_settings->tag));
 
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
-    xNetworkContext.pParams = &secureSocketsTransportParams;
-    xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &aknano_context->xTransportInterface);
-
+    xDemoStatus = AkNano_ConnectToDevicesGateway(&network_context);
     if( xDemoStatus == pdPASS )
     {
-        xDemoStatus = prvSendHttpRequest( &aknano_context->xTransportInterface, HTTP_METHOD_GET,
-                                          "/config", "", 0,
-                                          &aknano_context->xResponse, aknano_context->settings);
+        xDemoStatus =  AkNano_SendHttpRequest(
+                                        &network_context,
+                                        HTTP_METHOD_GET,
+                                        "/config", "", 0,
+                                        aknano_context->settings);
         if (xDemoStatus == pdPASS)
-            parse_config((char*)aknano_context->xResponse.pBody, aknano_context->xResponse.bodyLen, aknano_context->settings);
+            parse_config(network_context.reply_body, network_context.reply_body_len, aknano_context->settings);
 
-        
         time_t reference_time = get_current_epoch(aknano_settings->boot_up_epoch);
 // #define TUF_FORCE_DATE_IN_FUTURE 1
 #ifdef TUF_FORCE_DATE_IN_FUTURE
         LogInfo((ANSI_COLOR_RED "Forcing TUF reference date to be 1 year from now" ANSI_COLOR_RESET));
         reference_time += 31536000; // Add 1 year
 #endif
+        aknano_context->dg_network_context = &network_context;
         int tuf_ret = tuf_refresh(aknano_context, reference_time, tuf_data_buffer, sizeof(tuf_data_buffer)); /* TODO: Get epoch from system clock */
         LogInfo(("tuf_refresh %s (%d)", tuf_get_error_string(tuf_ret), tuf_ret));
 
@@ -684,7 +450,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                 if (aknano_context->selected_target.version == aknano_settings->last_applied_version) {
                     LogInfo(("* Same version was already applied (and failed). Do not retrying it"));
 
-                } else if (aknano_context->settings->running_version != aknano_context->selected_target.version) {
+                } else if (aknano_context->settings->running_version < aknano_context->selected_target.version) {
                     LogInfo((ANSI_COLOR_GREEN "* Update required: %lu -> %ld" ANSI_COLOR_RESET,
                             aknano_context->settings->running_version,
                             aknano_context->selected_target.version));
@@ -705,14 +471,15 @@ int AkNanoPoll(struct aknano_context *aknano_context)
             " \"class\": \"MCU\" "\
             "}",
             CONFIG_BOARD, aknano_settings->serial, CONFIG_BOARD);
-        prvSendHttpRequest( &aknano_context->xTransportInterface, HTTP_METHOD_PUT,
+
+        AkNano_SendHttpRequest(&network_context, HTTP_METHOD_PUT,
                             "/system_info", bodyBuffer, strlen(bodyBuffer),
-                            &aknano_context->xResponse, aknano_context->settings);
+                            aknano_context->settings);
 
         fill_network_info(bodyBuffer, sizeof(bodyBuffer));
-        prvSendHttpRequest( &aknano_context->xTransportInterface, HTTP_METHOD_PUT,
+        AkNano_SendHttpRequest( &network_context, HTTP_METHOD_PUT,
                             "/system_info/network", bodyBuffer, strlen(bodyBuffer),
-                            &aknano_context->xResponse, aknano_context->settings);
+                            aknano_context->settings);
 
         // LogInfo(("aknano_settings->tag=%s",aknano_settings->tag));
         sprintf(bodyBuffer,
@@ -724,14 +491,14 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                 aknano_settings->polling_interval,
                 CONFIG_BOARD,
                 aknano_settings->tag);
-        prvSendHttpRequest( &aknano_context->xTransportInterface, HTTP_METHOD_PUT,
+        AkNano_SendHttpRequest( &network_context, HTTP_METHOD_PUT,
                             "/system_info/config", bodyBuffer, strlen(bodyBuffer),
-                            &aknano_context->xResponse, aknano_context->settings);
+                            aknano_context->settings);
 
     }
 
     /* Close the network connection.  */
-    SecureSocketsTransport_Disconnect( &xNetworkContext );
+    aknano_mtls_disconnect(&network_context);
 
 
     if (isUpdateRequired) {

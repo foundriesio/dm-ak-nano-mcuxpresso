@@ -35,9 +35,8 @@ TEST_GROUP_RUNNER( Full_AKNano )
     /************* otaPAL_CloseFile Tests *************/
     RUN_TEST_CASE( Full_AKNano, akNano_BasicTest );
     RUN_TEST_CASE( Full_AKNano, akNano_TestFlashAccess );
-    RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayAccess );
-    RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayGetRoot );
-    RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayGetTargets );
+    // RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayAccess );
+    // RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayGetRoot );
 }
 
 
@@ -60,7 +59,7 @@ TEST( Full_AKNano, akNano_TestFlashAccess )
 
 TEST( Full_AKNano, akNano_TestDeviceGatewayAccess )
 {
-    TransportInterface_t xTransportInterface;
+    // TransportInterface_t xTransportInterface;
     NetworkContext_t xNetworkContext = { 0 };
     SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
     BaseType_t xDemoStatus;
@@ -79,64 +78,8 @@ TEST( Full_AKNano, akNano_TestDeviceGatewayAccess )
     /* Upon return, pdPASS will indicate a successful demo execution.
     * pdFAIL will indicate some failures occurred during execution. The
     * user of this demo must check the logs for any failure codes. */
-    xNetworkContext.pParams = &secureSocketsTransportParams;
-    xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &xTransportInterface);
-
-    /* Close the network connection.  */
-    SecureSocketsTransport_Disconnect( &xNetworkContext );
-
-    TEST_ASSERT(xDemoStatus == pdPASS);
-}
-
-TEST( Full_AKNano, akNano_TestDeviceGatewayGetRoot )
-{
-    TransportInterface_t xTransportInterface;
-    NetworkContext_t xNetworkContext = { 0 };
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-    HTTPResponse_t xResponse;
-    BaseType_t xDemoStatus;
-
-    struct aknano_settings aknano_settings;
-
-    AkNanoInitSettings(&aknano_settings);
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
-    xNetworkContext.pParams = &secureSocketsTransportParams;
-    xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &xTransportInterface);
-    TEST_ASSERT(xDemoStatus == pdPASS);
-
-    xDemoStatus = AkNano_GetRootMetadata(&xTransportInterface, &aknano_settings, &xResponse);
-    TEST_ASSERT(xDemoStatus == pdPASS);
-    TEST_ASSERT(xResponse.statusCode == 404);
-
-    /* Close the network connection.  */
-    SecureSocketsTransport_Disconnect( &xNetworkContext );
-
-    TEST_ASSERT(xDemoStatus == pdPASS);
-}
-
-TEST( Full_AKNano, akNano_TestDeviceGatewayGetTargets )
-{
-    TransportInterface_t xTransportInterface;
-    NetworkContext_t xNetworkContext = { 0 };
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-    HTTPResponse_t xResponse;
-    BaseType_t xDemoStatus;
-
-    struct aknano_settings aknano_settings;
-
-    AkNanoInitSettings(&aknano_settings);
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
-    xNetworkContext.pParams = &secureSocketsTransportParams;
-    xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &xTransportInterface);
-    TEST_ASSERT(xDemoStatus == pdPASS);
-
-    xDemoStatus = AkNano_GetTargets(&xTransportInterface, &aknano_settings, &xResponse);
-    TEST_ASSERT(xDemoStatus == pdPASS);
-    TEST_ASSERT(xResponse.statusCode == 200);
+    // xNetworkContext.pParams = &secureSocketsTransportParams;
+    // xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &xTransportInterface);
 
     /* Close the network connection.  */
     SecureSocketsTransport_Disconnect( &xNetworkContext );
