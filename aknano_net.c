@@ -31,6 +31,11 @@
 #include "aknano_secret.h"
 #include "libtufnano.h"
 
+#include "netif/ethernet.h"
+#include "enet_ethernetif.h"
+#include "lwip/netifapi.h"
+
+
 int init_network_context(struct aknano_network_context *network_context)
 {
     memset(network_context, 0, sizeof(*network_context));
@@ -162,9 +167,8 @@ BaseType_t aknano_mtls_send_http_request(
 
     for (int i=0; i<header_len; i++) {
         HTTPClient_AddHeader(&xRequestHeaders, header_keys[i], strlen(header_keys[i]), header_values[i], strlen(header_values[i]));
-        LogInfo(("Adding header %s=%s", header_keys[i], header_values[i]));
+        // LogInfo(("Adding header %s=%s", header_keys[i], header_values[i]));
     }
-    vTaskDelay( pdMS_TO_TICKS( 100 ) );
 
     if( xHTTPStatus == HTTPSuccess )
     {
@@ -227,4 +231,11 @@ void aknano_mtls_disconnect(struct aknano_network_context *network_context)
     xNetworkStatus = SecureSocketsTransport_Disconnect( &network_context->xNetworkContext );
     if (xNetworkStatus != TRANSPORT_SOCKET_STATUS_SUCCESS)
         LogError(("AkNanoSendEvent Disconnection error: %d", xNetworkStatus));
+}
+
+extern struct netif netif;
+void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac)
+{
+    memcpy(ipv4, (char*)&netif.ip_addr.addr, 4);
+    memcpy(mac, netif.hwaddr, 6);
 }

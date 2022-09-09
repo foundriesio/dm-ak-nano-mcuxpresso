@@ -16,22 +16,19 @@
 #include "aknano_secret.h"
 #include "libtufnano.h"
 
-//#include "netif.h"
-#include "netif/ethernet.h"
-#include "enet_ethernetif.h"
-#include "lwip/netifapi.h"
 
 #define AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN ( ( uint16_t ) ( sizeof( AKNANO_DEVICE_GATEWAY_ENDPOINT ) - 1 ) )
 
 static const uint32_t akNanoDeviceGateway_ROOT_CERTIFICATE_PEM_LEN = sizeof( AKNANO_DEVICE_GATEWAY_CERTIFICATE );
 
 static char bodyBuffer[500];
-extern struct netif netif;
 
 static void fill_network_info(char* output, size_t max_length)
 {
-    char* ipv4 = (char*)&netif.ip_addr.addr;
-    uint8_t* mac = netif.hwaddr;
+    char ipv4[4];
+    uint8_t mac[6];
+
+    aknano_get_ipv4_and_mac(ipv4, mac);
 
     snprintf(output, max_length,
         "{" \
@@ -430,7 +427,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
 #endif
         aknano_context->dg_network_context = &network_context;
         int tuf_ret = tuf_refresh(aknano_context, reference_time, tuf_data_buffer, sizeof(tuf_data_buffer)); /* TODO: Get epoch from system clock */
-        LogInfo(("tuf_refresh %s (%d)", tuf_get_error_string(tuf_ret), tuf_ret));
+        LogInfo((ANSI_COLOR_MAGENTA "tuf_refresh %s (%d)" ANSI_COLOR_RESET, tuf_get_error_string(tuf_ret), tuf_ret));
 
         // AkNano_GetRootMetadata(&xTransportInterface, aknano_context->settings, &xResponse);
 

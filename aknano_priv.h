@@ -351,4 +351,6 @@ BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_
 
 void aknano_mtls_disconnect(struct aknano_network_context *network_context);
 
+void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
+
 #endif /* __AKNANO_PRIV_H__ */
