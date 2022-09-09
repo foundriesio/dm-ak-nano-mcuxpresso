@@ -115,11 +115,11 @@ BaseType_t aknano_mtls_send_http_request(
         const char * pcPath,
         const char * pcBody,
         size_t xBodyLen,
-        char *buffer,
+        unsigned char *buffer,
         size_t buffer_len,
         const char **header_keys,
         const char **header_values,
-        size_t **header_len
+        size_t header_len
 )
 {
     /* Return value of this method. */

@@ -50,7 +50,7 @@ int tuf_client_read_local_file(enum tuf_role role, unsigned char *target_buffer,
             strncpy(target_buffer, sample_root_json, target_buffer_len);
             target_buffer[target_buffer_len-1] = 0;
             *file_size = strnlen((char*)target_buffer, target_buffer_len);
-            LogInfo((ANSI_COLOR_MAGENTA "tuf_client_read_local_file: role=%s file_size=%d strlen=%d OK [HARDCODED TEST FILE]" ANSI_COLOR_RESET, tuf_get_role_name(role), *file_size, strlen(target_buffer)));
+            LogInfo((ANSI_COLOR_MAGENTA "tuf_client_read_local_file: role=%s file_size=%d strlen=%d OK [HARDCODED TEST FILE]" ANSI_COLOR_RESET, tuf_get_role_name(role), *file_size, strlen((const char*)target_buffer)));
 
             tuf_client_write_local_file(role, target_buffer, *file_size, application_context);
             return TUF_SUCCESS;
@@ -67,7 +67,7 @@ int tuf_client_read_local_file(enum tuf_role role, unsigned char *target_buffer,
     }
     target_buffer[target_buffer_len-1] = 0;
     *file_size = strnlen((char*)target_buffer, target_buffer_len);
-    LogInfo((ANSI_COLOR_MAGENTA "tuf_client_read_local_file: role=%s file_size=%d strlen=%d OK" ANSI_COLOR_RESET, tuf_get_role_name(role), *file_size, strlen(target_buffer)));
+    LogInfo((ANSI_COLOR_MAGENTA "tuf_client_read_local_file: role=%s file_size=%d strlen=%d OK" ANSI_COLOR_RESET, tuf_get_role_name(role), *file_size, strlen((const char*)target_buffer)));
     return TUF_SUCCESS;
 }
 
