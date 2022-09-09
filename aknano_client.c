@@ -69,12 +69,6 @@ status_t AkNanoGenRandomBytes(char *output, size_t size)
         randomInitialized = true;
     }
 
-    // status_t status; // = kStatus_Fail;
-    // uint32_t number;
-    // uint32_t data[RNG_EXAMPLE_RANDOM_NUMBERS] = {0};
-
-    LogInfo(("RNG : "));
-
     LogInfo(("Generate %u-bit random number: ", RNG_EXAMPLE_RANDOM_NUMBER_BITS));
     // TODO: verify return code
     CAAM_RNG_GetRandomData(base, &caamHandle, kCAAM_RngStateHandle0, output, RNG_EXAMPLE_RANDOM_BYTES,

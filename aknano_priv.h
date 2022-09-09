@@ -334,14 +334,14 @@ BaseType_t aknano_mtls_send_http_request(
         const char * pcPath,
         const char * pcBody,
         size_t xBodyLen,
-        char *buffer,
+        unsigned char *buffer,
         size_t buffer_len,
         const char **header_keys,
         const char **header_values,
-        size_t **header_len
+        size_t header_len
 );
 
-BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_context,
+BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_context,
                                       const char * pcMethod,
                                       const char * pcPath,
                                       const char * pcBody,
@@ -352,5 +352,7 @@ BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_
 void aknano_mtls_disconnect(struct aknano_network_context *network_context);
 
 void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
+
+int enable_image_and_set_boot_image_position(uint8_t imagePosition);
 
 #endif /* __AKNANO_PRIV_H__ */

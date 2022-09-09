@@ -13,6 +13,7 @@
 #include <stdio.h>
 
 #include "aknano_priv.h"
+#include "aknano_client.h"
 #include "aknano_secret.h"
 #include "libtufnano.h"
 
@@ -318,7 +319,7 @@ BaseType_t AkNano_ConnectToDevicesGateway(struct aknano_network_context *network
     return pdPASS;
 }
 
-BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_context,
+BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_context,
                                       const char * pcMethod,
                                       const char * pcPath,
                                       const char * pcBody,
@@ -333,8 +334,8 @@ BaseType_t AkNano_SendHttpRequest( const struct aknano_network_context *network_
     char active_target[200];
     snprintf(active_target, sizeof(active_target), "%s-%d", factory_name, version);
 
-    char *header_keys[] = { "x-ats-tags", "x-ats-target" };
-    char *header_values[] = { tag, active_target };
+    const char *header_keys[] = { "x-ats-tags", "x-ats-target" };
+    const char *header_values[] = { tag, active_target };
 
     BaseType_t ret = aknano_mtls_send_http_request(
         network_context,
@@ -417,7 +418,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                                         "/config", "", 0,
                                         aknano_context->settings);
         if (xDemoStatus == pdPASS)
-            parse_config(network_context.reply_body, network_context.reply_body_len, aknano_context->settings);
+            parse_config((const char*)network_context.reply_body, network_context.reply_body_len, aknano_context->settings);
 
         time_t reference_time = get_current_epoch(aknano_settings->boot_up_epoch);
 // #define TUF_FORCE_DATE_IN_FUTURE 1
@@ -433,7 +434,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
 
         // xDemoStatus = AkNano_GetTargets(&xTransportInterface, aknano_context->settings, &xResponse);
         if (tuf_ret == 0) {
-            parse_targets_metadata(tuf_data_buffer, strlen(tuf_data_buffer), aknano_context);
+            parse_targets_metadata((const char*)tuf_data_buffer, strlen(tuf_data_buffer), aknano_context);
 
             // aknano_handle_manifest_data(aknano_context, single_target_buffer, &offset, (uint8_t*)xResponse.pBody, xResponse.bodyLen);
             if (aknano_context->selected_target.version == 0) {
