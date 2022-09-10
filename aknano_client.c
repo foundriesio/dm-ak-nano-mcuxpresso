@@ -4,7 +4,6 @@
 #include "aknano_secret.h"
 
 #include "flexspi_flash_config.h"
-#include "fsl_caam.h"
 #include "lwip/opt.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/netif.h"
@@ -16,6 +15,28 @@
 /*
  * Random numbers generator
  */
+#ifdef AKNANO_BOARD_MODEL_RT1060
+#include "fsl_trng.h"
+status_t AkNanoGenRandomBytes(char *output, size_t size)
+{
+    trng_config_t trng_config;
+    int status = TRNG_GetDefaultConfig(&trng_config);
+    if (status != kStatus_Success)
+    {
+        return status;
+    }
+    // Set sample mode of the TRNG ring oscillator to Von Neumann, for better random data.
+    trng_config.sampleMode = kTRNG_SampleModeVonNeumann;
+    status = TRNG_Init(TRNG, &trng_config);
+    if (status != kStatus_Success)
+        return status;
+    status = TRNG_GetRandomData(TRNG, output, size);
+    if (status != kStatus_Success)
+        return status;
+    return kStatus_Success;
+}
+#else
+#include "fsl_caam.h"
 #define RNG_EXAMPLE_RANDOM_NUMBERS     (4U)
 #define RNG_EXAMPLE_RANDOM_BYTES       (16U)
 #define RNG_EXAMPLE_RANDOM_NUMBER_BITS (RNG_EXAMPLE_RANDOM_NUMBERS * 8U * sizeof(uint32_t))
@@ -75,6 +96,7 @@ status_t AkNanoGenRandomBytes(char *output, size_t size)
                                     kCAAM_RngDataAny, NULL);
     return kStatus_Success;
 }
+#endif
 
 /*
  * Time

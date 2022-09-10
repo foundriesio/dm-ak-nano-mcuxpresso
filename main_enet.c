@@ -48,6 +48,7 @@
 #include "types/iot_network_types.h"
 #include "aws_demo.h"
 
+#ifdef AKNANO_BOARD_MODEL_RT1170
 #if BOARD_NETWORK_USE_100M_ENET_PORT
 #include "fsl_phyksz8081.h"
 #else
@@ -57,6 +58,8 @@
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
 #include "fsl_enet.h"
+#endif
+
 #include "fsl_phy.h"
 /* lwIP Includes */
 #include "lwip/tcpip.h"
@@ -66,16 +69,40 @@
 #include "enet_ethernetif.h"
 #include "lwip/netifapi.h"
 
+#ifdef AKNANO_BOARD_MODEL_RT1060
+#include "fsl_phyksz8081.h"
+#include "fsl_enet_mdio.h"
+#include "fsl_gpio.h"
+#include "fsl_iomuxc.h"
+#endif
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
 /* MAC address configuration. */
 #define configMAC_ADDR                     \
     {                                      \
         0x02, 0x12, 0x13, 0x10, 0x15, 0x25 \
     }
 
+#ifdef AKNANO_BOARD_MODEL_RT1060
+
+#ifndef EXAMPLE_NETIF_INIT_FN
+/*! @brief Network interface initialization function. */
+#define EXAMPLE_NETIF_INIT_FN ethernetif0_init
+#endif /* EXAMPLE_NETIF_INIT_FN */
+/* Address of PHY interface. */
+#define EXAMPLE_PHY_ADDRESS BOARD_ENET0_PHY_ADDRESS
+/* MDIO operations. */
+#define EXAMPLE_MDIO_OPS enet_ops
+
+/* PHY operations. */
+#define EXAMPLE_PHY_OPS phyksz8081_ops
+
+/* ENET clock frequency. */
+#define EXAMPLE_CLOCK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
+
+#else
 #if BOARD_NETWORK_USE_100M_ENET_PORT
 /* Address of PHY interface. */
 #define EXAMPLE_PHY_ADDRESS BOARD_ENET0_PHY_ADDRESS
@@ -102,6 +129,7 @@
 /*! @brief Network interface initialization function. */
 #define EXAMPLE_NETIF_INIT_FN ethernetif0_init
 #endif /* EXAMPLE_NETIF_INIT_FN */
+#endif
 
 #define INIT_SUCCESS 0
 #define INIT_FAIL    1
@@ -136,6 +164,26 @@ struct netif netif;
 /*******************************************************************************
  * Code
  ******************************************************************************/
+#ifdef AKNANO_BOARD_MODEL_RT1060
+void BOARD_InitModuleClock(void)
+{
+    const clock_enet_pll_config_t config = {
+        .enableClkOutput    = true,
+        .enableClkOutput25M = false,
+        .loopDivider        = 1,
+    };
+    CLOCK_InitEnetPll(&config);
+}
+
+void delay(void)
+{
+    volatile uint32_t i = 0;
+    for (i = 0; i < 1000000; ++i)
+    {
+        __asm("NOP"); /* delay */
+    }
+}
+#else
 void BOARD_InitModuleClock(void)
 {
     const clock_sys_pll1_config_t sysPll1Config = {
@@ -176,6 +224,7 @@ void BOARD_ENETFlexibleConfigure(enet_config_t *config)
     config->miiMode = kENET_RgmiiMode;
 #endif
 }
+#endif
 
 int initNetwork(void)
 {
@@ -284,6 +333,25 @@ int main(void)
     gpio_pin_config_t gpio_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
 
     BOARD_ConfigMPU();
+
+#ifdef AKNANO_BOARD_MODEL_RT1060
+    BOARD_InitBootPins();
+    BOARD_InitBootClocks();
+    BOARD_InitPins();
+    BOARD_BootClockRUN();
+    BOARD_InitDebugConsole();
+    BOARD_InitModuleClock();
+
+    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, true);
+
+    GPIO_PinInit(GPIO1, 9, &gpio_config);
+    GPIO_PinInit(GPIO1, 10, &gpio_config);
+    /* pull up the ENET_INT before RESET. */
+    GPIO_WritePinOutput(GPIO1, 10, 1);
+    GPIO_WritePinOutput(GPIO1, 9, 0);
+    delay();
+    GPIO_WritePinOutput(GPIO1, 9, 1);
+#else
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
@@ -317,6 +385,8 @@ xx
     EnableIRQ(ENET_1G_MAC0_Tx_Rx_1_IRQn);
     EnableIRQ(ENET_1G_MAC0_Tx_Rx_2_IRQn);
 #endif
+#endif
+
     CRYPTO_InitHardware();
 
     xLoggingTaskInitialize(LOGGING_TASK_STACK_SIZE, LOGGING_TASK_PRIORITY, LOGGING_QUEUE_LENGTH);

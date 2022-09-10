@@ -22,48 +22,7 @@ SET(EXECUTABLE_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 SET(LIBRARY_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 
 # SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
-    ${CMAKE_C_FLAGS_FLEXSPI_NOR_DEBUG} \
-    -DXIP_EXTERNAL_FLASH=1 \
-    -DXIP_BOOT_HEADER_ENABLE=1 \
-    -DDEBUG \
-    -DLWIP_TIMEVAL_PRIVATE=0 \
-    -DCPU_MIMXRT1176DVMAA_cm7 \
-    -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
-    -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
-    -DPRINTF_ADVANCED_ENABLE=1 \
-    -DUSE_RTOS=1 \
-    -DLWIP_DNS=1 \
-    -DLWIP_DHCP=1 \
-    -DHTTP_DO_NOT_USE_CUSTOM_CONFIG=1 \
-    -DMQTT_DO_NOT_USE_CUSTOM_CONFIG=1 \
-    -DCRYPTO_USE_DRIVER_CAAM \
-    -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
-    -DMFLASH_FILE_BASEADDR=14221312 \
-    -DSDK_OS_FREE_RTOS \
-    -DSERIAL_PORT_TYPE_UART=1 \
-    -DMCUXPRESSO_SDK \
-    -g \
-    -O0 \
-    -fomit-frame-pointer \
-    -Wno-unused-function \
-    -mcpu=cortex-m7 \
-    -Wall \
-    -mfloat-abi=hard \
-    -mfpu=fpv5-d16 \
-    -mthumb \
-    -MMD \
-    -MP \
-    -fno-common \
-    -ffunction-sections \
-    -fdata-sections \
-    -ffreestanding \
-    -fno-builtin \
-    -mapcs \
-    -std=gnu99 \
-")
 
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C -DJSON_QUERY_KEY_SEPARATOR=\\'/\\'")
 
 project(ota_demo_enet)
 
@@ -79,9 +38,17 @@ SET(THREADX_ARCH "cortex_m7")
 
 SET(THREADX_TOOLCHAIN "gnu")
 
-include(${ProjDirPath}/flags.cmake)
 
-include(${ProjDirPath}/config.cmake)
+if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+include(${ProjDirPath}/flags_rt1170.cmake)
+include(${ProjDirPath}/config_rt1170.cmake)
+endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+
+if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+include(${ProjDirPath}/flags_rt1060.cmake)
+include(${ProjDirPath}/config_rt1060.cmake)
+endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+
 
 
 SET(FreeRtosAwsPath "${ProjDirPath}/../../../rtos/amazon-freertos")
@@ -120,16 +87,6 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../ota_flag/sbl_ota_flag.c"
 "${ProjDirPath}/../tests/aknano_test.c"
 "${ProjDirPath}/../../libtufnano/libtufnano.c"
-
-"${ProjDirPath}/../board/pin_mux.c"
-"${ProjDirPath}/../board/pin_mux.h"
-"${ProjDirPath}/../board/board.c"
-"${ProjDirPath}/../board/board.h"
-"${ProjDirPath}/../board/clock_config.c"
-"${ProjDirPath}/../board/clock_config.h"
-"${ProjDirPath}/../board/dcd.c"
-"${ProjDirPath}/../board/dcd.h"
-"${ProjDirPath}/../board/evkmimxrt1170_connect_cm4_cm7side.jlinkscript"
 
 "${FreeRtosAwsPath}/demos/demo_runner/iot_demo_freertos.c"
 "${FreeRtosAwsPath}/demos/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c"
@@ -171,12 +128,6 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
-
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1171/drivers/fsl_clock.c"
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_anatop_ai.c"
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_pmu.c"
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/gcc/startup_MIMXRT1176_cm7.S"
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/system_MIMXRT1176_cm7.c"
 
 "${ProjDirPath}/../../../middleware/freertos/backoffAlgorithm/source/backoff_algorithm.c"
 "${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/core_http_client.c"
@@ -336,6 +287,142 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../middleware/unity/extras/fixture/src/unity_fixture.c"
 )
 
+if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+    "${ProjDirPath}/../board_rt1170/pin_mux.c"
+    "${ProjDirPath}/../board_rt1170/pin_mux.h"
+    "${ProjDirPath}/../board_rt1170/board.c"
+    "${ProjDirPath}/../board_rt1170/board.h"
+    "${ProjDirPath}/../board_rt1170/clock_config.c"
+    "${ProjDirPath}/../board_rt1170/clock_config.h"
+    "${ProjDirPath}/../board_rt1170/dcd.c"
+    "${ProjDirPath}/../board_rt1170/dcd.h"
+    "${ProjDirPath}/../board_rt1170/evkmimxrt1170_connect_cm4_cm7side.jlinkscript"
+
+
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1171/drivers/fsl_clock.c"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_anatop_ai.c"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_pmu.c"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/gcc/startup_MIMXRT1176_cm7.S"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/system_MIMXRT1176_cm7.c"
+   
+    )
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1170")
+
+    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+    ${ProjDirPath}/../board_rt1170
+    )
+    SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
+    ${CMAKE_C_FLAGS_FLEXSPI_NOR} \
+    -DXIP_EXTERNAL_FLASH=1 \
+    -DXIP_BOOT_HEADER_ENABLE=1 \
+    -DDEBUG \
+    -DLWIP_TIMEVAL_PRIVATE=0 \
+    -DCPU_MIMXRT1176DVMAA_cm7 \
+    -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
+    -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
+    -DPRINTF_ADVANCED_ENABLE=1 \
+    -DUSE_RTOS=1 \
+    -DLWIP_DNS=1 \
+    -DLWIP_DHCP=1 \
+    -DHTTP_DO_NOT_USE_CUSTOM_CONFIG=1 \
+    -DMQTT_DO_NOT_USE_CUSTOM_CONFIG=1 \
+    -DCRYPTO_USE_DRIVER_CAAM \
+    -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
+    -DMFLASH_FILE_BASEADDR=14221312 \
+    -DSDK_OS_FREE_RTOS \
+    -DSERIAL_PORT_TYPE_UART=1 \
+    -DMCUXPRESSO_SDK \
+    -g \
+    -O0 \
+    -fomit-frame-pointer \
+    -Wno-unused-function \
+    -mcpu=cortex-m7 \
+    -Wall \
+    -mfloat-abi=hard \
+    -mfpu=fpv5-d16 \
+    -mthumb \
+    -MMD \
+    -MP \
+    -fno-common \
+    -ffunction-sections \
+    -fdata-sections \
+    -ffreestanding \
+    -fno-builtin \
+    -mapcs \
+    -std=gnu99 \
+    ")
+endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+
+if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+
+target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+"${ProjDirPath}/../board_rt1060/pin_mux.c"
+"${ProjDirPath}/../board_rt1060/pin_mux.h"
+"${ProjDirPath}/../board_rt1060/board.c"
+"${ProjDirPath}/../board_rt1060/board.h"
+"${ProjDirPath}/../board_rt1060/clock_config.c"
+"${ProjDirPath}/../board_rt1060/clock_config.h"
+"${ProjDirPath}/../board_rt1060/dcd.c"
+"${ProjDirPath}/../board_rt1060/dcd.h"
+
+"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_clock.c"
+# "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_anatop_ai.c"
+# "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_pmu.c"
+"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/gcc/startup_MIMXRT1062.S"
+"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/system_MIMXRT1062.c"
+
+"${ProjDirPath}/../../../mcuxsdk/drivers/trng/fsl_trng.c"
+)
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1060")
+
+target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+${ProjDirPath}/../board_rt1060
+)
+
+SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
+    ${CMAKE_C_FLAGS_FLEXSPI_NOR} \
+    -DXIP_EXTERNAL_FLASH=1 \
+    -DXIP_BOOT_HEADER_ENABLE=1 \
+    -DDEBUG \
+    -DLWIP_TIMEVAL_PRIVATE=0 \
+    -DCPU_MIMXRT1062DVL6A \
+    -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
+    -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
+    -DUSE_RTOS=1 \
+    -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
+    -DMFLASH_FILE_BASEADDR=7340032 \
+    -DSDK_OS_FREE_RTOS \
+    -DSERIAL_PORT_TYPE_UART=1 \
+    -DMCUXPRESSO_SDK \
+    -g \
+    -O0 \
+    -fomit-frame-pointer \
+    -Wno-unused-function \
+    -mcpu=cortex-m7 \
+    -Wall \
+    -mfloat-abi=hard \
+    -mfpu=fpv5-d16 \
+    -mthumb \
+    -MMD \
+    -MP \
+    -fno-common \
+    -ffunction-sections \
+    -fdata-sections \
+    -ffreestanding \
+    -fno-builtin \
+    -mapcs \
+    -std=gnu99 \
+")
+target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+    ${ProjDirPath}/../../../mcuxsdk/drivers/trng/
+)
+
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C -DJSON_QUERY_KEY_SEPARATOR=\\'/\\'")
+
+endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+
+
 if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
      target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
 endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
@@ -352,7 +439,6 @@ endif(CMAKE_AKNANO_TEST EQUAL 1)
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
     ${ProjDirPath}/../../..
-    ${ProjDirPath}/../board
     ${ProjDirPath}/../config_files
     ${ProjDirPath}/../tests
     ${ProjDirPath}/../../libtufnano
@@ -405,15 +491,31 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosKernelPath}/portable/GCC/ARM_CM4F/
 )
 
+if(CMAKE_BOARD_MODEL STREQUAL rt1060)
 #path for entry cmake
 set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../mcuxsdk/
     ${ProjDirPath}/../../../
     ${ProjDirPath}/../../../middleware
-    ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176    
+    ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1162
+    ${ProjDirPath}/../../../mcuxsdk/devices/    
     ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
     ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
 )
+endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+
+if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+#path for entry cmake
+set(CMAKE_MODULE_PATH
+    ${ProjDirPath}/../../../mcuxsdk/
+    ${ProjDirPath}/../../../
+    ${ProjDirPath}/../../../middleware
+    ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
+    ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
+    ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
+)
+endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+
 
 include(afr)
 
@@ -459,11 +561,29 @@ include(component_mflash_file)
 
 # include(middleware_freertos-kernel_heap_4)
 
+if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+
+# include(all_lib_device_MIMXRT1176_cm7)
+include(driver_dcp)
+
+include(driver_trng)
+
+endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+
+
+if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+
 include(all_lib_device_MIMXRT1176_cm7)
+
+include(driver_caam)
+include(driver_dcdc_soc)
+
+include(driver_phy-device-rtl8211f)
+
+endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 include(driver_igpio)
 
-# include(driver_dcp)
 
 # include(driver_trng)
 
@@ -471,11 +591,6 @@ include(driver_igpio)
 
 # include(middleware_freertos-aws_iot_demos_ota_demo_helpers)
 
-include(driver_caam)
-
-include(driver_dcdc_soc)
-
-include(driver_phy-device-rtl8211f)
 
 # include(middleware_freertos-aws_iot_demos_corehttp) # 3rdparty
 
