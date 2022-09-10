@@ -8,7 +8,12 @@
  */
 
 #include "fsl_flexspi.h"
-#include "app.h"
+#ifdef AKNANO_BOARD_MODEL_RT1060
+#include "app_rt1060.h"
+#else
+#include "app_rt1170.h"
+#endif
+
 #if (defined CACHE_MAINTAIN) && (CACHE_MAINTAIN == 1)
 #include "fsl_cache.h"
 #endif
@@ -83,8 +88,13 @@ status_t flexspi_nor_wait_bus_busy(FLEXSPI_Type *base)
 
 // FIXME: set those in an appropriate header file
 // FLEXSPI
+#ifdef AKNANO_BOARD_MODEL_RT1060
+#define UPDATE_EXAMPLE_FLEXSPI                        FLEXSPI
+#define UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE              FlexSPI_AMBA_BASE
+#else
 #define UPDATE_EXAMPLE_FLEXSPI                        FLEXSPI1
 #define UPDATE_EXAMPLE_FLEXSPI_AMBA_BASE              FlexSPI1_AMBA_BASE
+#endif
 
 status_t sfw_flash_read_ipc(uint32_t address, void *buffer, size_t length)
 {
