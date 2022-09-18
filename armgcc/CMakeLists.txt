@@ -356,72 +356,70 @@ endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
-target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
-"${ProjDirPath}/../board_rt1060/pin_mux.c"
-"${ProjDirPath}/../board_rt1060/pin_mux.h"
-"${ProjDirPath}/../board_rt1060/board.c"
-"${ProjDirPath}/../board_rt1060/board.h"
-"${ProjDirPath}/../board_rt1060/clock_config.c"
-"${ProjDirPath}/../board_rt1060/clock_config.h"
-"${ProjDirPath}/../board_rt1060/dcd.c"
-"${ProjDirPath}/../board_rt1060/dcd.h"
+    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+    "${ProjDirPath}/../board_rt1060/pin_mux.c"
+    "${ProjDirPath}/../board_rt1060/pin_mux.h"
+    "${ProjDirPath}/../board_rt1060/board.c"
+    "${ProjDirPath}/../board_rt1060/board.h"
+    "${ProjDirPath}/../board_rt1060/clock_config.c"
+    "${ProjDirPath}/../board_rt1060/clock_config.h"
+    "${ProjDirPath}/../board_rt1060/dcd.c"
+    "${ProjDirPath}/../board_rt1060/dcd.h"
 
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_clock.c"
-# "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_anatop_ai.c"
-# "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_pmu.c"
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/gcc/startup_MIMXRT1062.S"
-"${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/system_MIMXRT1062.c"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_clock.c"
+    # "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_anatop_ai.c"
+    # "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_pmu.c"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/gcc/startup_MIMXRT1062.S"
+    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/system_MIMXRT1062.c"
 
-"${ProjDirPath}/../../../mcuxsdk/drivers/trng/fsl_trng.c"
-)
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1060")
+    "${ProjDirPath}/../../../mcuxsdk/drivers/trng/fsl_trng.c"
+    )
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1060")
 
-target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
-${ProjDirPath}/../board_rt1060
-)
+    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+    ${ProjDirPath}/../board_rt1060
+    )
 
-SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
-    ${CMAKE_C_FLAGS_FLEXSPI_NOR} \
-    -DXIP_EXTERNAL_FLASH=1 \
-    -DXIP_BOOT_HEADER_ENABLE=1 \
-    -DDEBUG \
-    -DLWIP_TIMEVAL_PRIVATE=0 \
-    -DCPU_MIMXRT1062DVL6A \
-    -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
-    -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
-    -DUSE_RTOS=1 \
-    -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
-    -DMFLASH_FILE_BASEADDR=7340032 \
-    -DSDK_OS_FREE_RTOS \
-    -DSERIAL_PORT_TYPE_UART=1 \
-    -DMCUXPRESSO_SDK \
-    -g \
-    -O0 \
-    -fomit-frame-pointer \
-    -Wno-unused-function \
-    -mcpu=cortex-m7 \
-    -Wall \
-    -mfloat-abi=hard \
-    -mfpu=fpv5-d16 \
-    -mthumb \
-    -MMD \
-    -MP \
-    -fno-common \
-    -ffunction-sections \
-    -fdata-sections \
-    -ffreestanding \
-    -fno-builtin \
-    -mapcs \
-    -std=gnu99 \
-")
-target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
-    ${ProjDirPath}/../../../mcuxsdk/drivers/trng/
-)
-
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C -DJSON_QUERY_KEY_SEPARATOR=\\'/\\'")
-
+    SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
+        ${CMAKE_C_FLAGS_FLEXSPI_NOR} \
+        -DXIP_EXTERNAL_FLASH=1 \
+        -DXIP_BOOT_HEADER_ENABLE=1 \
+        -DDEBUG \
+        -DLWIP_TIMEVAL_PRIVATE=0 \
+        -DCPU_MIMXRT1062DVL6A \
+        -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
+        -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
+        -DUSE_RTOS=1 \
+        -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
+        -DMFLASH_FILE_BASEADDR=7340032 \
+        -DSDK_OS_FREE_RTOS \
+        -DSERIAL_PORT_TYPE_UART=1 \
+        -DMCUXPRESSO_SDK \
+        -g \
+        -O0 \
+        -fomit-frame-pointer \
+        -Wno-unused-function \
+        -mcpu=cortex-m7 \
+        -Wall \
+        -mfloat-abi=hard \
+        -mfpu=fpv5-d16 \
+        -mthumb \
+        -MMD \
+        -MP \
+        -fno-common \
+        -ffunction-sections \
+        -fdata-sections \
+        -ffreestanding \
+        -fno-builtin \
+        -mapcs \
+        -std=gnu99 \
+    ")
+    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        ${ProjDirPath}/../../../mcuxsdk/drivers/trng/
+    )
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C -DJSON_QUERY_KEY_SEPARATOR=\\'/\\'")
 
 if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
      target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
