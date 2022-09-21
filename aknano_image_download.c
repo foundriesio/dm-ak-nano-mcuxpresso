@@ -19,13 +19,19 @@
 #include "aknano_priv.h"
 #include "flexspi_flash_config.h"
 
-#define AKNANO_DOWNLOAD_ENDPOINT "detsch.gobolinux.org"
-
-#define AKNANO_DOWNLOAD_ENDPOINT_LEN sizeof(AKNANO_DOWNLOAD_ENDPOINT)-1
-
 
 #define AKNANO_REQUEST_BODY ""
 #define AKNANO_REQUEST_BODY_LEN sizeof(AKNANO_REQUEST_BODY)-1
+
+#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
+#define AKNANO_DOWNLOAD_ENDPOINT "ac1f3cae-6b17-4872-b559-d197508b3620.ostree.foundries.io"
+#define AKNANO_DOWNLOAD_PORT 8443
+
+#include "aknano_secret.h"
+static const char donwloadServer_ROOT_CERTIFICATE_PEM[] = AKNANO_DEVICE_GATEWAY_CERTIFICATE;
+#else
+#define AKNANO_DOWNLOAD_ENDPOINT "detsch.gobolinux.org"
+#define AKNANO_DOWNLOAD_PORT 443
 
 static const char donwloadServer_ROOT_CERTIFICATE_PEM[] =
 "-----BEGIN CERTIFICATE-----\n"
@@ -125,6 +131,9 @@ static const char donwloadServer_ROOT_CERTIFICATE_PEM[] =
 "mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d\n"
 "emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=\n"
 "-----END CERTIFICATE-----\n";
+#endif
+
+#define AKNANO_DOWNLOAD_ENDPOINT_LEN sizeof(AKNANO_DOWNLOAD_ENDPOINT)-1
 
 static const uint32_t donwloadServer_ROOT_CERTIFICATE_LENGTH = sizeof( donwloadServer_ROOT_CERTIFICATE_PEM );
 
@@ -139,7 +148,7 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
     /* Initializer server information. */
     xServerInfo.pHostName = AKNANO_DOWNLOAD_ENDPOINT;
     xServerInfo.hostNameLength = AKNANO_DOWNLOAD_ENDPOINT_LEN;
-    xServerInfo.port = 443;
+    xServerInfo.port = AKNANO_DOWNLOAD_PORT;
 
     /* Configure credentials for TLS mutual authenticated session. */
     xSocketsConfig.enableTls = true;
@@ -481,6 +490,10 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
         if( xHTTPStatus == HTTPSuccess )
         {
+#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
+            xFileSize = aknano_context->selected_target.expected_size;
+            xResponse.contentLength = xFileSize;
+#else
             if (xFileSize == FILE_SIZE_UNSET && GetFileSize(&pxFileSize, &xResponse) == pdPASS) {
                 xFileSize = pxFileSize;
                 LogInfo( ( "Setting xFileSize=%d", xFileSize));
@@ -495,6 +508,7 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                     LogInfo( ( ANSI_COLOR_MAGENTA "Expected file size is not set" ANSI_COLOR_RESET));
                 }
             }
+#endif
 
             LogInfo( ( "Received HTTP response from %s %s...",
                         "binary download server", pcPath ) );
@@ -561,6 +575,10 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                         xResponse.statusCode ) );
         }
     }
+#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
+    xStatus = pdPASS;
+    xHTTPStatus = HTTPSuccess;
+#endif
 
     if (( xStatus == pdPASS ) && ( xHTTPStatus == HTTPSuccess )) {
         mbedtls_sha256_finish_ret(&aknano_context->sha256_context, sha256_bytes);
@@ -625,7 +643,23 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
 
     if( xDemoStatus == pdPASS )
     {
+#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
+        uint8_t *h = aknano_context->selected_target.expected_hash;
+        int i = 0;
+        char relative_path[AKNANO_MAX_URI_LENGTH];
+        sprintf(relative_path, "/mcu/files/"
+        "%02x/%02x%02x%02x%02x%02x%02x%02x"
+        "%02x%02x%02x%02x%02x%02x%02x%02x"
+        "%02x%02x%02x%02x%02x%02x%02x%02x"
+        "%02x%02x%02x%02x%02x%02x%02x%02x"
+        ".bin",
+        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
+        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
+        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
+        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++]);
+#else
         char *relative_path = aknano_context->selected_target.uri + strlen("https://") + strlen(AKNANO_DOWNLOAD_ENDPOINT);
+#endif
         LogInfo(("Download relativepath=%s", relative_path));
         xDemoStatus = prvDownloadFile(&xNetworkContext, &xTransportInterface, 
             relative_path, aknano_context->settings->image_position, aknano_context);
