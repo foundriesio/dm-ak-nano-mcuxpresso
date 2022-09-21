@@ -14,6 +14,8 @@
 #ifndef __AKNANO_PRIV_H__
 #define __AKNANO_PRIV_H__
 
+#define AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
+
 #include "mbedtls/sha256.h"
 
 #include "board.h"
@@ -139,7 +141,9 @@ enum aknano_response {
 
 struct aknano_target {
     char updatedAt[AKNANO_MAX_UPDATE_AT_LENGTH];
+#ifndef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
     char uri[AKNANO_MAX_URI_LENGTH];
+#endif
     size_t expected_size;
     int32_t version;
     uint8_t expected_hash[AKNANO_SHA256_LEN];
@@ -233,7 +237,7 @@ struct aknano_context {
 #define httpexampleHTTP_STATUS_CODE_PARTIAL_CONTENT          206
 
 
-#define democonfigRANGE_REQUEST_LENGTH  4 * 1024 * 30
+#define democonfigRANGE_REQUEST_LENGTH  1024 * 550
 #define democonfigUSER_BUFFER_LENGTH democonfigRANGE_REQUEST_LENGTH + 1024
 
 /**

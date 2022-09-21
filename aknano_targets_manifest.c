@@ -124,6 +124,7 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
 	//		 return -2;
 	// }
 
+#ifndef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
 	/* Handle custom/uri */
 	result = JSON_SearchConst(data, len, "custom/uri", strlen("custom/uri"), &out_value, &out_value_len, NULL);
 	if (result != JSONSuccess) {
@@ -132,7 +133,7 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
 	}
 	strncpy(target.uri, out_value, out_value_len);
         target.uri[out_value_len] = 0;
-
+#endif
 	/* Handle hashes/sha256 */
         result = JSON_SearchConst(data, len, "hashes/sha256", strlen("hashes/sha256"), &out_value, &out_value_len, NULL);
 	if (result != JSONSuccess) {
