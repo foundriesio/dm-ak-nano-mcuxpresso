@@ -237,7 +237,7 @@ struct aknano_context {
 #define httpexampleHTTP_STATUS_CODE_PARTIAL_CONTENT          206
 
 
-#define democonfigRANGE_REQUEST_LENGTH  1024 * 550
+#define democonfigRANGE_REQUEST_LENGTH  1024 * 540
 #define democonfigUSER_BUFFER_LENGTH democonfigRANGE_REQUEST_LENGTH + 1024
 
 /**
