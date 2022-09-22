@@ -239,7 +239,7 @@ static bool fill_event_payload(char *payload,
         old_version = aknano_settings->last_confirmed_version;
         new_version = aknano_settings->running_version;
     }
-    snprintf(target, sizeof(target), "%s-%d", aknano_settings->factory_name, new_version);
+    snprintf(target, sizeof(target), "%s-v%d", aknano_settings->hwid, new_version);
 
     if (strnlen(correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH) == 0)
         snprintf(correlation_id, AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH, "%s-%s", target, aknano_settings->uuid);
@@ -332,7 +332,7 @@ BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_contex
     int version = aknano_settings->running_version;
 
     char active_target[200];
-    snprintf(active_target, sizeof(active_target), "%s-%d", factory_name, version);
+    snprintf(active_target, sizeof(active_target), "%s-v%d", aknano_settings->hwid, version);
 
     const char *header_keys[] = { "x-ats-tags", "x-ats-target" };
     const char *header_values[] = { tag, active_target };
