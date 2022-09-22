@@ -71,7 +71,7 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 
     memset(aknano_settings, 0, sizeof(*aknano_settings));
     strcpy(aknano_settings->tag, "devel");
-    aknano_settings->polling_interval = 60;
+    aknano_settings->polling_interval = 15;
     strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
     strcpy(aknano_settings->token, AKNANO_API_TOKEN);
 
@@ -178,7 +178,7 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
                   -1, AKNANO_EVENT_SUCCESS_FALSE);
         //aknano_write_to_nvs(AKNANO_NVS_ID_ONGOING_UPDATE_COR_ID, "", 0);
 
-        memset(aknano_settings->ongoing_update_correlation_id, 0, 
+        memset(aknano_settings->ongoing_update_correlation_id, 0,
                sizeof(aknano_settings->ongoing_update_correlation_id));
         AkNanoUpdateSettingsInFlash(aknano_settings);
     }
@@ -201,7 +201,7 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
         // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_APPLIED_VERSION, &zero, sizeof(zero));
 
-        memset(aknano_settings->ongoing_update_correlation_id, 0, 
+        memset(aknano_settings->ongoing_update_correlation_id, 0,
                sizeof(aknano_settings->ongoing_update_correlation_id));
         aknano_settings->last_applied_version = 0;
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
@@ -240,7 +240,7 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         AkNanoUpdateSettingsInFlash(aknano_settings);
 
-        LogInfo(("Updating aknano_settings->running_version in flash (%d -> %lu)", 
+        LogInfo(("Updating aknano_settings->running_version in flash (%d -> %lu)",
                  aknano_settings->last_confirmed_version, aknano_settings->running_version));
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
         // strcpy(aknano_settings->ongoing_update_correlation_id, "ABCDEFGHIJKLMNOPQRSTUVXYZ");
@@ -309,11 +309,27 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
     AkNanoInitSettings(aknano_settings);
 
+
+#ifdef AKNANO_FORCE_DEVICE_CLEANUP
+    LogWarn((ANSI_COLOR_RED "**** Marking device as unregistered, and reseting TUF data ****" ANSI_COLOR_RESET));
+    aknano_settings->is_device_registered = 0;
+    AkNanoUpdateSettingsInFlash(aknano_settings);
+    #include "libtufnano.h"
+    tuf_client_write_local_file(ROLE_ROOT, "\xFF", 1, NULL);
+    tuf_client_write_local_file(ROLE_TIMESTAMP, "\xFF", 1, NULL);
+    tuf_client_write_local_file(ROLE_SNAPSHOT, "\xFF", 1, NULL);
+    tuf_client_write_local_file(ROLE_ROOT, "\xFF", 1, NULL);
+
+    LogWarn((ANSI_COLOR_RED "**** Sleeping for 2 minutes ****" ANSI_COLOR_RESET));
+    vTaskDelay(pdMS_TO_TICKS(120000));
+#endif
+
     // SNTPRequest();
 
     vDevModeKeyProvisioning_new((uint8_t*)xaknano_settings.device_priv_key,
                                 (uint8_t*)xaknano_settings.device_certificate );
     LogInfo(("vDevModeKeyProvisioning_new done"));
+    vTaskDelay(pdMS_TO_TICKS(100));
     // UpdateClientCertificate(aknano_settings->device_certificate, aknano_settings->device_priv_key);
     aknano_handle_img_confirmed(aknano_settings);
 }
