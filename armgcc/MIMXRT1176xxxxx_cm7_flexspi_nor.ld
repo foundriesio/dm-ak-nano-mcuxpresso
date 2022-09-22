@@ -39,7 +39,8 @@ MEMORY
   m_text                (RX)  : ORIGIN = 0x30040800, LENGTH = 0x00D8DC00
   m_data                (RW)  : ORIGIN = 0x20000000, LENGTH = 0x00040000
   m_ncache              (RW)  : ORIGIN = 0x202C0000, LENGTH = 0x00002000
-  m_data2               (RW)  : ORIGIN = 0x202C2000 + RPMSG_SHMEM_SIZE, LENGTH = 0x0007E000 - RPMSG_SHMEM_SIZE
+/*  m_data2               (RW)  : ORIGIN = 0x202C2000 + RPMSG_SHMEM_SIZE, LENGTH = 0x0007E000 - RPMSG_SHMEM_SIZE */
+  m_data2               (RW)  : ORIGIN = 0x202C2000 + RPMSG_SHMEM_SIZE, LENGTH = 0x000BD000 - RPMSG_SHMEM_SIZE
   rpmsg_sh_mem          (RW)  : ORIGIN = 0x202C2000, LENGTH = RPMSG_SHMEM_SIZE
   m_core1_image         (RX)  : ORIGIN = 0x30FC0000, LENGTH = 0x00040000
 }
