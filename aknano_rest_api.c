@@ -262,7 +262,8 @@ static BaseType_t prvSendHttpRequest( const TransportInterface_t * pxTransportIn
                     HTTPClient_strerror( xHTTPStatus ) ) );
     }
 
-    if( xHTTPStatus != HTTPSuccess )
+    /* TODO: Improve verification of registration error codes */
+    if( xHTTPStatus != HTTPSuccess || pxResponse->statusCode == 403)
     {
         xStatus = pdFAIL;
     }
