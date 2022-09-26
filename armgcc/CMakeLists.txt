@@ -119,12 +119,12 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 
 ## "${FreeRtosAwsPath}/libraries/3rdparty/lwip_osal/src/sys_arch.c" # -> this file lacks a few functions
 "${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/src/sys_arch.c"
-"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/lwip_ethernet/enet_ethernetif_kinetis.c"
-"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/lwip_ethernet/enet_ethernetif.c"
-"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/aes_alt.c"
-"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/ecp_alt.c"
-"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/ecp_curves_alt.c"
-"${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/ksdk_mbedtls.c"
+"${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif_kinetis.c"
+"${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif.c"
+"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/aes_alt.c"
+"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/ecp_alt.c"
+"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/ecp_curves_alt.c"
+"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/ksdk_mbedtls.c"
 
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
@@ -211,6 +211,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../middleware/mbedtls/library/cipher_wrap.c"
 "${ProjDirPath}/../../../middleware/mbedtls/library/cipher.c"
 "${ProjDirPath}/../../../middleware/mbedtls/library/cmac.c"
+"${ProjDirPath}/../../../middleware/mbedtls/library/constant_time.c"
 "${ProjDirPath}/../../../middleware/mbedtls/library/ctr_drbg.c"
 "${ProjDirPath}/../../../middleware/mbedtls/library/debug.c"
 "${ProjDirPath}/../../../middleware/mbedtls/library/des.c"
@@ -447,8 +448,6 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
     ${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/include/
-    ${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/lwip_ethernet/
-    ${ProjDirPath}/../../../poc/3rdparty/middleware/nxp/mbedtls_port/ksdk/
     ${ProjDirPath}/../../../middleware/freertos/backoffAlgorithm/source/include/
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/include/
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/interface/
@@ -459,9 +458,11 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../../../middleware/freertos/tls_freertos/
     ${ProjDirPath}/../../../middleware/http-parser/
     ${ProjDirPath}/../../../middleware/lwip/src/include/
+    ${ProjDirPath}/../../../middleware/lwip/port/
     ${ProjDirPath}/../../../middleware/mbedtls/include/
     ${ProjDirPath}/../../../middleware/mbedtls/include/mbedtls
     ${ProjDirPath}/../../../middleware/mbedtls/library/
+    ${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/
     ${ProjDirPath}/../../../middleware/unity/extras/fixture/src/
     ${ProjDirPath}/../../../middleware/unity/extras/memory/src/
     ${ProjDirPath}/../../../middleware/unity/src/
