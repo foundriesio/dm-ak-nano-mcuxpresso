@@ -190,7 +190,7 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
 
 static int HandleReceivedData(const unsigned char* data, int offset, int dataLen, uint32_t partition_log_addr, uint32_t partition_size)
 {
-    LogInfo(("X Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ] partition_log_addr=0x%08X", 
+    LogInfo(("Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ] partition_log_addr=0x%08X", 
         offset, dataLen, data[0], data[1], data[2], data[3], (int)partition_log_addr));
 
 #ifdef AKNANO_DRY_RUN
@@ -586,7 +586,7 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             LogInfo((ANSI_COLOR_RED "Downloaded image SHA256 does not match the expected value" ANSI_COLOR_RESET));
             return false;
         } else {
-            LogInfo(("Downloaded image SHA256 matches the expected value"));
+            LogInfo((ANSI_COLOR_MAGENTA "Downloaded image SHA256 matches the expected value" ANSI_COLOR_RESET));
         }
 
 #ifndef AKNANO_DRY_RUN
