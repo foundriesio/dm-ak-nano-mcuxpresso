@@ -378,7 +378,6 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
     /* xCurByte indicates which starting byte we want to download next. */
     size_t xCurByte = 0;
     uint32_t dstAddr;
-    struct image_header ih;
     uint8_t sha256_bytes[AKNANO_SHA256_LEN];
 
     if(image_position == 0x01) {
@@ -590,12 +589,21 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
         }
 
 #ifndef AKNANO_DRY_RUN
-        LogInfo(("Validating image of size %ld at dstAddr=%p", stored, (void*)dstAddr + BOOT_FLASH_BASE));
-        sfw_flash_read_ipc(dstAddr + BOOT_FLASH_BASE, (void*)&ih, sizeof(ih));
-        if (bl_verify_image(dstAddr + BOOT_FLASH_BASE, stored) <= 0)
+        partition_t update_partition;
+        if (bl_get_update_partition_info(&update_partition) != kStatus_Success)
+        {
+            /* Could not get update partition info */
+            LogError(("Could not get update partition info"));
+            return pdFAIL;
+        }
+        LogInfo(("Validating image of size %d", stored));
+
+        struct image_header *ih;
+        ih = (struct image_header *)update_partition.start;
+        if (bl_verify_image((void *)update_partition.start, stored) <= 0)
         {
             /* Image validation failed */
-            LogError(("Image validation failed magic=0x%lX", ih.ih_magic));
+            LogError(("Image validation failed magic=0x%X", ih->ih_magic));
             return false;
         } else {
             LogInfo(("Image validation succeded"));

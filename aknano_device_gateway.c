@@ -530,8 +530,13 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                             AKNANO_EVENT_SUCCESS_TRUE);
 
             LogInfo(("Requesting update on next boot (ReadyForTest)"));
-            enable_image_and_set_boot_image_position(aknano_settings->image_position);
-            isRebootRequired = true;
+            status_t status;
+            status = bl_update_image_state(kSwapType_ReadyForTest);
+            if (status != kStatus_Success) {
+                LogWarn(("Error setting image as ReadyForTest. status=%d", status));
+            } else {
+                isRebootRequired = true;
+            }
         } else {
             AkNanoSendEvent(aknano_context->settings, AKNANO_EVENT_DOWNLOAD_COMPLETED,
                             aknano_context->selected_target.version,

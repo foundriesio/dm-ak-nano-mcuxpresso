@@ -9,6 +9,8 @@
 #ifndef __MCUBOOT_APP_SUPPORT_H__
 #define __MCUBOOT_APP_SUPPORT_H__
 
+#define CONFIG_MCUBOOT_FLASH_REMAP_ENABLE
+
 #include "fsl_common.h"
 #include "flash_partitioning.h"
 #include "image.h"
@@ -59,12 +61,15 @@ typedef struct
     uint32_t size;
 } partition_t;
 
-extern int32_t bl_verify_image(uint32_t addr, uint32_t size);
 
-// extern status_t bl_get_update_partition_info(partition_t *partition);
+extern int32_t bl_verify_image(const uint8_t *data, uint32_t size);
+
+extern status_t bl_get_update_partition_info(partition_t *ptn);
 extern status_t bl_update_image_state(uint32_t state);
 extern status_t bl_get_image_state(uint32_t *state);
 
-extern status_t bl_get_image_build_num(uint32_t *iv_build_num, uint8_t image_position);
+status_t bl_get_image_build_num(uint32_t *iv_build_num, uint8_t image_position);
+
+uint32_t get_active_image(void);
 
 #endif
