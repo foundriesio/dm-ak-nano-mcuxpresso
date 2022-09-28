@@ -24,7 +24,6 @@
 #include <time.h>
 
 #include "mcuboot_app_support.h"
-#include "ota_flag/sbl_ota_flag.h"
 /* Transport interface implementation include header for TLS. */
 #include "transport_secure_sockets.h"
 
