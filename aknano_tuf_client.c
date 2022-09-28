@@ -91,6 +91,7 @@ int tuf_client_fetch_file(const char *file_base_name, unsigned char *target_buff
     struct aknano_context *aknano_context = application_context;
     BaseType_t ret;
 
+    *file_size = 0;
     snprintf((char*)aknano_context->url_buffer, sizeof(aknano_context->url_buffer), "/repo/%s", file_base_name);
     ret = AkNano_SendHttpRequest(
             aknano_context->dg_network_context,
