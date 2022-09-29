@@ -190,8 +190,7 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
 
 static int HandleReceivedData(const unsigned char* data, int offset, int dataLen, uint32_t partition_log_addr, uint32_t partition_size)
 {
-    LogInfo(("Writing image chunk to flash. offset=%d len=%d  [ 0x%02x 0x%02x 0x%02x 0x%02x ... ] partition_log_addr=0x%08X", 
-        offset, dataLen, data[0], data[1], data[2], data[3], (int)partition_log_addr));
+    LogInfo(("Writing image chunk to flash. offset=%d len=%d", offset, dataLen));
 
 #ifdef AKNANO_DRY_RUN
     LogInfo(("** Dry run mode, skipping flash operations"));
@@ -227,10 +226,6 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
         LogError(("HandleReceivedData: Invalid partition_log_addr=0x%X", (int)partition_log_addr));
         return -1;
     }
-
-    LogInfo(("HandleReceivedData: partition_phys_addr=0x%X partition_log_addr=0x%X", 
-        (int) partition_phys_addr, (int) partition_log_addr));     vTaskDelay(20 / portTICK_PERIOD_MS);
-
 
     if (!mflash_drv_is_sector_aligned(partition_phys_addr) || !mflash_drv_is_sector_aligned(partition_size))
     {
@@ -297,7 +292,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
         }
 
     } while (chunk_len == page_size);
-    LogInfo(("Chunk writen. offset=%d len=%d total_processed=%ld", offset, dataLen, total_processed));
+    // LogInfo(("Chunk writen. offset=%d len=%d total_processed=%ld", offset, dataLen, total_processed));
     return retval;
 }
 
@@ -421,28 +416,15 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
     xResponse.pBuffer = ucUserBuffer;
     xResponse.bufferLen = democonfigUSER_BUFFER_LENGTH;
 
-    // /* Verify the file exists by retrieving the file size. */
-    #define FILE_SIZE_UNSET 999999999
-    xFileSize = FILE_SIZE_UNSET;
-    /* Set the number of bytes to request in each iteration, defined by the user
-     * in democonfigRANGE_REQUEST_LENGTH. */
-    // if( xFileSize < democonfigRANGE_REQUEST_LENGTH )
-    // {
-    //     xNumReqBytes = xFileSize;
-    // }
-    // else
-    // {
-        xNumReqBytes = democonfigRANGE_REQUEST_LENGTH;
-    // }
+    xNumReqBytes = democonfigRANGE_REQUEST_LENGTH;
     xStatus = pdPASS;
-
-
 
     int32_t stored = 0;
     /* Initialize SHA256 calculation for FW image */
     mbedtls_sha256_init(&aknano_context->sha256_context);
     mbedtls_sha256_starts(&aknano_context->sha256_context, 0);
 
+    xFileSize = aknano_context->selected_target.expected_size;
     /* Here we iterate sending byte range requests until the full file has been
      * downloaded. We keep track of the next byte to download with xCurByte, and
      * increment by xNumReqBytes after each iteration. When xCurByte reaches
@@ -470,7 +452,7 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             LogInfo( ( ANSI_COLOR_GREEN "Downloading new image. Retrieving bytes %d-%d of %d" ANSI_COLOR_RESET,
                        ( int ) ( xCurByte ),
                        ( int ) ( xCurByte + xNumReqBytes - 1 ),
-                       ( int ) xFileSize == FILE_SIZE_UNSET? -1 : xFileSize));
+                       ( int ) xFileSize));
             LogDebug( ( "Request Headers:\n%.*s",
                         ( int ) xRequestHeaders.headersLen,
                         ( char * ) xRequestHeaders.pBuffer ) );
@@ -490,8 +472,8 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
         if( xHTTPStatus == HTTPSuccess )
         {
 #ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
-            xFileSize = aknano_context->selected_target.expected_size;
-            xResponse.contentLength = xFileSize;
+            //xFileSize = aknano_context->selected_target.expected_size;
+            // xResponse.contentLength = xFileSize;
 #else
             if (xFileSize == FILE_SIZE_UNSET && GetFileSize(&pxFileSize, &xResponse) == pdPASS) {
                 xFileSize = pxFileSize;
@@ -509,30 +491,30 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
             }
 #endif
 
-            LogInfo( ( "Received HTTP response from %s %s...",
+            LogDebug( ( "Received HTTP response from %s %s...",
                         "binary download server", pcPath ) );
             LogDebug( ( "Response Headers:\n%.*s",
                         ( int ) xResponse.headersLen,
                         xResponse.pHeaders ) );
-            LogInfo( ( "Response Body Len: %d",
+            LogDebug( ( "Response Body Len: %d",
                        ( int ) xResponse.bodyLen) );
             if (xStatus == pdPASS) {
                 // FIXME
                 #define MAX_FIRMWARE_SIZE 0x100000
 
-                mbedtls_sha256_update(&aknano_context->sha256_context, xResponse.pBody, xResponse.contentLength);
-                if (HandleReceivedData(xResponse.pBody, xCurByte, xResponse.contentLength, dstAddr + BOOT_FLASH_BASE, MAX_FIRMWARE_SIZE) < 0)
+                mbedtls_sha256_update(&aknano_context->sha256_context, xResponse.pBody, xResponse.bodyLen);
+                if (HandleReceivedData(xResponse.pBody, xCurByte, xResponse.bodyLen, dstAddr + BOOT_FLASH_BASE, MAX_FIRMWARE_SIZE) < 0)
                 {
                     LogError(("Error during HandleReceivedData"));
                     xStatus = pdFAIL;
                     break;
                 }
 
-                stored += xResponse.contentLength;
+                stored += xResponse.bodyLen;
 
                 /* We increment by the content length because the server may not
                 * have sent us the range we requested. */
-                xCurByte += xResponse.contentLength;
+                xCurByte += xResponse.bodyLen;
 
                 if( ( xFileSize - xCurByte ) < xNumReqBytes )
                 {
@@ -544,27 +526,10 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
         }
         else
         {
-#if 0
             // It is normal to get in here, because of the current server sinalization that the connection will be closed
             LogError( ( "An error occurred in downloading the file. "
                         "Failed to send HTTP GET request to %s %s: Error=%s.",
                         "binary download server", pcPath, HTTPClient_strerror( xHTTPStatus ) ) );
-#endif
-        }
-
-        // Force re-connection after every attempt
-        if (/*xHTTPStatus == HTTPNetworkError && */ retriesLimit-- > 0) {
-            // LogInfo(("Disconnecting retriesLimit=%d", retriesLimit));
-            SecureSocketsTransport_Disconnect( pxNetworkContext );
-            //LogInfo(("Reconnecting"));
-            vTaskDelay(50 / portTICK_PERIOD_MS);
-            BaseType_t ret;
-            if (xNumReqBytes > 0) {
-                ret = prvConnectToDownloadServer(pxNetworkContext);
-                // LogInfo(("Reconnect result = %d", ret));
-                if (ret == pdPASS)
-                    xHTTPStatus = HTTPSuccess;
-            }
         }
 
         if( xStatus != pdPASS )
@@ -574,10 +539,15 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                         xResponse.statusCode ) );
         }
     }
-#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
-    xStatus = pdPASS;
-    xHTTPStatus = HTTPSuccess;
-#endif
+    LogInfo(("Disconnecting"));
+    SecureSocketsTransport_Disconnect( pxNetworkContext );
+
+    if (stored != aknano_context->selected_target.expected_size) {
+        LogInfo( ( ANSI_COLOR_MAGENTA "Actual file size (%ld bytes) does not match expected size (%ld bytes)" ANSI_COLOR_RESET, stored, aknano_context->selected_target.expected_size));
+        xStatus = pdFAIL;
+    } else {
+        LogInfo( ( ANSI_COLOR_MAGENTA "Actual file size (%ld bytes) matches expected size (%ld bytes)" ANSI_COLOR_RESET, stored, aknano_context->selected_target.expected_size));
+    }
 
     if (( xStatus == pdPASS ) && ( xHTTPStatus == HTTPSuccess )) {
         mbedtls_sha256_finish_ret(&aknano_context->sha256_context, sha256_bytes);
