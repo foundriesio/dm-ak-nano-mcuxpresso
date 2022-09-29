@@ -23,115 +23,11 @@
 #define AKNANO_REQUEST_BODY ""
 #define AKNANO_REQUEST_BODY_LEN sizeof(AKNANO_REQUEST_BODY)-1
 
-#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
 #define AKNANO_DOWNLOAD_ENDPOINT "ac1f3cae-6b17-4872-b559-d197508b3620.ostree.foundries.io"
 #define AKNANO_DOWNLOAD_PORT 8443
 
 #include "aknano_secret.h"
 static const char donwloadServer_ROOT_CERTIFICATE_PEM[] = AKNANO_DEVICE_GATEWAY_CERTIFICATE;
-#else
-#define AKNANO_DOWNLOAD_ENDPOINT "detsch.gobolinux.org"
-#define AKNANO_DOWNLOAD_PORT 443
-
-static const char donwloadServer_ROOT_CERTIFICATE_PEM[] =
-"-----BEGIN CERTIFICATE-----\n"
-"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\n"
-"-----END CERTIFICATE-----\n"
-"-----BEGIN CERTIFICATE-----\n"
-"MIIFFjCCAv6gAwIBAgIRAJErCErPDBinU/bWLiWnX1owDQYJKoZIhvcNAQELBQAw\n"
-"TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n"
-"cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjAwOTA0MDAwMDAw\n"
-"WhcNMjUwOTE1MTYwMDAwWjAyMQswCQYDVQQGEwJVUzEWMBQGA1UEChMNTGV0J3Mg\n"
-"RW5jcnlwdDELMAkGA1UEAxMCUjMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK\n"
-"AoIBAQC7AhUozPaglNMPEuyNVZLD+ILxmaZ6QoinXSaqtSu5xUyxr45r+XXIo9cP\n"
-"R5QUVTVXjJ6oojkZ9YI8QqlObvU7wy7bjcCwXPNZOOftz2nwWgsbvsCUJCWH+jdx\n"
-"sxPnHKzhm+/b5DtFUkWWqcFTzjTIUu61ru2P3mBw4qVUq7ZtDpelQDRrK9O8Zutm\n"
-"NHz6a4uPVymZ+DAXXbpyb/uBxa3Shlg9F8fnCbvxK/eG3MHacV3URuPMrSXBiLxg\n"
-"Z3Vms/EY96Jc5lP/Ooi2R6X/ExjqmAl3P51T+c8B5fWmcBcUr2Ok/5mzk53cU6cG\n"
-"/kiFHaFpriV1uxPMUgP17VGhi9sVAgMBAAGjggEIMIIBBDAOBgNVHQ8BAf8EBAMC\n"
-"AYYwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMBIGA1UdEwEB/wQIMAYB\n"
-"Af8CAQAwHQYDVR0OBBYEFBQusxe3WFbLrlAJQOYfr52LFMLGMB8GA1UdIwQYMBaA\n"
-"FHm0WeZ7tuXkAXOACIjIGlj26ZtuMDIGCCsGAQUFBwEBBCYwJDAiBggrBgEFBQcw\n"
-"AoYWaHR0cDovL3gxLmkubGVuY3Iub3JnLzAnBgNVHR8EIDAeMBygGqAYhhZodHRw\n"
-"Oi8veDEuYy5sZW5jci5vcmcvMCIGA1UdIAQbMBkwCAYGZ4EMAQIBMA0GCysGAQQB\n"
-"gt8TAQEBMA0GCSqGSIb3DQEBCwUAA4ICAQCFyk5HPqP3hUSFvNVneLKYY611TR6W\n"
-"PTNlclQtgaDqw+34IL9fzLdwALduO/ZelN7kIJ+m74uyA+eitRY8kc607TkC53wl\n"
-"ikfmZW4/RvTZ8M6UK+5UzhK8jCdLuMGYL6KvzXGRSgi3yLgjewQtCPkIVz6D2QQz\n"
-"CkcheAmCJ8MqyJu5zlzyZMjAvnnAT45tRAxekrsu94sQ4egdRCnbWSDtY7kh+BIm\n"
-"lJNXoB1lBMEKIq4QDUOXoRgffuDghje1WrG9ML+Hbisq/yFOGwXD9RiX8F6sw6W4\n"
-"avAuvDszue5L3sz85K+EC4Y/wFVDNvZo4TYXao6Z0f+lQKc0t8DQYzk1OXVu8rp2\n"
-"yJMC6alLbBfODALZvYH7n7do1AZls4I9d1P4jnkDrQoxB3UqQ9hVl3LEKQ73xF1O\n"
-"yK5GhDDX8oVfGKF5u+decIsH4YaTw7mP3GFxJSqv3+0lUFJoi5Lc5da149p90Ids\n"
-"hCExroL1+7mryIkXPeFM5TgO9r0rvZaBFOvV2z0gp35Z0+L4WPlbuEjN/lxPFin+\n"
-"HlUjr8gRsI3qfJOQFy/9rKIJR0Y/8Omwt/8oTWgy1mdeHmmjk7j1nYsvC9JSQ6Zv\n"
-"MldlTTKB3zhThV1+XWYp6rjd5JW1zbVWEkLNxE7GJThEUG3szgBVGP7pSWTUTsqX\n"
-"nLRbwHOoq7hHwg==\n"
-"-----END CERTIFICATE-----\n"
-"-----BEGIN CERTIFICATE-----\n"
-"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\n"
-"-----END CERTIFICATE-----\n";
-#endif
 
 #define AKNANO_DOWNLOAD_ENDPOINT_LEN sizeof(AKNANO_DOWNLOAD_ENDPOINT)-1
 
@@ -471,26 +367,6 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
         if( xHTTPStatus == HTTPSuccess )
         {
-#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
-            //xFileSize = aknano_context->selected_target.expected_size;
-            // xResponse.contentLength = xFileSize;
-#else
-            if (xFileSize == FILE_SIZE_UNSET && GetFileSize(&pxFileSize, &xResponse) == pdPASS) {
-                xFileSize = pxFileSize;
-                LogInfo( ( "Setting xFileSize=%d", xFileSize));
-                if (aknano_context->selected_target.expected_size > 0) {
-                    if (xFileSize != aknano_context->selected_target.expected_size) {
-                        LogInfo( ( ANSI_COLOR_MAGENTA "Actual file size (%ld bytes) does not match expected size (%ld bytes)" ANSI_COLOR_RESET, xFileSize, aknano_context->selected_target.expected_size));
-                        xStatus = pdFAIL;
-                    } else {
-                        LogInfo( ( ANSI_COLOR_MAGENTA "Actual file size (%ld bytes) matches expected size (%ld bytes)" ANSI_COLOR_RESET, xFileSize, aknano_context->selected_target.expected_size));
-                    }
-                } else {
-                    LogInfo( ( ANSI_COLOR_MAGENTA "Expected file size is not set" ANSI_COLOR_RESET));
-                }
-            }
-#endif
-
             LogDebug( ( "Received HTTP response from %s %s...",
                         "binary download server", pcPath ) );
             LogDebug( ( "Response Headers:\n%.*s",
@@ -621,7 +497,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
 
     if( xDemoStatus == pdPASS )
     {
-#ifdef AKNANO_DOWN_FW_FROM_OTA_FOUNDRIES
         uint8_t *h = aknano_context->selected_target.expected_hash;
         int i = 0;
         char relative_path[AKNANO_MAX_URI_LENGTH];
@@ -635,9 +510,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
         h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
         h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
         h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++]);
-#else
-        char *relative_path = aknano_context->selected_target.uri + strlen("https://") + strlen(AKNANO_DOWNLOAD_ENDPOINT);
-#endif
         LogInfo(("Download relativepath=%s", relative_path));
         xDemoStatus = prvDownloadFile(&xNetworkContext, &xTransportInterface, 
             relative_path, aknano_context->settings->image_position, aknano_context);
