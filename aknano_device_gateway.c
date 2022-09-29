@@ -206,7 +206,7 @@ int aknano_gen_serial_and_uuid(char *uuid_string, char *serial_string)
     serial_string_to_uuid_string(serial_string, uuid_string);
     uuid_string[36] = '\0';
     serial_string[32] = '\0';
-    LogInfo(("uuid='%s', serial='%s'", uuid_string, serial_string));
+    // LogInfo(("uuid='%s', serial='%s'", uuid_string, serial_string));
     return 0;
 }
 
@@ -265,13 +265,7 @@ static bool fill_event_payload(char *payload,
     // else
     //     get_pseudo_time_str(aknano_settings->boot_up_epoch, current_time_str, event_type, success);
 
-    LogInfo(("fill_event_payload: current_time_str=%s", current_time_str));
-    LogInfo(("fill_event_payload: old_version=%d", old_version));
-    LogInfo(("fill_event_payload: new_version=%d", new_version));
-    // LogInfo(("fill_event_payload: version=%d", version));
-    LogInfo(("fill_event_payload: aknano_settings->tag=%s", aknano_settings->tag));
-    LogInfo(("fill_event_payload: correlation_id=%s", correlation_id));
-    LogInfo(("fill_event_payload: evt_uuid=%s", evt_uuid));
+    LogInfo(("fill_event_payload: time=%s cor_id=%s uuid=%s", current_time_str, correlation_id, evt_uuid));
 
     snprintf(payload, 1000,
         "[{" \
@@ -366,7 +360,6 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
         return TRUE;
     }
 
-    LogInfo(("AkNanoSendEvent BEGIN %s", event_type));
     BaseType_t xDemoStatus = pdPASS;
 
     xDemoStatus = AkNano_ConnectToDevicesGateway(&network_context);
@@ -390,7 +383,6 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
 
     /* Close the network connection.  */
     aknano_mtls_disconnect(&network_context);
-    LogInfo(("AkNanoSendEvent END %s", event_type));
     return TRUE;
 }
 
