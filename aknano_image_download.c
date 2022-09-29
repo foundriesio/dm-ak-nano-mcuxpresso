@@ -22,9 +22,8 @@
 
 #define AKNANO_REQUEST_BODY ""
 #define AKNANO_REQUEST_BODY_LEN sizeof(AKNANO_REQUEST_BODY)-1
-
-#define AKNANO_DOWNLOAD_ENDPOINT "ac1f3cae-6b17-4872-b559-d197508b3620.ostree.foundries.io"
-#define AKNANO_DOWNLOAD_PORT 8443
+#define AKNANO_DOWNLOAD_ENDPOINT AKNANO_FACTORY_UUID ".ostree.foundries.io"
+#define AKNANO_DOWNLOAD_PORT AKNANO_DEVICE_GATEWAY_PORT
 
 #include "aknano_secret.h"
 static const char donwloadServer_ROOT_CERTIFICATE_PEM[] = AKNANO_DEVICE_GATEWAY_CERTIFICATE;
@@ -59,15 +58,10 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
     /* Establish a TLS session with the HTTP server. This example connects to
      * the HTTP server as specified in democonfigAWS_IOT_ENDPOINT and
      * democonfigAWS_HTTP_PORT in http_demo_mutual_auth_config.h. */
-#if 0
     LogInfo( ( "Establishing a TLS session to %.*s:%d.",
                ( int32_t ) xServerInfo.hostNameLength,
                xServerInfo.pHostName,
                xServerInfo.port ) );
-#else
-    LogInfo( ( "Establishing a TLS session to binaries download server port %d.",
-               xServerInfo.port ) );
-#endif
 
     /* Attempt to create a mutually authenticated TLS connection. */
     xNetworkStatus = SecureSocketsTransport_Connect( pxNetworkContext,

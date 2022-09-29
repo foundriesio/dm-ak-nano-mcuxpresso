@@ -17,6 +17,7 @@
 #include "aknano_secret.h"
 #include "libtufnano.h"
 
+#define AKNANO_DEVICE_GATEWAY_ENDPOINT AKNANO_FACTORY_UUID ".ota-lite.foundries.io"
 
 #define AKNANO_DEVICE_GATEWAY_ENDPOINT_LEN ( ( uint16_t ) ( sizeof( AKNANO_DEVICE_GATEWAY_ENDPOINT ) - 1 ) )
 
@@ -166,7 +167,7 @@ static void get_time_str(time_t boot_up_epoch, char *output)
         tm->tm_hour, tm->tm_min, tm->tm_sec,
         0);
 
-    LogInfo(("get_time_str: %s (boot_up_epoch=%lld)", output, boot_up_epoch));
+    // LogInfo(("get_time_str: %s (boot_up_epoch=%lld)", output, boot_up_epoch));
 }
 
 
