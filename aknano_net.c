@@ -95,7 +95,6 @@ BaseType_t aknano_mtls_connect(
         xStatus = pdFAIL;
     } else {
         /* Define the transport interface. */
-        LogInfo(("Setting network_context->xTransportInterface"));
         network_context->xTransportInterface.pNetworkContext = &network_context->xNetworkContext;
         network_context->xTransportInterface.send = SecureSocketsTransport_Send;
         network_context->xTransportInterface.recv = SecureSocketsTransport_Recv;
