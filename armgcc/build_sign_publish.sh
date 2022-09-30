@@ -9,6 +9,9 @@ set -e # exit on errors
 mcuboot_path="${HOME}/nxp_sdk/SDK_2_11_1_MIMXRT1170-EVK/middleware/mcuboot_opensource/"
 fioctl_path="${HOME}/git_foundries/fioctl/bin"
 
+[ -n "${MCUBOOT_PATH}" ] && mcuboot_path=${MCUBOOT_PATH}
+[ -n "${FIOCTL_PATH}" ] && fioctl_path=${FIOCTL_PATH}
+
 COLOR_RED="\e[31m"
 COLOR_GREEN="\e[32m"
 COLOR_YELLOW="\e[33m"
