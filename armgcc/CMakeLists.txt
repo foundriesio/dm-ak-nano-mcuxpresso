@@ -120,11 +120,6 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/src/sys_arch.c"
 "${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif_kinetis.c"
 "${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif.c"
-"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/aes_alt.c"
-"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/ecp_alt.c"
-"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/ecp_curves_alt.c"
-"${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/ksdk_mbedtls.c"
-
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
 
@@ -137,151 +132,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 
 "${ProjDirPath}/../../../middleware/http-parser/http_parser.c"
 
-"${ProjDirPath}/../../../middleware/lwip/src/api/api_lib.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/api_msg.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/err.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/if_api.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/netbuf.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/netdb.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/netifapi.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/sockets.c"
-"${ProjDirPath}/../../../middleware/lwip/src/api/tcpip.c"
 "${ProjDirPath}/../../../middleware/lwip/src/apps/sntp/sntp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/altcp_alloc.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/altcp_tcp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/altcp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/def.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/dns.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/inet_chksum.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/init.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ip.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/autoip.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/dhcp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/etharp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/icmp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/igmp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/ip4_addr.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/ip4_frag.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/ipv4/ip4.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/dhcp6.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/ethip6.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/icmp6.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/inet6.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/ip6_addr.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/ip6_frag.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/ip6.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/mld6.c"
-# "${ProjDirPath}/../../../middleware/lwip/src/core/ipv6/nd6.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/mem.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/memp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/netif.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/pbuf.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/raw.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/stats.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/sys.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/tcp_in.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/tcp_out.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/tcp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/timeouts.c"
-"${ProjDirPath}/../../../middleware/lwip/src/core/udp.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/bridgeif_fdb.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/bridgeif.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/ethernet.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/lowpan6_ble.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/lowpan6_common.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/lowpan6.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/slipif.c"
-"${ProjDirPath}/../../../middleware/lwip/src/netif/zepif.c"
-
-"${ProjDirPath}/../../../middleware/mbedtls/library/aes.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/aesni.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/arc4.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/aria.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/asn1parse.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/asn1write.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/base64.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/bignum.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/blowfish.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/camellia.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ccm.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/certs.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/chacha20.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/chachapoly.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/cipher_wrap.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/cipher.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/cmac.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/constant_time.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ctr_drbg.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/debug.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/des.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/dhm.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ecdh.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ecdsa.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ecjpake.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ecp_curves.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ecp.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/entropy_poll.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/entropy.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/error.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/error.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/gcm.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/havege.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/hkdf.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/hmac_drbg.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/md.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/md2.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/md4.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/md5.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/memory_buffer_alloc.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/net_sockets.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/nist_kw.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/oid.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/padlock.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pem.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pk_wrap.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pk.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pkcs11.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pkcs12.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pkcs5.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pkparse.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/pkwrite.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/platform_util.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/platform.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_client.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_driver_wrappers.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_ecp.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_rsa.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_se.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_slot_management.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto_storage.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_crypto.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/psa_its_file.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/rsa_internal.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/rsa.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/sha1.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/sha256.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/sha512.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_cache.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_ciphersuites.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_cli.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_cookie.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_msg.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_srv.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_ticket.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_tls.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/ssl_tls13_keys.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/threading.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/timing.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/version_features.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/version.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509_create.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509_crl.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509_crt.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509_csr.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509write_crt.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/x509write_csr.c"
-"${ProjDirPath}/../../../middleware/mbedtls/library/xtea.c"
 
 "${ProjDirPath}/../../../middleware/unity/src/unity.c"
 "${ProjDirPath}/../../../middleware/unity/extras/fixture/src/unity_fixture.c"
@@ -299,13 +150,6 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
     "${ProjDirPath}/../board_rt1170/dcd.h"
     "${ProjDirPath}/../board_rt1170/evkmimxrt1170_connect_cm4_cm7side.jlinkscript"
 
-
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1171/drivers/fsl_clock.c"
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_anatop_ai.c"
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/drivers/fsl_pmu.c"
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/gcc/startup_MIMXRT1176_cm7.S"
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176/system_MIMXRT1176_cm7.c"
-   
     )
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1170")
 
@@ -366,13 +210,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     "${ProjDirPath}/../board_rt1060/dcd.c"
     "${ProjDirPath}/../board_rt1060/dcd.h"
 
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_clock.c"
-    # "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_anatop_ai.c"
-    # "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/drivers/fsl_pmu.c"
     "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/gcc/startup_MIMXRT1062.S"
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/system_MIMXRT1062.c"
-
-    "${ProjDirPath}/../../../mcuxsdk/drivers/trng/fsl_trng.c"
     )
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1060")
 
@@ -456,12 +294,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../../../middleware/freertos/pkcs11/
     ${ProjDirPath}/../../../middleware/freertos/tls_freertos/
     ${ProjDirPath}/../../../middleware/http-parser/
-    ${ProjDirPath}/../../../middleware/lwip/src/include/
     ${ProjDirPath}/../../../middleware/lwip/port/
-    ${ProjDirPath}/../../../middleware/mbedtls/include/
-    ${ProjDirPath}/../../../middleware/mbedtls/include/mbedtls
-    ${ProjDirPath}/../../../middleware/mbedtls/library/
-    ${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/
     ${ProjDirPath}/../../../middleware/unity/extras/fixture/src/
     ${ProjDirPath}/../../../middleware/unity/extras/memory/src/
     ${ProjDirPath}/../../../middleware/unity/src/
@@ -498,6 +331,7 @@ set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../mcuxsdk/
     ${ProjDirPath}/../../../
     ${ProjDirPath}/../../../middleware
+    ${ProjDirPath}/../../../middleware/mbedtls
     ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1162
     ${ProjDirPath}/../../../mcuxsdk/devices/    
     ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
@@ -535,6 +369,15 @@ include(driver_flexspi)
 # include(middleware_lwip_enet_ethernetif)
 
 # include(middleware_lwip)
+
+include(device_CMSIS)
+include(device_startup)
+include(device_system)
+include(driver_clock)
+include(CMSIS_Include_core_cm)
+include(middleware_mbedtls_MIMXRT1062)
+include(middleware_lwip_enet_ethernetif_MIMXRT1062)
+include(middleware_lwip)
 
 include(driver_phy-common)
 
