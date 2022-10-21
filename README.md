@@ -28,7 +28,7 @@ west update
 - Start with an empty board, erasing original content if needed:
 
 ~~~
-pyocd erase --mass
+pyocd erase --mass -t MIMXRT1060
 ~~~
 
 ## MCUBoot flashing
