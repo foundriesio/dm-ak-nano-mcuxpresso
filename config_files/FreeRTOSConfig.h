@@ -59,7 +59,11 @@
 #define configTICK_RATE_HZ                           ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES                         ( 7 )
 #define configMINIMAL_STACK_SIZE                     ( ( uint16_t ) 90 )
+#ifdef AKNANO_ENABLE_SE05X
+#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 360 * 1024 ) )
+#else
 #define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 120 * 1024 ) )
+#endif
 #define configMAX_TASK_NAME_LEN                      ( 16 )
 #define configUSE_TRACE_FACILITY                     1
 #define configUSE_16_BIT_TICKS                       0
@@ -83,7 +87,11 @@
 #define configUSE_TIMERS                             1
 #define configTIMER_TASK_PRIORITY                    ( configMAX_PRIORITIES - 2 )
 #define configTIMER_QUEUE_LENGTH                     10
+#ifdef AKNANO_ENABLE_SE05X
+#define configTIMER_TASK_STACK_DEPTH                 ( 4096 )
+#else
 #define configTIMER_TASK_STACK_DEPTH                 ( configMINIMAL_STACK_SIZE * 8 )
+#endif
 
 /* Set the following definitions to 1 to include the API function, or zero
  * to exclude the API function. */

@@ -76,6 +76,18 @@
 #include "fsl_iomuxc.h"
 #endif
 
+#if AKNANO_ENABLE_SE05X
+#include <ex_sss_boot.h>
+
+static ex_sss_boot_ctx_t gex_sss_demo_boot_ctx;
+ex_sss_boot_ctx_t * pex_sss_demo_boot_ctx = &gex_sss_demo_boot_ctx;
+
+static ex_sss_cloud_ctx_t gex_sss_demo_tls_ctx;
+ex_sss_cloud_ctx_t * pex_sss_demo_tls_ctx = &gex_sss_demo_tls_ctx;
+
+const char * g_port_name = NULL;
+#endif
+
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -139,6 +151,8 @@
 #define LOGGING_TASK_PRIORITY   (tskIDLE_PRIORITY + 1)
 #define LOGGING_TASK_STACK_SIZE (200)
 #define LOGGING_QUEUE_LENGTH    (16)
+
+#define AKNANO_TASK_STACK_SIZE 5000
 
 /*******************************************************************************
  * Prototypes
@@ -316,7 +330,7 @@ void vApplicationDaemonTaskStartupHook(void)
                                                     .networkDisconnectedCallback = NULL};
 
             Iot_CreateDetachedThread(runDemoTask, &mqttDemoContext, (tskIDLE_PRIORITY + 1),
-                                     (configMINIMAL_STACK_SIZE * 100));
+                                     AKNANO_TASK_STACK_SIZE);
 #endif
         }
     }

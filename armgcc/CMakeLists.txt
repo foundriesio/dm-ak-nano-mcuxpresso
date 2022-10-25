@@ -1,3 +1,5 @@
+SET (AKNANO_ENABLE_SE05X 0)
+
 # CROSS COMPILER SETTING
 SET(CMAKE_SYSTEM_NAME Generic)
 CMAKE_MINIMUM_REQUIRED (VERSION 3.10.0)
@@ -120,7 +122,6 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/src/sys_arch.c"
 "${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif_kinetis.c"
 "${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif.c"
-"${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
 
 "${ProjDirPath}/../../../middleware/freertos/backoffAlgorithm/source/backoff_algorithm.c"
@@ -128,7 +129,6 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../middleware/freertos/coreJSON/source/core_json.c"
 "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/core_pkcs11.c"
 "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/core_pki_utils.c"
-"${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c"
 
 "${ProjDirPath}/../../../middleware/http-parser/http_parser.c"
 
@@ -333,7 +333,8 @@ set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../middleware
     ${ProjDirPath}/../../../middleware/mbedtls
     ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1162
-    ${ProjDirPath}/../../../mcuxsdk/devices/    
+    ${ProjDirPath}/../../../mcuxsdk/devices/
+    ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
     ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
     ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
 )
@@ -346,6 +347,7 @@ set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../
     ${ProjDirPath}/../../../middleware
     ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
+    ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
     ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
     ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
 )
@@ -455,3 +457,121 @@ TARGET_LINK_LIBRARIES(${MCUX_SDK_PROJECT_NAME} PRIVATE -Wl,--end-group)
 ADD_CUSTOM_COMMAND(TARGET ${MCUX_SDK_PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_OBJCOPY}
 -Obinary ${EXECUTABLE_OUTPUT_PATH}/${MCUX_SDK_PROJECT_NAME} ${EXECUTABLE_OUTPUT_PATH}/ota_demo.bin)
 
+
+if(AKNANO_ENABLE_SE05X EQUAL 1)
+    SET(SE05X_SDK_PATH "${ProjDirPath}/../../../middleware/plug-and-trust")
+    SET(SE05X_SDK_FROM_ZIP_PATH "${ProjDirPath}/../../../poc/3rdparty/middleware/plug-and-trust")
+
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ENABLE_SE05X")
+
+    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        "${ProjDirPath}/../../../foundriesio/mbedtls/library/ecdh.c"
+        "${SE05X_SDK_PATH}/sss/ex/src/ex_sss_boot.c"
+        "${SE05X_SDK_PATH}/sss/ex/src/ex_sss_se05x.c"
+        "${SE05X_SDK_PATH}/sss/src/fsl_sss_apis.c"
+        "${SE05X_SDK_PATH}/sss/src/fsl_sss_util_asn1_der.c"
+        "${SE05X_SDK_PATH}/sss/src/fsl_sss_util_rsa_sign_utils.c"
+        "${SE05X_SDK_PATH}/sss/src/fsl_sss_util_asn1_der.c"
+        "${SE05X_SDK_PATH}/sss/src/mbedtls/fsl_sss_mbedtls_apis.c"
+        "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_apis.c"
+        "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_eckey.c"
+        "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_mw.c"
+        "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_policy.c"
+        "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_scp03.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/sm_connect.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/global_platf.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/nxScp/nxScp03_Com.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/smCom.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/smComT1oI2C.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/T1oI2C/phNxpEse_Api.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/T1oI2C/phNxpEsePal_i2c.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/T1oI2C/phNxpEseProto7816_3.c"
+        # "${SE05X_SDK_PATH}/hostlib/hostLib/platform/ksdk/timer_kinetis_bm.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/se05x_03_xx_xx/se05x_APDU.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/se05x/src/se05x_tlv.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/se05x/src/se05x_ECC_curves.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/se05x/src/se05x_mw.c"
+        "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/log/nxLog.c"
+        "${SE05X_SDK_PATH}/sss/ex/src/ex_sss_boot_connectstring.c"
+
+        # SE050 PKCS11
+        "${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/pkcs11_mbedtls_utils.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/sss_pkcs11_pal_asymm.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/sss_pkcs11_pal_core.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/sss_pkcs11_pal_helpers.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/sss_pkcs11_pal_object.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/sss_pkcs11_pal_symm.c"
+
+        "${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/ksdk/ax_reset.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/ksdk/timer_kinetis.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/ksdk/timer_kinetis_freertos.c"
+        "${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/ksdk/i2c_imxrt.c"
+    )
+
+    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        ${SE05X_SDK_PATH}/sss/ex/inc/
+        ${SE05X_SDK_PATH}/sss/inc/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/inc/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/log/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/se05x_03_xx_xx/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/
+        ${SE05X_SDK_PATH}/sss/plugin/mbedtls/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/smCom/T1oI2C/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/
+        ${SE05X_SDK_PATH}/hostlib/hostLib/platform/inc/
+        ${SE05X_SDK_FROM_ZIP_PATH}/sss/port/ksdk/
+        ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/libCommon/smCom/
+        ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/inc/
+        ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/inc/
+        ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/libCommon/infra/
+        ${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/
+    )
+
+    # SE05X
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDK_DEBUGCONSOLE=1")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDK_DEBUGCONSOLE_UART")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMCUXPRESSO_SDK")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_SMCOM_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_APP_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_SSS_DEBUG=1")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_PKCS11_DEBUG=1")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_USECASES_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_VCOM_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_PKCS11_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_SSCP_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_MBEDTLS_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_HOSTLIB_DEBUG=1")
+
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFLOW_VERBOSE")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_DES_C")
+
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSDK_I2C_BASED_COMPONENT_USED")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__USE_CMIS")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__MCUXPRESSO")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__NEWLIB")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_DES_C")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVERBOSE_APDU_LOGS=1")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPKCS11_SESSION_OPEN")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_CONSOLE_TRANSFER_NON_BLOCKING=1")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_CONSOLE_RECEIVE_BUFFER_LEN=4096")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG_CONSOLE_ENABLE_ECHO=1")
+
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__stack_size__=0x2000")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D__heap_size__=0x10000")
+
+    include(driver_lpi2c)
+    include(driver_lpi2c_freertos)
+else()
+    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        # PKCS#11 using mflash
+        "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c"
+        "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
+    )
+endif(ENABLE_SE05X_SUPPORT EQUAL 1)

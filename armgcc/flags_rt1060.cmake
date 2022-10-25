@@ -50,6 +50,16 @@ SET(CMAKE_C_FLAGS_FLEXSPI_NOR_DEBUG " \
     -DSDK_OS_FREE_RTOS \
     -DSERIAL_PORT_TYPE_UART=1 \
     -DMCUXPRESSO_SDK \
+    \
+    -DIMX_RT \
+    -DPRINTF_ADVANCED_ENABLE=1 \
+    -DMBEDTLS \
+    -DSCP_MODE=C_MAC_C_ENC_R_MAC_R_ENC \
+    -DT1oI2C \
+    -DT1oI2C_UM11225=1 \
+    -DSSS_USE_FTR_FILE \
+    -DNO_SECURE_CHANNEL_SUPPORT \
+    \
     -g \
     -O0 \
     -fomit-frame-pointer \
