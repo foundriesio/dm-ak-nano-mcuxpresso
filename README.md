@@ -208,17 +208,60 @@ To generate new versions to test the OTA functionality, an yet unreleased versio
 of fioctl is required. It can be fetched from: https://github.com/foundriesio/fioctl/tree/mcu-api.
 Notice that the feature is only available in the mcu-api branch.
 
-After compiling fioctl, set its path:
-~~~
-export FIOCTL_PATH=~/git_foundries/fioctl/bin"
-~~~
-
-Make sure to `fioctl login` using your client ID, which must have access to the
+After compiling fioctl, make sure it is on the enviroment PATH, and log in with `fioctl login` using your client ID, which must have access to the
 factory.
 
 Then, the application can be built and published:
 
 ~~~
-# build for RT1060, publish, do not flash
-./build_sign_publish.sh --rt1060
+# build for RT1060, publish, do not flash, use tag "nxp"
+./build_sign_publish.sh --rt1060 --tags=nxp
 ~~~
+
+As an alternative to using the script, the `fioctl` command can be called manually
+after buiding and signing the firmware binary. Here is an example command:
+
+~~~
+# Upload version 3772 with tag "nxp"
+fioctl --verbose targets create-file "ota_demo.3772.signed.bin" "3772" "MIMXRT1060-EVK" "nxp"
+~~~
+
+## Changing the tag tracked by the device
+
+The *tag* that is being tracked by the device, as long as the *polling_interval* and
+the *btn_polling_interval* can be adjusted by uploading a settings JSON file to the
+factory. Here is an example:
+
+~~~
+{
+    "reason": "",
+    "files": [
+        {
+        "name": "tag",
+        "value": "nxp",
+        "unencrypted": true
+        },
+        {
+        "name": "polling_interval",
+        "value": "10",
+        "unencrypted": true
+        },
+        {
+        "name": "btn_polling_interval",
+        "value": "2000",
+        "unencrypted": true
+        }
+    ]
+}
+~~~
+
+Save this file to a local file, for exemple, *device_settings.json*, and upload it
+with a command such as:
+
+~~~
+fioctl devices config set "MIMXRT1060-EVK-71FBF5FCB35B79452A95C0E1E25C915E"  --raw device_settings.json
+~~~
+
+Replace "MIMXRT1060-EVK-71FBF5FCB35B79452A95C0E1E25C915E" with the name of the
+device that will be affected. The name can be verified in the `app.foundries.io` 
+factory web dashboard.
