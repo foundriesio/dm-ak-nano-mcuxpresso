@@ -126,7 +126,12 @@ fi
 if [ ${DO_PUBLISH} -eq 1 -a ${DO_TEST_BUILD} -ne 1 ]; then
   echo -e "${COLOR_YELLOW}"
   echo -e "Publishing..."
-  ${fioctl_path}/fioctl-linux-amd64 --verbose targets create-file "${signed_file}" "${revision}" "${BUILD_HWID}" "${PUBLISH_TAGS}"
+  fioctl_cmd="fioctl"
+  if [ -f "${fioctl_path}/fioctl-linux-amd64" ]; then
+    fioctl_cmd="${fioctl_path}/fioctl-linux-amd64"
+  fi
+  ${fioctl_cmd} --verbose targets create-file "${signed_file}" "${revision}" "${BUILD_HWID}" "${PUBLISH_TAGS}"
+
   echo -e "Publishing Done"
   echo -e "${COLOR_RESET}"
 fi
