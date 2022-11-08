@@ -574,4 +574,4 @@ else()
         "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c"
         "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
     )
-endif(ENABLE_SE05X_SUPPORT EQUAL 1)
+endif(AKNANO_ENABLE_SE05X EQUAL 1)
