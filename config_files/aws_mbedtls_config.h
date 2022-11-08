@@ -914,10 +914,10 @@ void *pvPortCalloc(size_t num, size_t size); /*Calloc for HEAP3.*/
  *
  * Comment macros to disable the curve and functions for it
  */
-//#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
-//#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
+#define MBEDTLS_ECP_DP_SECP192R1_ENABLED
+#define MBEDTLS_ECP_DP_SECP224R1_ENABLED
 #define MBEDTLS_ECP_DP_SECP256R1_ENABLED
-//#define MBEDTLS_ECP_DP_SECP384R1_ENABLED
+#define MBEDTLS_ECP_DP_SECP384R1_ENABLED
 //#ifndef MBEDTLS_FREESCALE_LTC_PKHA /* PKHA suports only <=512 */
 //#define MBEDTLS_ECP_DP_SECP521R1_ENABLED
 //#endif
@@ -2723,7 +2723,7 @@ void *pvPortCalloc(size_t num, size_t size); /*Calloc for HEAP3.*/
  * Caller:  library/md.c
  *
  */
-//#define MBEDTLS_RIPEMD160_C
+#define MBEDTLS_RIPEMD160_C
 
 /**
  * \def MBEDTLS_RSA_C
@@ -2796,7 +2796,7 @@ void *pvPortCalloc(size_t num, size_t size); /*Calloc for HEAP3.*/
  *
  * This module adds support for SHA-384 and SHA-512.
  */
-//#define MBEDTLS_SHA512_C
+#define MBEDTLS_SHA512_C
 
 /**
  * \def MBEDTLS_SSL_CACHE_C
