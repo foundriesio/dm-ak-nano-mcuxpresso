@@ -130,7 +130,11 @@
  * Private key for connection to AWS IoT endpoint.  The corresponding
  * public key should be registered with the AWS IoT endpoint.
  */
+#ifdef AKNANO_ENABLE_EL2GO
+#define pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS       "sss:42000083"
+#else
 #define pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS       "Device Priv TLS Key"
+#endif
 
 /**
  * @brief The PKCS #11 label for device public key.
@@ -139,12 +143,17 @@
  */
 #define pkcs11configLABEL_DEVICE_PUBLIC_KEY_FOR_TLS        "Device Pub TLS Key"
 
+
 /**
  * @brief The PKCS #11 label for the device certificate.
  *
  * Device certificate corresponding to pkcs11configLABEL_DEVICE_PRIVATE_KEY_FOR_TLS.
  */
+#ifdef AKNANO_ENABLE_EL2GO
+#define pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS       "sss:43000083"
+#else
 #define pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS       "Device Cert"
+#endif
 
 /**
  * @brief The PKCS #11 label for the object to be used for code verification.

@@ -1,4 +1,5 @@
 SET (AKNANO_ENABLE_SE05X 0)
+SET (AKNANO_ENABLE_EL2GO 0)
 
 # CROSS COMPILER SETTING
 SET(CMAKE_SYSTEM_NAME Generic)
@@ -465,7 +466,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ENABLE_SE05X")
 
     target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
-        "${ProjDirPath}/../../../foundriesio/mbedtls/library/ecdh.c"
+        "${ProjDirPath}/../../../middleware/mbedtls/library/ecdh.c"
         "${SE05X_SDK_PATH}/sss/ex/src/ex_sss_boot.c"
         "${SE05X_SDK_PATH}/sss/ex/src/ex_sss_se05x.c"
         "${SE05X_SDK_PATH}/sss/src/fsl_sss_apis.c"
@@ -525,6 +526,10 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
         ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/inc/
         ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/libCommon/infra/
         ${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/
+        ${ProjDirPath}/../../../mcuxsdk/components/phy/device/phyrtl8211f/
+
+        # El2Go
+        ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/tstUtil/
     )
 
     # SE05X
@@ -534,8 +539,8 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMCUXPRESSO_SDK")
     # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_SMCOM_DEBUG=1")
     # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_APP_DEBUG=1")
-    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_SSS_DEBUG=1")
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_PKCS11_DEBUG=1")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_SSS_DEBUG=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_PKCS11_DEBUG=1")
 
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_USECASES_DEBUG=1")
     # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_VCOM_DEBUG=1")
@@ -555,7 +560,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
 
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_DES_C")
 
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVERBOSE_APDU_LOGS=1")
+    # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVERBOSE_APDU_LOGS=1")
 
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPKCS11_SESSION_OPEN")
 
@@ -568,6 +573,37 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
 
     include(driver_lpi2c)
     include(driver_lpi2c_freertos)
+
+    if(AKNANO_ENABLE_EL2GO EQUAL 1)
+        SET (CMAKE_MODULE_PATH $CMAKE_MODULE_PATH
+            ${SE05X_SDK_FROM_ZIP_PATH}
+        )
+        include(middleware_se_hostlib_nxp_iot_agent_lib)
+
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DAKNANO_ENABLE_EL2GO")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPB_FIELD_16BIT")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSSS_HAVE_MBEDTLS_ALT_SSS")
+
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_SSL_KEEP_PEER_CERTIFICATE")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_X509_CRL_PARSE_C")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_ECDH_ALT")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_ECDH_GEN_PUBLIC_ALT")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_ECDH_COMPUTE_SHARED_ALT")
+
+        # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_APP_DEBUG")
+
+        target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+            "${ProjDirPath}/../aknano_el2go.c"
+            "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/sm_apdu.c"
+            "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecp_alt_sss.c"
+            "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecdh_alt_ax.c"
+            "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecdsa_verify_alt.c"
+            "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecp_alt_sss.c"
+            "${SE05X_SDK_PATH}/sss/plugin/mbedtls/sss_mbedtls.c"
+            "${SE05X_SDK_PATH}/sss/plugin/mbedtls/sss_mbedtls_rsa.c"
+            "${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/mbedtls/src/ecdh_alt.c"
+        )
+    endif(AKNANO_ENABLE_EL2GO EQUAL 1)
 else()
     target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
         # PKCS#11 using mflash

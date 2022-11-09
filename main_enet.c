@@ -79,10 +79,10 @@
 #if AKNANO_ENABLE_SE05X
 #include <ex_sss_boot.h>
 
-static ex_sss_boot_ctx_t gex_sss_demo_boot_ctx;
+ex_sss_boot_ctx_t gex_sss_demo_boot_ctx;
 ex_sss_boot_ctx_t * pex_sss_demo_boot_ctx = &gex_sss_demo_boot_ctx;
 
-static ex_sss_cloud_ctx_t gex_sss_demo_tls_ctx;
+ex_sss_cloud_ctx_t gex_sss_demo_tls_ctx;
 ex_sss_cloud_ctx_t * pex_sss_demo_tls_ctx = &gex_sss_demo_tls_ctx;
 
 const char * g_port_name = NULL;
@@ -307,6 +307,9 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
                         const IotNetworkInterface_t * pxNetworkInterface );
 int initTime();
 int initStorage();
+#ifdef AKNANO_ENABLE_EL2GO
+void aknano_start_el2go_task();
+#endif
 
 void vApplicationDaemonTaskStartupHook(void)
 {
@@ -421,7 +424,9 @@ xx
     xTaskCreate(btn_read_task, "btn_read_task", 2048, NULL, btn_press_task_PRIO, NULL);
 
     // xTaskCreate(sampleAppTask, "sntp_task", 4096, NULL, btn_press_task_PRIO, NULL);
-
+#ifdef AKNANO_ENABLE_EL2GO
+    aknano_start_el2go_task();
+#endif
     vTaskStartScheduler();
     for (;;)
         ;
