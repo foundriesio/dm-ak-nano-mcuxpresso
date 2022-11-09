@@ -250,10 +250,15 @@ int initNetwork(void)
 
     mdioHandle.resource.csrClock_Hz = EXAMPLE_CLOCK_FREQ;
 
+#ifdef AKNANO_USE_STATIC_NETWORK_SETTINGS
+    IP4_ADDR(&netif_ipaddr, 192, 168, 15, 8);
+    IP4_ADDR(&netif_netmask, 255, 255, 255, 0);
+    IP4_ADDR(&netif_gw, 192, 168, 15, 1);
+#else
     IP4_ADDR(&netif_ipaddr, 0, 0, 0, 0);
     IP4_ADDR(&netif_netmask, 0, 0, 0, 0);
     IP4_ADDR(&netif_gw, 0, 0, 0, 0);
-
+#endif
     tcpip_init(NULL, NULL);
 
     netifapi_netif_add(&netif, &netif_ipaddr, &netif_netmask, &netif_gw, &enet_config, EXAMPLE_NETIF_INIT_FN,
@@ -261,6 +266,12 @@ int initNetwork(void)
     netifapi_netif_set_default(&netif);
     netifapi_netif_set_up(&netif);
 
+#ifdef AKNANO_USE_STATIC_NETWORK_SETTINGS
+	#include "lwip/dns.h"
+	ip4_addr_t netif_dns;
+	IP4_ADDR(&netif_dns, 8, 8, 8, 8);
+	dns_setserver(0, &netif_dns);
+#else
     configPRINTF(("Getting IP address from DHCP ...\r\n"));
     netifapi_dhcp_start(&netif);
 
@@ -279,6 +290,7 @@ int initNetwork(void)
                       ((u8_t *)&netif.ip_addr.addr)[3]));
     }
     configPRINTF(("DHCP OK\r\n"));
+#endif
 
     return INIT_SUCCESS;
 }
