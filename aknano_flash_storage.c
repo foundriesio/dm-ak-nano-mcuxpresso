@@ -103,7 +103,7 @@ status_t WriteDataToFlash(int offset, void *data, size_t data_len)
             }
 
             /* Program the page */
-            mflash_result = mflash_drv_page_program(AKNANO_STORAGE_FLASH_OFFSET + chunk_flash_addr, (int32_t*)page_buffer);
+            mflash_result = mflash_drv_page_program(AKNANO_STORAGE_FLASH_OFFSET + chunk_flash_addr, (uint32_t*)page_buffer);
             if (mflash_result != 0)
             {
                 LogError(("store_update_image: Error storing page %ld", mflash_result));

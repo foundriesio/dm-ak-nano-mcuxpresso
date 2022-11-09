@@ -323,7 +323,6 @@ BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_contex
                                       )
 {
     char *tag = aknano_settings->tag;
-    char *factory_name = aknano_settings->factory_name;
     int version = aknano_settings->running_version;
 
     char active_target[200];
@@ -427,7 +426,7 @@ int AkNanoPoll(struct aknano_context *aknano_context)
 
         // xDemoStatus = AkNano_GetTargets(&xTransportInterface, aknano_context->settings, &xResponse);
         if (tuf_ret == 0) {
-            parse_targets_metadata((const char*)tuf_data_buffer, strlen(tuf_data_buffer), aknano_context);
+            parse_targets_metadata((const char*)tuf_data_buffer, strlen((char*)tuf_data_buffer), aknano_context);
 
             // aknano_handle_manifest_data(aknano_context, single_target_buffer, &offset, (uint8_t*)xResponse.pBody, xResponse.bodyLen);
             if (aknano_context->selected_target.version == 0) {

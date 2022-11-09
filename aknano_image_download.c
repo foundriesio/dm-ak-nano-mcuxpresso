@@ -19,6 +19,7 @@
 #include "aknano_priv.h"
 #include "flexspi_flash_config.h"
 
+#include <stdio.h>
 
 #define AKNANO_REQUEST_BODY ""
 #define AKNANO_REQUEST_BODY_LEN sizeof(AKNANO_REQUEST_BODY)-1
@@ -243,7 +244,6 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
     /* Return value of this method. */
     BaseType_t xStatus = pdFAIL;
     HTTPStatus_t xHTTPStatus = HTTPSuccess;
-    int retriesLimit = 20;
 
     /* Configurations of the initial request headers that are passed to
     * #HTTPClient_InitializeRequestHeaders. */
@@ -255,7 +255,6 @@ static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
 
     /* The size of the file we are trying to download . */
     size_t xFileSize = 0;
-    size_t pxFileSize;
 
     /* The number of bytes we want to request with in each range of the file
      * bytes. */
@@ -492,7 +491,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
     if( xDemoStatus == pdPASS )
     {
         uint8_t *h = aknano_context->selected_target.expected_hash;
-        int i = 0;
         char relative_path[AKNANO_MAX_URI_LENGTH];
         sprintf(relative_path, "/mcu/files/"
         "%02x/%02x%02x%02x%02x%02x%02x%02x"
@@ -500,10 +498,10 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
         "%02x%02x%02x%02x%02x%02x%02x%02x"
         "%02x%02x%02x%02x%02x%02x%02x%02x"
         ".bin",
-        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
-        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
-        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++],
-        h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++], h[i++]);
+        *(h+0), *(h+1), *(h+2), *(h+3), *(h+4), *(h+5), *(h+6), *(h+7),
+        *(h+8), *(h+9), *(h+10), *(h+11), *(h+12), *(h+13), *(h+14), *(h+15),
+        *(h+16),*(h+17), *(h+18), *(h+19), *(h+20), *(h+21), *(h+22), *(h+23),
+        *(h+24), *(h+25), *(h+26), *(h+27), *(h+28), *(h+29), *(h+30), *(h+31));
         LogInfo(("Download relativepath=%s", relative_path));
         xDemoStatus = prvDownloadFile(&xNetworkContext, &xTransportInterface, 
             relative_path, aknano_context->settings->image_position, aknano_context);

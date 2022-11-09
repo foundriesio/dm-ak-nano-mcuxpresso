@@ -353,4 +353,6 @@ void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
 
 int enable_image_and_set_boot_image_position(uint8_t imagePosition);
 
+status_t WriteDataToFlash(int offset, void *data, size_t data_len);
+
 #endif /* __AKNANO_PRIV_H__ */

@@ -53,7 +53,7 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
 	// LogInfo(("handle_json_data: Parsing target data with len=%d", len));
 	JSONStatus_t result = JSON_Validate(data, len);
 	if (result != JSONSuccess) {
-		log_info(("handle_json_data: Got invalid targets JSON: %s\n", data));
+		LogInfo(("handle_json_data: Got invalid targets JSON: %s\n", data));
 		return -1;
 	}
 
@@ -61,12 +61,12 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
 	found_match = false;
 	result = JSON_SearchConst(data, len, "custom/version", strlen("custom/version"), &out_value, &out_value_len, NULL);
 	if (result == JSONSuccess) {
-		sscanf(out_value, "%u", &target.version);
+		sscanf(out_value, "%ld", &target.version);
                 // LogInfo(("tuf_parse_single_target: version=%d selected_version=%d\n", version, aknano_context->selected_target.version));
 		if (target.version <= aknano_context->selected_target.version)
 			return 0;
 	} else {
-		log_info(("handle_json_data: custom/version not found\n"));
+		LogInfo(("handle_json_data: custom/version not found\n"));
 		return 0;
 	}
 
@@ -85,11 +85,11 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
                         }
 		}
 	} else {
-		log_info(("handle_json_data: custom/hardwareIds not found\n"));
+		LogInfo(("handle_json_data: custom/hardwareIds not found\n"));
 		return 0;
 	}
 	if (!found_match) {
-		log_info(("Matching hardwareId not found (%s)", aknano_context->settings->hwid));
+		LogInfo(("Matching hardwareId not found (%s)", aknano_context->settings->hwid));
 		return 0;
         }
 
@@ -108,7 +108,7 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
 				found_match = true;
 		}
 	} else {
-		log_info(("handle_json_data: custom/tags not found\n"));
+		LogInfo(("handle_json_data: custom/tags not found\n"));
 		return 0;
 	}
 	if (!found_match) {
@@ -127,25 +127,25 @@ static int tuf_parse_single_target(const char *target_key, size_t target_key_len
 	/* Handle hashes/sha256 */
         result = JSON_SearchConst(data, len, "hashes/sha256", strlen("hashes/sha256"), &out_value, &out_value_len, NULL);
 	if (result != JSONSuccess) {
-		log_info(("handle_json_data: hashes/sha256 not found\n"));
+		LogInfo(("handle_json_data: hashes/sha256 not found\n"));
 		return 0;
 	}
         if (out_value_len != AKNANO_SHA256_LEN * 2) {
-		log_info(("handle_json_data: hashes/sha256 string has invalid length: %d\n", out_value_len));
+		LogInfo(("handle_json_data: hashes/sha256 string has invalid length: %d\n", out_value_len));
 		return 0;
         }
-        if (hex_to_bin(out_value, &target.expected_hash, AKNANO_SHA256_LEN)) {
-		log_info(("handle_json_data: hashes/sha256 string is not a valid hex value: '%.*s'\n", out_value_len, out_value));
+        if (hex_to_bin((unsigned char*)out_value, (unsigned char*)&target.expected_hash, AKNANO_SHA256_LEN)) {
+		LogInfo(("handle_json_data: hashes/sha256 string is not a valid hex value: '%.*s'\n", out_value_len, out_value));
 		return 0;
         }
 
 	/* Handle length */
 	result = JSON_SearchConst(data, len, "length", strlen("length"), &out_value, &out_value_len, NULL);
 	if (result != JSONSuccess) {
-		log_info(("handle_json_data: length not found\n"));
+		LogInfo(("handle_json_data: length not found\n"));
 		return 0;
 	}
-        sscanf(out_value, "%ld", &target.expected_size);
+        sscanf(out_value, "%u", &target.expected_size);
 
         /* All good, update selected_target */
         memcpy(&aknano_context->selected_target, &target, sizeof(aknano_context->selected_target));
@@ -167,13 +167,13 @@ int parse_targets_metadata(const char *data, int len, void *application_context)
 
 	result = JSON_Validate(data, len);
 	if (result != JSONSuccess) {
-		log_error(("parse_targets_metadata: Got invalid JSON: %s", data));
+		LogError(("parse_targets_metadata: Got invalid JSON: %s", data));
 		return TUF_ERROR_INVALID_METADATA;
 	}
 
 	result = JSON_SearchConst(data, len, "signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets", strlen("signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets"), &out_value, &out_value_len, NULL);
 	if (result != JSONSuccess) {
-		log_error(("parse_targets_metadata: \"signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets\" not found"));
+		LogError(("parse_targets_metadata: \"signed" TUF_JSON_QUERY_KEY_SEPARATOR "targets\" not found"));
 		return TUF_ERROR_FIELD_MISSING;
 	}
 
@@ -183,7 +183,7 @@ int parse_targets_metadata(const char *data, int len, void *application_context)
 	while ((result = JSON_Iterate(out_value, out_value_len, &start, &next, &pair)) == JSONSuccess) {
 		ret = tuf_parse_single_target(pair.key, pair.keyLength, pair.value, pair.valueLength, application_context);
 		if (ret < 0) {
-			log_error(("Error processing target %.*s", (int)pair.keyLength, pair.key));
+			LogError(("Error processing target %.*s", (int)pair.keyLength, pair.key));
 			break;
 		}
 	}

@@ -50,6 +50,9 @@ void BOARD_InitBootPins(void);
  *
  */
 void BOARD_InitPins(void);
+void I2CPins(void);
+void EnetPins(void);
+void spiPins(void);
 
 #if defined(__cplusplus)
 }

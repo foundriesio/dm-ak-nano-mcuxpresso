@@ -1,7 +1,4 @@
-#define LIBRARY_LOG_NAME "aknano_manifest"
-#define LIBRARY_LOG_LEVEL LOG_INFO
 #include "aknano_priv.h"
-#include "logging_stack.h"
 
 #include <stdio.h>
 #include "core_json.h"
@@ -48,7 +45,7 @@ int tuf_client_read_local_file(enum tuf_role role, unsigned char *target_buffer,
 
     if (target_buffer[0] != '{') {
         if (role == ROLE_ROOT) {
-            strncpy(target_buffer, sample_root_json, target_buffer_len);
+            strncpy((char*)target_buffer, sample_root_json, target_buffer_len);
             target_buffer[target_buffer_len-1] = 0;
             *file_size = strnlen((char*)target_buffer, target_buffer_len);
             LogInfo((ANSI_COLOR_MAGENTA "tuf_client_read_local_file: role=%s file_size=%d strlen=%d OK [HARDCODED TEST FILE]" ANSI_COLOR_RESET, tuf_get_role_name(role), *file_size, strlen((const char*)target_buffer)));

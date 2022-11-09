@@ -61,8 +61,8 @@ TEST( Full_AKNano, akNano_TestDeviceGatewayAccess )
 {
     // TransportInterface_t xTransportInterface;
     NetworkContext_t xNetworkContext = { 0 };
-    SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
-    BaseType_t xDemoStatus;
+    // SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
+    BaseType_t xDemoStatus = pdPASS;
 
     struct aknano_settings aknano_settings;
     struct aknano_context aknano_context;
