@@ -1,5 +1,6 @@
 SET (AKNANO_ENABLE_SE05X 0)
 SET (AKNANO_ENABLE_EL2GO 0)
+SET (AKNANO_ALLOW_PROVISIONING 0)
 
 # CROSS COMPILER SETTING
 SET(CMAKE_SYSTEM_NAME Generic)
@@ -52,7 +53,9 @@ include(${ProjDirPath}/flags_rt1060.cmake)
 include(${ProjDirPath}/config_rt1060.cmake)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
-
+if(AKNANO_ALLOW_PROVISIONING EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ALLOW_PROVISIONING")
+endif(AKNANO_ALLOW_PROVISIONING EQUAL 1)
 
 SET(FreeRtosAwsPath "${ProjDirPath}/../../../rtos/amazon-freertos")
 SET(FreeRtosKernelPath "${ProjDirPath}/../../../rtos/freertos/freertos_kernel")

@@ -335,7 +335,7 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
 
     // SNTPRequest();
 
-#ifdef AKNANO_ENABLE_EL2GO
+#if defined(AKNANO_ENABLE_EL2GO) || defined(AKNANO_ALLOW_PROVISIONING)
     LogInfo(("vDevModeKeyProvisioning_new skipped"));
 #else
     vDevModeKeyProvisioning_new((uint8_t*)xaknano_settings.device_priv_key,
@@ -383,7 +383,7 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
         }
     }
 
-#ifdef AKNANO_ENABLE_EL2GO
+#if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
     LogInfo(("EL2Go provisioning enabled. Waiting %d ms before starting AkNano loop\n\n", 120000));
     vTaskDelay( pdMS_TO_TICKS( 120000 ) );
 #endif
