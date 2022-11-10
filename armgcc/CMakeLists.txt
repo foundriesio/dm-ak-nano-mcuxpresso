@@ -296,6 +296,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../../../middleware/freertos/tls_freertos/
     ${ProjDirPath}/../../../middleware/http-parser/
     ${ProjDirPath}/../../../middleware/lwip/port/
+    ${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/
     ${ProjDirPath}/../../../middleware/unity/extras/fixture/src/
     ${ProjDirPath}/../../../middleware/unity/extras/memory/src/
     ${ProjDirPath}/../../../middleware/unity/src/
@@ -347,6 +348,7 @@ set(CMAKE_MODULE_PATH
     ${ProjDirPath}/../../../mcuxsdk/
     ${ProjDirPath}/../../../
     ${ProjDirPath}/../../../middleware
+    ${ProjDirPath}/../../../middleware/mbedtls
     ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
     ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
     ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
@@ -374,12 +376,8 @@ include(driver_flexspi)
 # include(middleware_lwip)
 
 include(device_CMSIS)
-include(device_startup)
-include(device_system)
 include(driver_clock)
 include(CMSIS_Include_core_cm)
-include(middleware_mbedtls_MIMXRT1062)
-include(middleware_lwip_enet_ethernetif_MIMXRT1062)
 include(middleware_lwip)
 
 include(driver_phy-common)
@@ -410,10 +408,14 @@ include(component_mflash_file)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
+include(device_startup)
+include(device_system)
 # include(all_lib_device_MIMXRT1176_cm7)
 include(driver_dcp)
 
 include(driver_trng)
+include(middleware_mbedtls_MIMXRT1062)
+include(middleware_lwip_enet_ethernetif_MIMXRT1062)
 
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
@@ -421,6 +423,14 @@ endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 if(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 include(all_lib_device_MIMXRT1176_cm7)
+
+include(device_startup_MIMXRT1176_cm7)
+include(device_system_MIMXRT1176_cm7)
+
+include(middleware_mbedtls_MIMXRT1176_cm7)
+include(middleware_lwip_enet_ethernetif_MIMXRT1176_cm7)
+include(middleware_mbedtls_port_ksdk)
+
 
 include(driver_caam)
 include(driver_dcdc_soc)
@@ -589,6 +599,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_ECDH_ALT")
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_ECDH_GEN_PUBLIC_ALT")
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_ECDH_COMPUTE_SHARED_ALT")
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMBEDTLS_SSL_MAX_FRAGMENT_LENGTH")
 
         # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_APP_DEBUG")
 
