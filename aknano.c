@@ -75,6 +75,7 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
     strcpy(aknano_settings->token, AKNANO_API_TOKEN);
 
+    aknano_read_device_certificate(aknano_settings->device_certificate, sizeof(aknano_settings->device_certificate));
     // strcpy(aknano_settings->serial, "000000000000");
     // sfw_flash_read(REMAP_FLAG_ADDRESS, &aknano_settings->image_position, 1);
     aknano_settings->image_position = get_active_image() + 1;
@@ -85,10 +86,10 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%lu",
              aknano_settings->running_version));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate,
-                     sizeof(aknano_settings->device_certificate));
-    LogInfo(("AkNanoInitSettings: device_certificate=%.25s (...)",
-             aknano_settings->device_certificate));
+    // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate,
+    //                  sizeof(aknano_settings->device_certificate));
+    // LogInfo(("AkNanoInitSettings: device_certificate=%.25s (...)",
+    //          aknano_settings->device_certificate));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, aknano_settings->device_priv_key,
                      sizeof(aknano_settings->device_priv_key));
@@ -372,6 +373,10 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
     ( void ) pNetworkServerInfo;
     ( void ) pNetworkCredentialInfo;
     ( void ) pxNetworkInterface;
+
+#ifdef AKNANO_ALLOW_PROVISIONING
+    aknano_gen_and_store_random_device_certificate_and_key();
+#endif
 
     LogInfo(("AKNano RunAkNanoDemo"));
     AkNanoInit(&xaknano_settings);

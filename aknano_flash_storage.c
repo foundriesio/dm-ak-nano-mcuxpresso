@@ -121,3 +121,18 @@ status_t WriteDataToFlash(int offset, void *data, size_t data_len)
     
     return ret;
 }
+
+#ifdef AKNANO_ALLOW_PROVISIONING
+status_t ClearFlashSector(int offset)
+{
+    PRINTF("EraseSector to 0x%X\r\n", AKNANO_STORAGE_FLASH_OFFSET + offset);
+    int mflash_result = mflash_drv_sector_erase(AKNANO_STORAGE_FLASH_OFFSET + offset);
+
+    if (mflash_result != 0)
+    {
+        LogError(("EraseSector error %d", mflash_result));
+    }
+
+    return 0;
+}
+#endif

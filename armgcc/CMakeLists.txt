@@ -53,9 +53,6 @@ include(${ProjDirPath}/flags_rt1060.cmake)
 include(${ProjDirPath}/config_rt1060.cmake)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
-if(AKNANO_ALLOW_PROVISIONING EQUAL 1)
-    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ALLOW_PROVISIONING")
-endif(AKNANO_ALLOW_PROVISIONING EQUAL 1)
 
 SET(FreeRtosAwsPath "${ProjDirPath}/../../../rtos/amazon-freertos")
 SET(FreeRtosKernelPath "${ProjDirPath}/../../../rtos/freertos/freertos_kernel")
@@ -89,6 +86,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../aknano_tuf_client.c"
 "${ProjDirPath}/../aknano.c"
 "${ProjDirPath}/../aknano_net.c"
+"${ProjDirPath}/../aknano_pkcs11.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../tests/aknano_test.c"
 "${ProjDirPath}/../../libtufnano/libtufnano.c"
@@ -625,3 +623,15 @@ else()
         "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
     )
 endif(AKNANO_ENABLE_SE05X EQUAL 1)
+
+if(AKNANO_ALLOW_PROVISIONING EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ALLOW_PROVISIONING")
+    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        # PKCS#11 using mflash
+        "${ProjDirPath}/../provisioning/aknano_provisioning_mbedtls.c"
+        "${ProjDirPath}/../provisioning/aknano_provisioning.c"
+    )
+    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        ${ProjDirPath}/../provisioning
+    )
+endif(AKNANO_ALLOW_PROVISIONING EQUAL 1)

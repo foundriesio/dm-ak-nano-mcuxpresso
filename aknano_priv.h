@@ -347,6 +347,8 @@ BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_contex
                                       struct aknano_settings *aknano_settings
                                       );
 
+int aknano_gen_serial_and_uuid(char *uuid_string, char *serial_string);
+
 void aknano_mtls_disconnect(struct aknano_network_context *network_context);
 
 void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
@@ -354,5 +356,11 @@ void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
 int enable_image_and_set_boot_image_position(uint8_t imagePosition);
 
 status_t WriteDataToFlash(int offset, void *data, size_t data_len);
+
+int aknano_read_device_certificate(char* dst, size_t dst_size);
+
+#ifdef AKNANO_ALLOW_PROVISIONING
+status_t ClearFlashSector(int offset);
+#endif
 
 #endif /* __AKNANO_PRIV_H__ */
