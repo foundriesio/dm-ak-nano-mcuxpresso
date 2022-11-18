@@ -25,12 +25,12 @@ DO_FLASH_PRIMARY_SLOT=0
 DO_FLASH_SECONDARY_SLOT=0
 DO_FORCE_CLEANUP=0 # not effective yet
 
-# Default RT1170
-BUILD_RT1060=0
-FLASH_SLOT1_ADDRESS=0x30040000
-FLASH_SLOT2_ADDRESS=0x30240000
-BUILD_HWID="MIMXRT1170-EVK"
-export BOARD_MODEL="rt1170"
+# Default RT1060
+BUILD_RT1060=1
+FLASH_SLOT1_ADDRESS=0x60040000
+FLASH_SLOT2_ADDRESS=0x60240000
+export BOARD_MODEL="rt1060"
+BUILD_HWID="MIMXRT1060-EVK"
 
 DO_PUBLISH=1
 PUBLISH_TAGS="devel"
@@ -57,6 +57,14 @@ for i in "$@"; do
     --tags=*)
       PUBLISH_TAGS="${i#*=}"
       shift # past argument=value
+      ;;
+    --rt1170)
+      BUILD_RT1060=0
+      FLASH_SLOT1_ADDRESS=0x30040000
+      FLASH_SLOT2_ADDRESS=0x30240000
+      BUILD_HWID="MIMXRT1170-EVK"
+      export BOARD_MODEL="rt1170"
+      shift # past argument
       ;;
     --rt1060)
       BUILD_RT1060=1
@@ -94,7 +102,7 @@ else
   revision=1300
 fi
 
-build_full_path="flexspi_nor_debug"
+build_full_path="flexspi_nor_release"
 unsigned_file="${build_full_path}/ota_demo.bin"
 rm -f "${unsigned_file}"
 
@@ -103,10 +111,10 @@ if [ $DO_TEST_BUILD -eq 1 ]; then
   ./build_flexspi_nor_test.sh
 else
   # regular build
-  ./build_flexspi_nor_debug.sh
+  ./build_flexspi_nor_release.sh
 fi
 
-signed_file="${build_full_path}/ota_demo.${revision}.signed.bin"
+signed_file="${build_full_path}/ota_demo.signed.bin"
 
 python3 ${mcuboot_path}/scripts/imgtool.py sign \
         --key ${mcuboot_path}/root-rsa-2048.pem  \
@@ -115,7 +123,8 @@ python3 ${mcuboot_path}/scripts/imgtool.py sign \
         --pad-header \
         --slot-size 0x200000 \
         --version 2.7.0+${revision} \
-        ${build_full_path}/ota_demo.bin ${signed_file}
+        ${build_full_path}/ota_demo.bin \
+        ${signed_file}
 
 if [ ${DO_BREAK_SIGNATURE} -eq 1 ]; then
   echo -e "${COLOR_RED}BREAKING SIGNATURE${COLOR_RESET}"
