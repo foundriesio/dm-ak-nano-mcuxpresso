@@ -433,7 +433,16 @@ typedef struct cli_arguments
 
 void agent_start_task(void *args)
 {
-    vTaskDelay(20 * 1000 / portTICK_PERIOD_MS);
+    vTaskDelay(15 * 1000 / portTICK_PERIOD_MS);
+
+    if (is_valid_certificate_available(true)) {
+        LogInfo(("EL2GO Agent: Device certificate is already available, skipping agent start"));
+        for (;;)
+        {
+            vTaskDelay(15 * 1000 / portTICK_PERIOD_MS);
+        }
+        return;
+    }
 #if IOT_AGENT_TIME_MEASUREMENT_ENABLE
     axTimeMeasurement_t iot_agent_demo_boot_time = { 0 };
     initMeasurement(&iot_agent_demo_boot_time);
@@ -442,7 +451,7 @@ void agent_start_task(void *args)
 
     iot_agent_session_boot_rtos_task();
 
-    const TickType_t xDelay = 20 * 1000 / portTICK_PERIOD_MS;
+    const TickType_t xDelay = 10 * 1000 / portTICK_PERIOD_MS;
 
 #if IOT_AGENT_TIME_MEASUREMENT_ENABLE
     concludeMeasurement(&iot_agent_demo_boot_time);
@@ -466,6 +475,15 @@ void agent_start_task(void *args)
             iot_agent_session_led_failure();
         }
 
+        vTaskDelay(xDelay);
+
+        if (is_valid_certificate_available(true)) {
+            LogInfo(("EL2GO Agent: Device providioning done. Stopping agent"));
+            break;
+        }
+    }
+    for (;;)
+    {
         vTaskDelay(xDelay);
     }
 // exit:

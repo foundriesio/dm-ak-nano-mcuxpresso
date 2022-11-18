@@ -1,9 +1,58 @@
+#define LIBRARY_LOG_LEVEL LOG_INFO
 
 #include "aknano_priv.h"
 
 #include "pkcs11t.h"
+
 #include "mbedtls/pem.h"
 
+
+#ifdef AKNANO_RESET_DEVICE_ID
+CK_RV prvDestroyDefaultCryptoObjects( void )
+{
+    /* Find the certificate */
+    CK_OBJECT_HANDLE xHandle = 0;
+    CK_RV xResult;
+    CK_FUNCTION_LIST_PTR xFunctionList;
+    CK_SLOT_ID xSlotId;
+    CK_ULONG xCount = 1;
+    CK_SESSION_HANDLE xSession;
+    CK_ATTRIBUTE xTemplate = { 0 };
+    uint8_t * pucCert = NULL;
+    CK_BBOOL xSessionOpen = CK_FALSE;
+
+    xResult = C_GetFunctionList( &xFunctionList );
+
+    if( CKR_OK == xResult )
+    {
+        xResult = xFunctionList->C_Initialize( NULL );
+    }
+
+    if( ( CKR_OK == xResult ) || ( CKR_CRYPTOKI_ALREADY_INITIALIZED == xResult ) )
+    {
+        xResult = xFunctionList->C_GetSlotList( CK_TRUE, &xSlotId, &xCount );
+    }
+
+    if( CKR_OK == xResult )
+    {
+        xResult = xFunctionList->C_OpenSession( xSlotId, CKF_SERIAL_SESSION, NULL, NULL, &xSession );
+    }
+
+    if( CKR_OK == xResult )
+    {
+        xResult = xDestroyDefaultCryptoObjects(xSession);
+    }
+
+    if( xSessionOpen == CK_TRUE )
+    {
+        ( void ) xFunctionList->C_CloseSession( xSession );
+    }
+
+    return xResult;
+}
+#endif
+
+#if defined(AKNANO_ENABLE_EXPLICIT_REGISTRATION) || defined(AKNANO_ALLOW_PROVISIONING)
 #define PEM_BEGIN_CRT           "-----BEGIN CERTIFICATE-----\n"
 #define PEM_END_CRT             "-----END CERTIFICATE-----\n"
 
@@ -21,7 +70,7 @@ static CK_RV prvGetCertificateHandle( CK_FUNCTION_LIST_PTR pxFunctionList,
     if( 0 == xResult )
     {
         xTemplate.type = CKA_LABEL;
-        xTemplate.ulValueLen = strlen( pcLabelName ) + 1;
+        xTemplate.ulValueLen = strlen( pcLabelName );// + 1;
         xTemplate.pValue = ( char * ) pcLabelName;
         xResult = pxFunctionList->C_FindObjectsInit( xSession, &xTemplate, 1 );
     }
@@ -33,6 +82,7 @@ static CK_RV prvGetCertificateHandle( CK_FUNCTION_LIST_PTR pxFunctionList,
                                                  ( CK_OBJECT_HANDLE_PTR ) pxCertHandle,
                                                  1,
                                                  &ulCount );
+        printf("prvGetCertificateHandle '%s' ulCount=%d \r\n", pcLabelName, ulCount);
     }
 
     if( CK_TRUE == xFindInit )
@@ -130,12 +180,12 @@ static CK_RV prvGetCertificate( const char * pcLabelName,
     return xResult;
 }
 
-int aknano_read_device_certificate(char* dst, size_t dst_size)
+CK_RV aknano_read_device_certificate(char* dst, size_t dst_size)
 {
     uint8_t *cert_data = NULL;
     uint32_t cert_size;
     CK_RV ret = prvGetCertificate(pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS, &cert_data, &cert_size);
-    LogInfo(("AkNanoInitSettings: prvGetCertificate ret=%d", ret));
+    LogInfo(("AkNanoInitSettings: prvGetCertificate '" pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS "' ret=%d", ret));
     LogInfo(("AkNanoInitSettings: prvGetCertificate cert_size=%d", cert_size));
     if (ret == 0) {
         // static char pem_buffer[2048];
@@ -147,7 +197,7 @@ int aknano_read_device_certificate(char* dst, size_t dst_size)
                                             dst, dst_size, &olen );
         if (ret == 0) {
             LogInfo(("AkNanoInitSettings: prvGetCertificate pem cert size=%u", olen));
-            LogInfo(("AkNanoInitSettings: prvGetCertificate pem cert:\r\n%s", aknano_settings->device_certificate));
+            LogInfo(("AkNanoInitSettings: prvGetCertificate pem cert:\r\n%s", dst));
         } else {
             LogInfo(("AkNanoInitSettings: prvGetCertificate pem cert error ret=%d", ret));
         }
@@ -157,4 +207,6 @@ int aknano_read_device_certificate(char* dst, size_t dst_size)
     {
         vPortFree( cert_data );
     }
+    return ret;
 }
+#endif

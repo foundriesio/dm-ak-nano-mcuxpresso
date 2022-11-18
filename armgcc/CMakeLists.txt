@@ -1,10 +1,31 @@
-SET (AKNANO_ENABLE_SE05X 0)
-SET (AKNANO_ENABLE_EL2GO 0)
-SET (AKNANO_ALLOW_PROVISIONING 0)
+################################################################################
+# Aktualizr-ano build options                                                  #
+################################################################################
 
+# Use SE05X for device key and certificate provisioning
+SET (AKNANO_ENABLE_SE05X 0)
+
+# Enable EdgeLock 2GO Managed. Requires SE05X
+SET (AKNANO_ENABLE_EL2GO 0)
+
+# Enable provisioning code
+SET (AKNANO_ALLOW_PROVISIONING 1)
+
+# Board type rt1060 or rt1170
 if(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
     SET(CMAKE_BOARD_MODEL rt1060)
 endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
+
+# Delete local TUF metadata, starting over with original root.1.json
+SET (AKNANO_DELETE_TUF_DATA 0)
+
+# Delete device key, certificate, serial and UUID
+SET (AKNANO_RESET_DEVICE_ID 1)
+
+# Enable intentional error during startup, forcing a version rollback
+SET (AKNANO_TEST_ROLLBACK 0)
+
+################################################################################
 
 # CROSS COMPILER SETTING
 SET(CMAKE_SYSTEM_NAME Generic)
@@ -29,9 +50,6 @@ SET(ProjDirPath ${CMAKE_CURRENT_SOURCE_DIR})
 SET(EXECUTABLE_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 SET(LIBRARY_OUTPUT_PATH ${ProjDirPath}/${CMAKE_BUILD_TYPE})
 
-# SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-
-
 project(ota_demo_enet)
 
 set(MCUX_SDK_PROJECT_NAME ota_demo_enet.elf)
@@ -48,13 +66,13 @@ SET(THREADX_TOOLCHAIN "gnu")
 
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1170)
-include(${ProjDirPath}/flags_rt1170.cmake)
-include(${ProjDirPath}/config_rt1170.cmake)
+    include(${ProjDirPath}/flags_rt1170.cmake)
+    include(${ProjDirPath}/config_rt1170.cmake)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
-include(${ProjDirPath}/flags_rt1060.cmake)
-include(${ProjDirPath}/config_rt1060.cmake)
+    include(${ProjDirPath}/flags_rt1060.cmake)
+    include(${ProjDirPath}/config_rt1060.cmake)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
 
@@ -162,46 +180,6 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
     target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../board_rt1170
     )
-    SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
-    ${CMAKE_C_FLAGS_FLEXSPI_NOR} \
-    -DXIP_EXTERNAL_FLASH=1 \
-    -DXIP_BOOT_HEADER_ENABLE=1 \
-    -DDEBUG \
-    -DLWIP_TIMEVAL_PRIVATE=0 \
-    -DCPU_MIMXRT1176DVMAA_cm7 \
-    -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
-    -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
-    -DPRINTF_ADVANCED_ENABLE=1 \
-    -DUSE_RTOS=1 \
-    -DLWIP_DNS=1 \
-    -DLWIP_DHCP=1 \
-    -DHTTP_DO_NOT_USE_CUSTOM_CONFIG=1 \
-    -DMQTT_DO_NOT_USE_CUSTOM_CONFIG=1 \
-    -DCRYPTO_USE_DRIVER_CAAM \
-    -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
-    -DMFLASH_FILE_BASEADDR=14221312 \
-    -DSDK_OS_FREE_RTOS \
-    -DSERIAL_PORT_TYPE_UART=1 \
-    -DMCUXPRESSO_SDK \
-    -g \
-    -O0 \
-    -fomit-frame-pointer \
-    -Wno-unused-function \
-    -mcpu=cortex-m7 \
-    -Wall \
-    -mfloat-abi=hard \
-    -mfpu=fpv5-d16 \
-    -mthumb \
-    -MMD \
-    -MP \
-    -fno-common \
-    -ffunction-sections \
-    -fdata-sections \
-    -ffreestanding \
-    -fno-builtin \
-    -mapcs \
-    -std=gnu99 \
-    ")
 endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
@@ -224,40 +202,6 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     ${ProjDirPath}/../board_rt1060
     )
 
-    SET(CMAKE_C_FLAGS_FLEXSPI_NOR " \
-        ${CMAKE_C_FLAGS_FLEXSPI_NOR} \
-        -DXIP_EXTERNAL_FLASH=1 \
-        -DXIP_BOOT_HEADER_ENABLE=1 \
-        -DDEBUG \
-        -DLWIP_TIMEVAL_PRIVATE=0 \
-        -DCPU_MIMXRT1062DVL6A \
-        -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE \
-        -DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
-        -DUSE_RTOS=1 \
-        -DLWIP_DISABLE_PBUF_POOL_SIZE_SANITY_CHECKS=1 \
-        -DMFLASH_FILE_BASEADDR=7340032 \
-        -DSDK_OS_FREE_RTOS \
-        -DSERIAL_PORT_TYPE_UART=1 \
-        -DMCUXPRESSO_SDK \
-        -g \
-        -O0 \
-        -fomit-frame-pointer \
-        -Wno-unused-function \
-        -mcpu=cortex-m7 \
-        -Wall \
-        -mfloat-abi=hard \
-        -mfpu=fpv5-d16 \
-        -mthumb \
-        -MMD \
-        -MP \
-        -fno-common \
-        -ffunction-sections \
-        -fdata-sections \
-        -ffreestanding \
-        -fno-builtin \
-        -mapcs \
-        -std=gnu99 \
-    ")
     target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
         ${ProjDirPath}/../../../mcuxsdk/drivers/trng/
     )
@@ -277,9 +221,17 @@ if(CMAKE_AKNANO_TEST EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
 endif(CMAKE_AKNANO_TEST EQUAL 1)
 
+if (AKNANO_DELETE_TUF_DATA EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DELETE_TUF_DATA")
+endif (AKNANO_DELETE_TUF_DATA EQUAL 1)
 
-# SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_FORCE_DEVICE_CLEANUP")
-# SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_TEST_ROLLBACK")
+if (AKNANO_RESET_DEVICE_ID EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_RESET_DEVICE_ID")
+endif (AKNANO_RESET_DEVICE_ID EQUAL 1)
+
+if (AKNANO_TEST_ROLLBACK EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_TEST_ROLLBACK")
+endif (AKNANO_TEST_ROLLBACK EQUAL 1)
 
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
@@ -333,32 +285,32 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
 )
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
-#path for entry cmake
-set(CMAKE_MODULE_PATH
-    ${ProjDirPath}/../../../mcuxsdk/
-    ${ProjDirPath}/../../../
-    ${ProjDirPath}/../../../middleware
-    ${ProjDirPath}/../../../middleware/mbedtls
-    ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1162
-    ${ProjDirPath}/../../../mcuxsdk/devices/
-    ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
-    ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
-    ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
-)
+    #path for entry cmake
+    set(CMAKE_MODULE_PATH
+        ${ProjDirPath}/../../../mcuxsdk/
+        ${ProjDirPath}/../../../
+        ${ProjDirPath}/../../../middleware
+        ${ProjDirPath}/../../../middleware/mbedtls
+        ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1162
+        ${ProjDirPath}/../../../mcuxsdk/devices/
+        ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
+        ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
+        ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
+    )
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1170)
-#path for entry cmake
-set(CMAKE_MODULE_PATH
-    ${ProjDirPath}/../../../mcuxsdk/
-    ${ProjDirPath}/../../../
-    ${ProjDirPath}/../../../middleware
-    ${ProjDirPath}/../../../middleware/mbedtls
-    ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
-    ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
-    ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
-    ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
-)
+    #path for entry cmake
+    set(CMAKE_MODULE_PATH
+        ${ProjDirPath}/../../../mcuxsdk/
+        ${ProjDirPath}/../../../
+        ${ProjDirPath}/../../../middleware
+        ${ProjDirPath}/../../../middleware/mbedtls
+        ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
+        ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
+        ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
+        ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
+    )
 endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 
@@ -412,36 +364,31 @@ include(component_mflash_file)
 # include(middleware_freertos-kernel_heap_4)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+    include(device_startup)
+    include(device_system)
+    include(driver_dcp)
 
-include(device_startup)
-include(device_system)
-# include(all_lib_device_MIMXRT1176_cm7)
-include(driver_dcp)
-
-include(driver_trng)
-include(middleware_mbedtls_MIMXRT1062)
-include(middleware_lwip_enet_ethernetif_MIMXRT1062)
-
+    include(driver_trng)
+    include(middleware_mbedtls_MIMXRT1062)
+    include(middleware_lwip_enet_ethernetif_MIMXRT1062)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+    include(all_lib_device_MIMXRT1176_cm7)
 
-include(all_lib_device_MIMXRT1176_cm7)
+    include(device_startup_MIMXRT1176_cm7)
+    include(device_system_MIMXRT1176_cm7)
 
-include(device_startup_MIMXRT1176_cm7)
-include(device_system_MIMXRT1176_cm7)
-
-include(middleware_mbedtls_MIMXRT1176_cm7)
-include(middleware_lwip_enet_ethernetif_MIMXRT1176_cm7)
-include(middleware_mbedtls_port_ksdk)
+    include(middleware_mbedtls_MIMXRT1176_cm7)
+    include(middleware_lwip_enet_ethernetif_MIMXRT1176_cm7)
+    include(middleware_mbedtls_port_ksdk)
 
 
-include(driver_caam)
-include(driver_dcdc_soc)
+    include(driver_caam)
+    include(driver_dcdc_soc)
 
-include(driver_phy-device-rtl8211f)
-
+    include(driver_phy-device-rtl8211f)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 include(driver_igpio)
@@ -623,7 +570,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
 else()
     target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
         # PKCS#11 using mflash
-        "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c"
+        "${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/corePKCS11/source/portable/mbedtls/core_pkcs11_mbedtls.c"
         "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/pkcs11/common/iot_pkcs11_pal.c"
     )
 endif(AKNANO_ENABLE_SE05X EQUAL 1)

@@ -59,10 +59,14 @@
 #define configTICK_RATE_HZ                           ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES                         ( 7 )
 #define configMINIMAL_STACK_SIZE                     ( ( uint16_t ) 90 )
-#ifdef AKNANO_ENABLE_SE05X
-#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 360 * 1024 ) )
+#ifdef AKNANO_ENABLE_EL2GO
+#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 640 * 1024 ) )
 #else
-#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 120 * 1024 ) )
+#ifdef AKNANO_ENABLE_SE05X
+#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 480 * 1024 ) )
+#else
+#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 240 * 1024 ) )
+#endif
 #endif
 #define configMAX_TASK_NAME_LEN                      ( 16 )
 #define configUSE_TRACE_FACILITY                     1
@@ -124,7 +128,7 @@
 
 /* Sets the length of the buffers into which logging messages are written - so
  * also defines the maximum length of each log message. */
-#define configLOGGING_MAX_MESSAGE_LENGTH            256
+#define configLOGGING_MAX_MESSAGE_LENGTH            10*256
 
 /* Set to 1 to prepend each log message with a message number, the task name,
  * and a time stamp. */

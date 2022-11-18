@@ -222,7 +222,7 @@ static bool fill_event_payload(char *payload,
     char details[200];
     char current_time_str[50];
     char *correlation_id = aknano_settings->ongoing_update_correlation_id;
-    char target[AKNANO_MAX_FACTORY_NAME_LENGTH+15];
+    char target[sizeof(aknano_settings->hwid)+15];
     char evt_uuid[AKNANO_MAX_UUID_LENGTH], _serial_string[AKNANO_MAX_SERIAL_LENGTH];
     char* success_string;
 
@@ -355,10 +355,12 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
 {
     struct aknano_network_context network_context;
 
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     if (!aknano_settings->is_device_registered) {
         LogInfo(("AkNanoSendEvent: Device is not registered. Skipping send of event %s", event_type));
         return TRUE;
     }
+#endif AKNANO_ENABLE_EXPLICIT_REGISTRATION
 
     BaseType_t xDemoStatus = pdPASS;
 
@@ -477,7 +479,8 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                 "poll_interval = %d\n" \
                 "hw_id = \"%s\"\n" \
                 "tag = \"%s\"\n" \
-                "binary_compilation_local_time = \""__DATE__ " " __TIME__"\"",
+                "binary_compilation_local_time = \""__DATE__ " " __TIME__"\"\n"
+                "provisioning_mode = \"" AKNANO_PROVISIONING_MODE "\"",
                 aknano_settings->polling_interval,
                 CONFIG_BOARD,
                 aknano_settings->tag);

@@ -55,9 +55,10 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
     memcpy(flashPageBuffer + sizeof(int), &aknano_settings->last_confirmed_version, sizeof(int));
     memcpy(flashPageBuffer + sizeof(int) * 2, aknano_settings->ongoing_update_correlation_id,
            sizeof(aknano_settings->ongoing_update_correlation_id));
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     flashPageBuffer[sizeof(int)*2 + sizeof(aknano_settings->ongoing_update_correlation_id)] =
         aknano_settings->is_device_registered;
-
+#endif
     LogInfo(("Saving buffer: 0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x    0x%x 0x%x 0x%x 0x%x",
     flashPageBuffer[0], flashPageBuffer[1], flashPageBuffer[2], flashPageBuffer[3],
     flashPageBuffer[4], flashPageBuffer[5], flashPageBuffer[6], flashPageBuffer[7],
@@ -72,10 +73,14 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     memset(aknano_settings, 0, sizeof(*aknano_settings));
     strcpy(aknano_settings->tag, "devel");
     aknano_settings->polling_interval = 15;
-    strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
+    // strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     strcpy(aknano_settings->token, AKNANO_API_TOKEN);
+#endif
 
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     aknano_read_device_certificate(aknano_settings->device_certificate, sizeof(aknano_settings->device_certificate));
+#endif
     // strcpy(aknano_settings->serial, "000000000000");
     // sfw_flash_read(REMAP_FLAG_ADDRESS, &aknano_settings->image_position, 1);
     aknano_settings->image_position = get_active_image() + 1;
@@ -86,21 +91,16 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: aknano_settings->running_version=%lu",
              aknano_settings->running_version));
 
-    // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, aknano_settings->device_certificate,
-    //                  sizeof(aknano_settings->device_certificate));
-    // LogInfo(("AkNanoInitSettings: device_certificate=%.25s (...)",
-    //          aknano_settings->device_certificate));
-
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, aknano_settings->device_priv_key,
-                     sizeof(aknano_settings->device_priv_key));
-    LogInfo(("AkNanoInitSettings: device_priv_key=%.30s (...)", aknano_settings->device_priv_key));
-
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_SERIAL, aknano_settings->serial,
                      sizeof(aknano_settings->serial));
+    if (aknano_settings->serial[0] == 0xff)
+        aknano_settings->serial[0] = 0;
     LogInfo(("AkNanoInitSettings: serial=%s", aknano_settings->serial));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_DEV_UUID, aknano_settings->uuid,
                      sizeof(aknano_settings->uuid));
+    if (aknano_settings->uuid[0] == 0xff)
+        aknano_settings->uuid[0] = 0;
     LogInfo(("AkNanoInitSettings: uuid=%s", aknano_settings->uuid));
 
     ReadFlashStorage(AKNANO_FLASH_OFF_LAST_APPLIED_VERSION,
@@ -125,12 +125,14 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     LogInfo(("AkNanoInitSettings: ongoing_update_correlation_id=%s",
              aknano_settings->ongoing_update_correlation_id));
 
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     ReadFlashStorage(AKNANO_FLASH_OFF_IS_DEVICE_REGISTERED,
                      &temp_value,
                      sizeof(temp_value));
     aknano_settings->is_device_registered = (temp_value & 0xFF) == 1;
     LogInfo(("AkNanoInitSettings:  is_device_registered=%d",
              aknano_settings->is_device_registered));
+#endif
 
     snprintf(aknano_settings->device_name, sizeof(aknano_settings->device_name),
             "%s-%s",
@@ -314,38 +316,104 @@ void vDevModeKeyProvisioning_new(uint8_t *client_key, uint8_t *client_certificat
     vAlternateKeyProvisioning( &xParams );
 }
 
+static bool is_certificate_valid(const char* pem)
+{
+    size_t cert_len;
+
+    if (pem[0] != '-')
+        return false;
+
+    cert_len = strnlen(pem, AKNANO_CERT_BUF_SIZE);
+
+    if (cert_len < 200 || cert_len >= AKNANO_CERT_BUF_SIZE)
+        return false;
+
+    return true;
+}
+
+static bool is_certificate_available_cache = false;
+static bool is_valid_certificate_available_()
+{
+    static CK_RV cert_status;
+    char device_certificate[AKNANO_CERT_BUF_SIZE];
+
+    cert_status = aknano_read_device_certificate(device_certificate, sizeof(device_certificate));
+    if (cert_status != CKR_OK) {
+        is_certificate_available_cache = false;
+    } else {
+        is_certificate_available_cache = is_certificate_valid(device_certificate);
+    }
+    return is_certificate_available_cache;
+}
+
+bool is_valid_certificate_available(bool use_cached_value)
+{
+    if (use_cached_value)
+        return is_certificate_available_cache;
+
+    return is_valid_certificate_available_();
+}
+
 
 static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
+    bool registrationOk;
+    CK_RV cert_status;
+
+#ifdef AKNANO_RESET_DEVICE_ID
+    LogWarn((ANSI_COLOR_RED "AKNANO_RESET_DEVICE_ID is set. Removing provisioned device data" ANSI_COLOR_RESET));
+    aknano_reset_device_id();
+    prvDestroyDefaultCryptoObjects();
+#endif
+
+    vTaskDelay( pdMS_TO_TICKS( 60000 ) );
+#if !defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
+    if (!is_valid_certificate_available(false)) {
+        LogWarn((ANSI_COLOR_RED "Device certificate is not set. Running provisioning process" ANSI_COLOR_RESET));
+        aknano_gen_and_store_random_device_certificate_and_key();
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        if (!is_valid_certificate_available(false)) {
+            LogError((ANSI_COLOR_RED "Fatal: Error fetching device certificate" ANSI_COLOR_RESET));
+            vTaskDelay(pdMS_TO_TICKS( 120000 ));
+        }
+    } else {
+        LogInfo(("Device certificate is set"));
+    }
+#endif
+
+#if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
+    LogInfo(("EL2Go provisioning enabled. Waiting for secure objects to be retrieved"));
+    while (!is_valid_certificate_available(false)) {
+        vTaskDelay( pdMS_TO_TICKS( 10000 ) );
+    }
+    LogInfo(("EL2GO provisioning succeeded. Proceeding"));
+#endif
     AkNanoInitSettings(aknano_settings);
 
+    vTaskDelay(pdMS_TO_TICKS(100));
+    aknano_handle_img_confirmed(aknano_settings);
 
-#ifdef AKNANO_FORCE_DEVICE_CLEANUP
-    LogWarn((ANSI_COLOR_RED "**** Marking device as unregistered, and reseting TUF data ****" ANSI_COLOR_RESET));
-    aknano_settings->is_device_registered = 0;
-    AkNanoUpdateSettingsInFlash(aknano_settings);
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
+    if (!xaknano_settings.is_device_registered) {
+        registrationOk = AkNanoRegisterDevice(&xaknano_settings);
+        if (registrationOk) {
+            xaknano_settings.is_device_registered = registrationOk;
+            AkNanoUpdateSettingsInFlash(&xaknano_settings);
+        }
+    }
+#endif
+
+#ifdef AKNANO_DELETE_TUF_DATA
+    LogWarn((ANSI_COLOR_RED "**** Reseting TUF data ****" ANSI_COLOR_RESET));
     #include "libtufnano.h"
     tuf_client_write_local_file(ROLE_ROOT, "\xFF", 1, NULL);
     tuf_client_write_local_file(ROLE_TIMESTAMP, "\xFF", 1, NULL);
     tuf_client_write_local_file(ROLE_SNAPSHOT, "\xFF", 1, NULL);
     tuf_client_write_local_file(ROLE_ROOT, "\xFF", 1, NULL);
 
-    LogWarn((ANSI_COLOR_RED "**** Sleeping for 2 minutes ****" ANSI_COLOR_RESET));
-    vTaskDelay(pdMS_TO_TICKS(120000));
+    LogWarn((ANSI_COLOR_RED "**** Sleeping for 20 seconds ****" ANSI_COLOR_RESET));
+    vTaskDelay(pdMS_TO_TICKS(20000));
 #endif
-
-    // SNTPRequest();
-
-#if defined(AKNANO_ENABLE_EL2GO) || defined(AKNANO_ALLOW_PROVISIONING)
-    LogInfo(("vDevModeKeyProvisioning_new skipped"));
-#else
-    vDevModeKeyProvisioning_new((uint8_t*)xaknano_settings.device_priv_key,
-                                (uint8_t*)xaknano_settings.device_certificate );
-    LogInfo(("vDevModeKeyProvisioning_new done"));
-#endif
-    vTaskDelay(pdMS_TO_TICKS(100));
-    // UpdateClientCertificate(aknano_settings->device_certificate, aknano_settings->device_priv_key);
-    aknano_handle_img_confirmed(aknano_settings);
 }
 
 static void AkNanoInitContext(struct aknano_context *aknano_context,
@@ -366,7 +434,6 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
                         const IotNetworkInterface_t * pxNetworkInterface )
 {
     int sleepTime;
-    bool registrationOk;
 
     ( void ) xAwsIotMqttMode;
     ( void ) pIdentifier;
@@ -374,25 +441,8 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
     ( void ) pNetworkCredentialInfo;
     ( void ) pxNetworkInterface;
 
-#ifdef AKNANO_ALLOW_PROVISIONING
-    aknano_gen_and_store_random_device_certificate_and_key();
-#endif
-
-    LogInfo(("AKNano RunAkNanoDemo"));
+    LogInfo(("AKNano RunAkNanoDemo mode '" AKNANO_PROVISIONING_MODE "'"));
     AkNanoInit(&xaknano_settings);
-    if (!xaknano_settings.is_device_registered) {
-        registrationOk = AkNanoRegisterDevice(&xaknano_settings);
-        if (registrationOk) {
-            xaknano_settings.is_device_registered = registrationOk;
-            AkNanoUpdateSettingsInFlash(&xaknano_settings);
-        }
-    }
-
-#if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
-    LogInfo(("EL2Go provisioning enabled. Waiting %d ms before starting AkNano loop\n\n", 120000));
-    vTaskDelay( pdMS_TO_TICKS( 120000 ) );
-#endif
-
     while (true) {
         AkNanoInitContext(&xaknano_context, &xaknano_settings);
         AkNanoPoll(&xaknano_context);
@@ -406,11 +456,4 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
         vTaskDelay( pdMS_TO_TICKS( sleepTime ) );
     }
     return 0;
-}
-
-
-unsigned long long PKCS11_PAL_DestroyObject( unsigned long long xHandle )
-{
-    LogError(("PKCS11_PAL_DestroyObject not implemented"));
-    return -1;
 }

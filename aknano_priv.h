@@ -15,7 +15,9 @@
 #define __AKNANO_PRIV_H__
 
 #include "mbedtls/sha256.h"
-
+#include "core_pkcs11_config.h"
+#include "core_pkcs11.h"
+#include "pkcs11t.h"
 #include "board.h"
 
 #include "fsl_common.h"
@@ -77,12 +79,14 @@
 #define AKNANO_MAX_UPDATE_AT_LENGTH 32
 #define AKNANO_MAX_URI_LENGTH 120
 
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
 #define AKNANO_MAX_TOKEN_LENGTH 100
+#endif
 #define AKNANO_CERT_BUF_SIZE 1024
 #define AKNANO_MAX_DEVICE_NAME_SIZE 100
 #define AKNANO_MAX_UUID_LENGTH 100
 #define AKNANO_MAX_SERIAL_LENGTH 100
-#define AKNANO_MAX_FACTORY_NAME_LENGTH 100
+// #define AKNANO_MAX_FACTORY_NAME_LENGTH 100
 #define AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH 100
 // #define AKNANO_MAX_TAG_LENGTH 20
 
@@ -98,7 +102,10 @@
 #define AKNANO_FLASH_OFF_LAST_APPLIED_VERSION AKNANO_FLASH_OFF_STATE_BASE + 0
 #define AKNANO_FLASH_OFF_LAST_CONFIRMED_VERSION AKNANO_FLASH_OFF_STATE_BASE + sizeof(int)
 #define AKNANO_FLASH_OFF_ONGOING_UPDATE_COR_ID AKNANO_FLASH_OFF_STATE_BASE + sizeof(int) * 2
+
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
 #define AKNANO_FLASH_OFF_IS_DEVICE_REGISTERED AKNANO_FLASH_OFF_STATE_BASE + sizeof(int) * 2 + AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH
+#endif
 
 // #define AKNANO_FLASH_OFF_ID_TAG 4096 + 256 * 4
 // #define AKNANO_NVS_ID_LAST_APPLIED_TAG 8
@@ -123,6 +130,17 @@
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+
+
+#ifdef AKNANO_ENABLE_EL2GO
+#define AKNANO_PROVISIONING_MODE "EgdeLock 2GO Managed"
+#else
+#ifdef AKNANO_ENABLE_SE05X
+#define AKNANO_PROVISIONING_MODE "SE05X Standalone"
+#else
+#define AKNANO_PROVISIONING_MODE "No Secure Element"
+#endif
+#endif
 
 enum aknano_response {
     AKNANO_NETWORKING_ERROR,
@@ -160,13 +178,11 @@ struct aknano_download {
 /* Settings are kept between iterations */
 struct aknano_settings {
     char tag[AKNANO_MAX_TAG_LENGTH];
-    char token[AKNANO_MAX_TOKEN_LENGTH];
-    char device_certificate[AKNANO_CERT_BUF_SIZE];
-    char device_priv_key[AKNANO_CERT_BUF_SIZE];
+    // char device_priv_key[AKNANO_CERT_BUF_SIZE];
     char device_name[AKNANO_MAX_DEVICE_NAME_SIZE];
     char uuid[AKNANO_MAX_UUID_LENGTH];
     char serial[AKNANO_MAX_SERIAL_LENGTH];
-    char factory_name[AKNANO_MAX_FACTORY_NAME_LENGTH];
+    // char factory_name[AKNANO_MAX_FACTORY_NAME_LENGTH];
     uint32_t running_version;
     int last_applied_version;
     int last_confirmed_version;
@@ -174,9 +190,13 @@ struct aknano_settings {
     int polling_interval;
     time_t boot_up_epoch;
     char ongoing_update_correlation_id[AKNANO_MAX_UPDATE_CORRELATION_ID_LENGTH];
-    bool is_device_registered;
     uint8_t image_position;
     const char *	hwid;
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
+    char token[AKNANO_MAX_TOKEN_LENGTH];
+    char device_certificate[AKNANO_CERT_BUF_SIZE];
+    bool is_device_registered;
+#endif
 };
 
 struct aknano_network_context;
@@ -357,10 +377,18 @@ int enable_image_and_set_boot_image_position(uint8_t imagePosition);
 
 status_t WriteDataToFlash(int offset, void *data, size_t data_len);
 
-int aknano_read_device_certificate(char* dst, size_t dst_size);
+#if defined(AKNANO_ENABLE_EXPLICIT_REGISTRATION) || defined(AKNANO_ALLOW_PROVISIONING)
+CK_RV aknano_read_device_certificate(char* dst, size_t dst_size);
+#endif
+
+#ifdef AKNANO_RESET_DEVICE_ID
+CK_RV prvDestroyDefaultCryptoObjects( void );
+#endif
 
 #ifdef AKNANO_ALLOW_PROVISIONING
 status_t ClearFlashSector(int offset);
 #endif
+
+bool is_valid_certificate_available(bool);
 
 #endif /* __AKNANO_PRIV_H__ */

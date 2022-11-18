@@ -68,10 +68,11 @@ TEST( Full_AKNano, akNano_TestDeviceGatewayAccess )
     struct aknano_context aknano_context;
 
     AkNanoInitSettings(&aknano_settings);
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     if (aknano_settings.device_certificate[0] == 0) {
         TEST_IGNORE_MESSAGE("Device certificate is not set. Skipping execution of test");
     }
-
+#endif
     memset(&aknano_context, 0, sizeof(aknano_context));
     aknano_context.settings = &aknano_settings;
 

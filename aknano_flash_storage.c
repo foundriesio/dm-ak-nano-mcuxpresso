@@ -125,7 +125,6 @@ status_t WriteDataToFlash(int offset, void *data, size_t data_len)
 #ifdef AKNANO_ALLOW_PROVISIONING
 status_t ClearFlashSector(int offset)
 {
-    PRINTF("EraseSector to 0x%X\r\n", AKNANO_STORAGE_FLASH_OFFSET + offset);
     int mflash_result = mflash_drv_sector_erase(AKNANO_STORAGE_FLASH_OFFSET + offset);
 
     if (mflash_result != 0)
@@ -135,4 +134,15 @@ status_t ClearFlashSector(int offset)
 
     return 0;
 }
+// Data needs to be a 256 bytes array
+status_t WriteFlashPage(int offset, void *data)
+{
+    int mflash_result = mflash_drv_page_program(AKNANO_STORAGE_FLASH_OFFSET + offset, data);
+    if (mflash_result != 0)
+    {
+        LogError(("WriteFlashPage error %d", mflash_result));
+    }
+    return 0;
+}
+
 #endif

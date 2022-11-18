@@ -8,10 +8,6 @@ int aknano_gen_device_certificate_and_key(
 					const char* uuid, const char* factory_name, 
 					const char* serial_string, char* cert_buf, char* key_buf);
 
-// int aknano_gen_random_device_certificate_and_key(char* cert_buf, char* key_buf) 
-// {
-// }
-
 static char cert_buf[AKNANO_CERT_BUF_SIZE];
 static char key_buf[AKNANO_CERT_BUF_SIZE];
 #define FLASH_PAGE_SIZE 256
@@ -21,6 +17,16 @@ static char temp_buf[FLASH_PAGE_SIZE];
 
 // Sectors used for AKNANO data
 #define AKNANO_FLASH_TOTAL_SECTORS 10
+
+int aknano_reset_device_id()
+{
+    int offset;
+
+    LogInfo(("Clearing device data from flash"));
+    for (offset = 0; offset < AKNANO_FLASH_TOTAL_SECTORS * FLASH_SECTOR_SIZE; offset += FLASH_SECTOR_SIZE) {
+        ClearFlashSector(offset);
+    }
+}
 
 int aknano_gen_and_store_random_device_certificate_and_key()
 {
@@ -46,7 +52,6 @@ int aknano_gen_and_store_random_device_certificate_and_key()
         return ret;
     }
     LogError(("Certificate generation DONE. Returning"));
-    return 0;
 
     // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_UUID, temp_buf, FLASH_PAGE_SIZE);
     // LogInfo(("BEFORE uuid=%s", temp_buf));
@@ -64,9 +69,7 @@ int aknano_gen_and_store_random_device_certificate_and_key()
     // LogInfo(("BEFORE key=%s", temp_buf));
 
     // Save Cert, Key, UUID and Serial to flash
-    for (offset = 0; offset < AKNANO_FLASH_TOTAL_SECTORS * FLASH_SECTOR_SIZE; offset += FLASH_SECTOR_SIZE) {
-        ClearFlashSector(offset);
-    }
+    aknano_reset_device_id();
 
     for (offset = 0; offset < AKNANO_CERT_BUF_SIZE; offset += FLASH_PAGE_SIZE)
         WriteFlashPage(AKNANO_FLASH_OFF_DEV_CERTIFICATE + offset, cert_buf + offset);
@@ -84,8 +87,8 @@ int aknano_gen_and_store_random_device_certificate_and_key()
     // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, temp_buf, FLASH_PAGE_SIZE);
     // LogInfo(("AFTER [%x] cert=%s", temp_buf[0], temp_buf));
 
-    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, temp_buf, FLASH_PAGE_SIZE);
-    LogInfo(("AFTER cert=%s", temp_buf));
+    // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_CERTIFICATE, temp_buf, FLASH_PAGE_SIZE);
+    // LogInfo(("AFTER cert=%s", temp_buf));
 
     // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_KEY, temp_buf, FLASH_PAGE_SIZE);
     // LogInfo(("AFTER key=%s", temp_buf));
@@ -95,4 +98,13 @@ int aknano_gen_and_store_random_device_certificate_and_key()
 
     // ReadFlashStorage(AKNANO_FLASH_OFF_DEV_SERIAL, temp_buf, FLASH_PAGE_SIZE);
     // LogInfo(("AFTER serial=%s", temp_buf));
+
+    #ifdef AKNANO_ENABLE_SE05X
+    LogInfo(("Provisioning Key and Certificate using PKCS#11 interface. Using SE05X"));
+    #else
+    LogInfo(("Provisioning Key and Certificate using PKCS#11 interface. Using flash device"));
+    #endif
+    vDevModeKeyProvisioning_new((uint8_t*)key_buf,
+                                (uint8_t*)cert_buf );
+    LogInfo(("Provisioning done"));
 }

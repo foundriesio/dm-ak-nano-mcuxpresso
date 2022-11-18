@@ -1,4 +1,4 @@
-
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
 #define LIBRARY_LOG_LEVEL LOG_INFO
 #include <assert.h>
 #include <stdlib.h>
@@ -349,6 +349,7 @@ bool AkNanoRegisterDevice(struct aknano_settings *aknano_settings)
                 "}",
                 pem_to_send, aknano_settings->device_name);
 
+        LogInfo(("** bodyBuffer=%s", bodyBuffer));
         ret = prvSendHttpRequest( &xTransportInterface, HTTP_METHOD_PUT,
                             "/ota/devices/",
                             bodyBuffer, strlen(bodyBuffer),
@@ -365,3 +366,4 @@ bool AkNanoRegisterDevice(struct aknano_settings *aknano_settings)
     return ret;
 }
 
+#endif
