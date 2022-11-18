@@ -20,7 +20,7 @@ endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
 SET (AKNANO_DELETE_TUF_DATA 0)
 
 # Delete device key, certificate, serial and UUID
-SET (AKNANO_RESET_DEVICE_ID 1)
+SET (AKNANO_RESET_DEVICE_ID 0)
 
 # Enable intentional error during startup, forcing a version rollback
 SET (AKNANO_TEST_ROLLBACK 0)
