@@ -9,6 +9,7 @@
 #include <mbedtls/pk.h>
 #include <mbedtls/error.h>
 #include <mbedtls/entropy_poll.h>>
+#include <mbedtls/oid.h>>
 
 #include "aknano_priv.h"
 #include "aknano_secret.h"
@@ -338,6 +339,33 @@ int aknano_gen_device_certificate_and_key(
                 (unsigned int) -ret, buf );
         goto exit;
     }
+
+#if 0
+     ret = mbedtls_x509_set_extension(&new_device_crt.extensions, 
+         MBEDTLS_OID_KEY_USAGE,
+         MBEDTLS_OID_SIZE(MBEDTLS_OID_KEY_USAGE),
+         1, "keyCertSign", strlen("keyCertSign")
+         );
+
+    ret = mbedtls_x509_set_extension(&new_device_crt.extensions, 
+        MBEDTLS_OID_BASIC_CONSTRAINTS,
+        MBEDTLS_OID_SIZE(MBEDTLS_OID_BASIC_CONSTRAINTS),
+        1, "CA:TRUE, pathlen:0", strlen("CA:TRUE, pathlen:0")
+        );
+#endif
+#if 0
+     ret = mbedtls_x509_set_extension(&new_device_crt.extensions, 
+         MBEDTLS_OID_KEY_USAGE,
+         MBEDTLS_OID_SIZE(MBEDTLS_OID_KEY_USAGE),
+         1, "Digital Signature", strlen("Digital Signature")
+         );
+
+     ret = mbedtls_x509_set_extension(&new_device_crt.extensions, 
+         MBEDTLS_OID_EXTENDED_KEY_USAGE,
+         MBEDTLS_OID_SIZE(MBEDTLS_OID_EXTENDED_KEY_USAGE),
+         1, "TLS Web Client Authentication", strlen("TLS Web Client Authentication")
+         );
+#endif
 
     memset(cert_buf, 0, AKNANO_CERT_BUF_SIZE);
     ret = mbedtls_x509write_crt_pem(&new_device_crt, cert_buf, AKNANO_CERT_BUF_SIZE,
