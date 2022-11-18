@@ -10,7 +10,7 @@ PoC code for a Foundries.io OTA client (Aktualizr-nano) running on top of MCUXpr
 
 - DHCP enabled local network with Internet access
 
-The instructions assume a **MIMXRT1060-EVK** board is being used, and the development
+The instructions assume a **MIMXRT1060-EVKB** board is being used, and the development
 environment is a Linux system.
 
 # Installation instructions
@@ -23,7 +23,7 @@ west update
 ~~~
 
 ## Preparation
-- Plug the RT1060 board on the PC serial (board **J1** plug)
+- Plug the MIMXRT1060-EVKB board on the PC serial (board **J1** plug)
 
 - Start with an empty board, erasing original content if needed:
 
@@ -265,3 +265,6 @@ fioctl devices config set "MIMXRT1060-EVK-71FBF5FCB35B79452A95C0E1E25C915E"  --r
 Replace "MIMXRT1060-EVK-71FBF5FCB35B79452A95C0E1E25C915E" with the name of the
 device that will be affected. The name can be verified in the `app.foundries.io` 
 factory web dashboard.
+
+The factory user needs to have `Owner` role in the factory, and the `fioct` token
+requires the `devices:read-update` permission.
