@@ -108,7 +108,7 @@ Some adjustments are required on top of MCUBoot available from MCUXpresso 2.12.1
 Apply the patch by running the following command inside the `SDK_2_12_1_MIMXRT1060-EVKB`
 directory:
 ~~~
-patch -P1 < ..\patches\mcuboot_sdk_2_12_1_mimxrt1060_evkb.patch
+patch -p1 --binary < ..\foundriesio-mcu-ota\patches\mcuboot_sdk_2_12_1_mimxrt1060_evkb_crlf.patch
 ~~~
 
 
