@@ -3,6 +3,7 @@
  * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  * Copyright (c) 2013 - 2014, Freescale Semiconductor, Inc.
  * Copyright 2016-2019 NXP
+ * Copyright 2022 Foundries.io
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in

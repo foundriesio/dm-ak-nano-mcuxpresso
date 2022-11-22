@@ -1,14 +1,8 @@
 /*
- * Copyright (c) 2020 Linumiz
- * Copyright (c) 2021 Foundries.io
+ * Copyright 2021-2022 Foundries.io
+ * All rights reserved.
  *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/** @file
- *
- * @brief This file contains structures representing JSON messages
- * exchanged with a hawkbit
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 #ifndef __AKNANO_PRIV_H__

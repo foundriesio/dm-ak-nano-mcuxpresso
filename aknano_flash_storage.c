@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include "logging_levels.h"
 #define LIBRARY_LOG_NAME "aknano_flash"
 #define LIBRARY_LOG_LEVEL LOG_INFO

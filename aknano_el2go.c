@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #ifdef AKNANO_ENABLE_EL2GO
 
 #include "lwipopts.h"

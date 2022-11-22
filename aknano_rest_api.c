@@ -1,3 +1,10 @@
+/*
+ * Copyright 2021-2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
 #define LIBRARY_LOG_LEVEL LOG_INFO
 #include <assert.h>

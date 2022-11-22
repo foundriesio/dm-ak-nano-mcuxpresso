@@ -1,9 +1,9 @@
-/**
- * @file ota_demo_core_mqtt.c
- * @brief OTA update example using coreMQTT.
+/*
+ * Copyright 2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
-
-/* Standard includes. */
 
 #define LIBRARY_LOG_LEVEL LOG_INFO
 #include <assert.h>

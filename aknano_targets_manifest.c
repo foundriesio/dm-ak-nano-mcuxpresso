@@ -1,3 +1,10 @@
+/*
+ * Copyright 2021-2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #define LIBRARY_LOG_NAME "aknano_manifest"
 #define LIBRARY_LOG_LEVEL LOG_INFO
 #include "aknano_priv.h"

@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #ifndef __AKNANO_PROVISIONING_H__
 #define __AKNANO_PROVISIONING_H__
 

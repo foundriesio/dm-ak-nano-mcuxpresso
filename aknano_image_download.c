@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 Foundries.io
+ * All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
 /*Include backoff algorithm header for retry logic.*/
