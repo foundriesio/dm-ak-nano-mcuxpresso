@@ -7,6 +7,7 @@
 
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
+#ifdef AKNANO_ALLOW_PROVISIONING
 #include <mbedtls/x509_csr.h>
 #include <mbedtls/x509_crt.h>
 #include <mbedtls/platform.h>
@@ -15,8 +16,8 @@
 #include <mbedtls/ecdh.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/error.h>
-#include <mbedtls/entropy_poll.h>>
-#include <mbedtls/oid.h>>
+#include <mbedtls/entropy_poll.h>
+#include <mbedtls/oid.h>
 
 #include "aknano_priv.h"
 #include "aknano_secret.h"
@@ -200,7 +201,7 @@ exit:
 
 int aknano_gen_device_certificate_and_key(
                     const char* uuid, const char* factory_name, 
-                    const char* serial_string, char* cert_buf, char* key_buf)
+                    const char* serial_string, unsigned char* cert_buf, unsigned char* key_buf)
 {
     LogInfo(("aknano_gen_device_certificate_and_key")); vTaskDelay(50 / portTICK_PERIOD_MS);
     
@@ -397,3 +398,4 @@ exit:
 
     return ret;
 }
+#endif

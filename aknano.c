@@ -350,6 +350,7 @@ static bool is_valid_certificate_available_()
     } else {
         is_certificate_available_cache = is_certificate_valid(device_certificate);
     }
+    LogInfo(("Device certificate available? %s", is_certificate_available_cache? "YES": "NO"));
     return is_certificate_available_cache;
 }
 
@@ -361,23 +362,51 @@ bool is_valid_certificate_available(bool use_cached_value)
     return is_valid_certificate_available_();
 }
 
+bool is_device_serial_set()
+{
+    char serial[AKNANO_MAX_SERIAL_LENGTH];
+    bool is_serial_set;
+
+    ReadFlashStorage(AKNANO_FLASH_OFF_DEV_SERIAL, serial, sizeof(serial));
+    if (serial[0] == 0xff)
+        serial[0] = 0;
+    LogInfo(("AkNanoInitSettings: serial=%s", serial));
+    is_serial_set = strnlen(serial, sizeof(serial)) > 5;
+    LogInfo(("Device serial set? %s", is_serial_set? "YES": "NO"));
+    return is_serial_set;
+}
 
 static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
     bool registrationOk;
     CK_RV cert_status;
 
+    LogInfo(("Initializing ak-nano..."));
+
 #ifdef AKNANO_RESET_DEVICE_ID
     LogWarn((ANSI_COLOR_RED "AKNANO_RESET_DEVICE_ID is set. Removing provisioned device data" ANSI_COLOR_RESET));
-    aknano_reset_device_id();
+    aknano_clear_provisioned_data();
     prvDestroyDefaultCryptoObjects();
 #endif
 
-    vTaskDelay( pdMS_TO_TICKS( 60000 ) );
-#if !defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
+    // vTaskDelay( pdMS_TO_TICKS( 60000 ) );
+#ifdef AKNANO_ALLOW_PROVISIONING
+#ifdef AKNANO_ENABLE_EL2GO
+    if (!is_device_serial_set()) {
+        LogWarn((ANSI_COLOR_RED "Device Serial is not set. Running initial provisioning process" ANSI_COLOR_RESET));
+        aknano_provision_device();
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        if (!is_device_serial_set()) {
+            LogError((ANSI_COLOR_RED "Fatal: Error fetching device serial" ANSI_COLOR_RESET));
+            vTaskDelay(pdMS_TO_TICKS( 120000 ));
+        }
+    } else {
+        LogInfo(("Device serial is set"));
+    }
+#else
     if (!is_valid_certificate_available(false)) {
         LogWarn((ANSI_COLOR_RED "Device certificate is not set. Running provisioning process" ANSI_COLOR_RESET));
-        aknano_gen_and_store_random_device_certificate_and_key();
+        aknano_provision_device();
         vTaskDelay(pdMS_TO_TICKS(1000));
         if (!is_valid_certificate_available(false)) {
             LogError((ANSI_COLOR_RED "Fatal: Error fetching device certificate" ANSI_COLOR_RESET));
@@ -387,6 +416,7 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
         LogInfo(("Device certificate is set"));
     }
 #endif
+#endif
 
 #if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
     LogInfo(("EL2Go provisioning enabled. Waiting for secure objects to be retrieved"));
@@ -395,6 +425,7 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
     }
     LogInfo(("EL2GO provisioning succeeded. Proceeding"));
 #endif
+    LogInfo(("Initializing settings..."));
     AkNanoInitSettings(aknano_settings);
 
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -448,7 +479,14 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
     ( void ) pNetworkCredentialInfo;
     ( void ) pxNetworkInterface;
 
-    LogInfo(("AKNano RunAkNanoDemo mode '" AKNANO_PROVISIONING_MODE "'"));
+    LogInfo((ANSI_COLOR_YELLOW "AKNano RunAkNanoDemo mode '" AKNANO_PROVISIONING_MODE "'" ANSI_COLOR_RESET));
+#ifdef AKNANO_RESET_DEVICE_ID
+    LogInfo((ANSI_COLOR_YELLOW "Reset of device provisioned data is enabled" ANSI_COLOR_RESET));
+#endif
+#ifdef AKNANO_ALLOW_PROVISIONING
+    LogInfo((ANSI_COLOR_YELLOW "Provisioning support is enabled" ANSI_COLOR_RESET));
+#endif
+
     AkNanoInit(&xaknano_settings);
     while (true) {
         AkNanoInitContext(&xaknano_context, &xaknano_settings);
