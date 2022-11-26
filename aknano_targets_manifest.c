@@ -193,6 +193,7 @@ int parse_targets_metadata(const char *data, int len, void *application_context)
 			LogError(("Error processing target %.*s", (int)pair.keyLength, pair.key));
 			break;
 		}
+		vTaskDelay(pdMS_TO_TICKS(50)); // Give some time to log task handle trace
 	}
 
 	return 0;
