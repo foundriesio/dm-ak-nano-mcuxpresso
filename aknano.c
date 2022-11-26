@@ -51,7 +51,13 @@ long unsigned int AkNanoGetTime(void)
     // LogInfo(( "osfGetTime %d", t) );
     return t;
 }
-
+#ifdef AKNANO_DUMP_MEMORY_USAGE_INFO
+void aknano_dump_memory_info(const char *context)
+{
+    LogInfo(("MEMORY (%s): Stack high watermark: %u.  Minimum free heap: %u",
+            context, uxTaskGetStackHighWaterMark( NULL ), xPortGetMinimumEverFreeHeapSize()));
+}
+#endif
 
 void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
 {
@@ -356,7 +362,7 @@ static bool is_valid_certificate_available_()
 
 bool is_valid_certificate_available(bool use_cached_value)
 {
-    if (use_cached_value)
+    if (use_cached_value || is_certificate_available_cache)
         return is_certificate_available_cache;
 
     return is_valid_certificate_available_();
@@ -375,6 +381,9 @@ bool is_device_serial_set()
     LogInfo(("Device serial set? %s", is_serial_set? "YES": "NO"));
     return is_serial_set;
 }
+#if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
+extern bool el2go_agent_stopped;
+#endif
 
 static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
@@ -387,9 +396,12 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
     LogWarn((ANSI_COLOR_RED "AKNANO_RESET_DEVICE_ID is set. Removing provisioned device data" ANSI_COLOR_RESET));
     aknano_clear_provisioned_data();
     prvDestroyDefaultCryptoObjects();
+#ifdef AKNANO_ENABLE_EL2GO
+    LogWarn((ANSI_COLOR_RED "Halting execution" ANSI_COLOR_RESET));
+    for(;;);
+#endif
 #endif
 
-    // vTaskDelay( pdMS_TO_TICKS( 60000 ) );
 #ifdef AKNANO_ALLOW_PROVISIONING
 #ifdef AKNANO_ENABLE_EL2GO
     if (!is_device_serial_set()) {
@@ -420,8 +432,8 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
 
 #if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
     LogInfo(("EL2Go provisioning enabled. Waiting for secure objects to be retrieved"));
-    while (!is_valid_certificate_available(false)) {
-        vTaskDelay( pdMS_TO_TICKS( 10000 ) );
+    while (!is_valid_certificate_available(true) || !el2go_agent_stopped) {
+        vTaskDelay( pdMS_TO_TICKS( 1000 ) );
     }
     LogInfo(("EL2GO provisioning succeeded. Proceeding"));
 #endif
@@ -489,6 +501,9 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
 
     AkNanoInit(&xaknano_settings);
     while (true) {
+#ifdef AKNANO_DUMP_MEMORY_USAGE_INFO
+        aknano_dump_memory_info("Before aknano poll");
+#endif
         AkNanoInitContext(&xaknano_context, &xaknano_settings);
         AkNanoPoll(&xaknano_context);
         sleepTime = xaknano_settings.polling_interval * 1000;
@@ -497,6 +512,9 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
         else if (sleepTime > 60 * 60 * 1000)
             sleepTime = 60 * 60 * 1000;
 
+#ifdef AKNANO_DUMP_MEMORY_USAGE_INFO
+        aknano_dump_memory_info("After aknano poll");
+#endif
         LogInfo(("Sleeping %d ms\n\n", sleepTime));
         vTaskDelay( pdMS_TO_TICKS( sleepTime ) );
     }

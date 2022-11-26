@@ -318,6 +318,10 @@ iot_agent_status_t agent_start(int argc, const char *argv[], ex_sss_boot_ctx_t *
 
     IOT_AGENT_INFO("Start EL2Go Agent");
 
+#ifdef AKNANO_DUMP_MEMORY_USAGE_INFO
+    aknano_dump_memory_info("Before EL2GO agent");
+#endif
+
     // Initialize and open a session to the secure element.
     agent_status = iot_agent_session_init(argc, argv, pCtx);
     AGENT_SUCCESS_OR_EXIT();
@@ -422,6 +426,10 @@ iot_agent_status_t agent_start(int argc, const char *argv[], ex_sss_boot_ctx_t *
 #endif
 
 exit:
+#ifdef AKNANO_DUMP_MEMORY_USAGE_INFO
+    aknano_dump_memory_info("After EL2GO agent");
+#endif
+
     //close SE session
     iot_agent_keystore_close_session(&keystore);
     iot_agent_free_update_status_report(&status_report);
@@ -438,12 +446,15 @@ typedef struct cli_arguments
     const char **v;
 } cli_arguments_t;
 
+bool el2go_agent_stopped = false;
+
 void agent_start_task(void *args)
 {
     vTaskDelay(15 * 1000 / portTICK_PERIOD_MS);
 
-    if (is_valid_certificate_available(true)) {
+    if (is_valid_certificate_available(false)) {
         LogInfo(("EL2GO Agent: Device certificate is already available, skipping agent start"));
+        el2go_agent_stopped = true;
         for (;;)
         {
             vTaskDelay(15 * 1000 / portTICK_PERIOD_MS);
@@ -458,7 +469,7 @@ void agent_start_task(void *args)
 
     iot_agent_session_boot_rtos_task();
 
-    const TickType_t xDelay = 10 * 1000 / portTICK_PERIOD_MS;
+    const TickType_t xDelay = 3 * 1000 / portTICK_PERIOD_MS;
 
 #if IOT_AGENT_TIME_MEASUREMENT_ENABLE
     concludeMeasurement(&iot_agent_demo_boot_time);
@@ -484,11 +495,13 @@ void agent_start_task(void *args)
 
         vTaskDelay(xDelay);
 
-        if (is_valid_certificate_available(true)) {
-            LogInfo(("EL2GO Agent: Device providioning done. Stopping agent"));
+        if (is_valid_certificate_available(false)) {
+            LogInfo(("EL2GO Agent: Device provisioning done. Stopping agent"));
             break;
         }
     }
+
+    el2go_agent_stopped = true;
     for (;;)
     {
         vTaskDelay(xDelay);
