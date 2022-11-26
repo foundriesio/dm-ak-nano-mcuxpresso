@@ -411,8 +411,12 @@ int AkNanoPoll(struct aknano_context *aknano_context)
                                         HTTP_METHOD_GET,
                                         "/config", "", 0,
                                         aknano_context->settings);
-        if (xDemoStatus == pdPASS)
-            parse_config((const char*)network_context.reply_body, network_context.reply_body_len, aknano_context->settings);
+        if (xDemoStatus == pdPASS) {
+            if (network_context.reply_body == NULL)
+                LogInfo(("Device has no config set"));
+            else
+                parse_config((const char*)network_context.reply_body, network_context.reply_body_len, aknano_context->settings);
+        }
 
         time_t reference_time = get_current_epoch(aknano_settings->boot_up_epoch);
 // #define TUF_FORCE_DATE_IN_FUTURE 1
