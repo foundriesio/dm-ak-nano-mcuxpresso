@@ -127,7 +127,7 @@
 
 
 #ifdef AKNANO_ENABLE_EL2GO
-#define AKNANO_PROVISIONING_MODE "EgdeLock 2GO Managed"
+#define AKNANO_PROVISIONING_MODE "EdgeLock 2GO Managed"
 #else
 #ifdef AKNANO_ENABLE_SE05X
 #define AKNANO_PROVISIONING_MODE "SE05X Standalone"
@@ -370,6 +370,9 @@ void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
 int enable_image_and_set_boot_image_position(uint8_t imagePosition);
 
 status_t WriteDataToFlash(int offset, void *data, size_t data_len);
+
+
+void aknano_dump_memory_info(const char *context);
 
 #if defined(AKNANO_ENABLE_EXPLICIT_REGISTRATION) || defined(AKNANO_ALLOW_PROVISIONING)
 CK_RV aknano_read_device_certificate(char* dst, size_t dst_size);
