@@ -25,15 +25,18 @@ SET (AKNANO_RESET_DEVICE_ID 0)
 # Enable intentional error during startup, forcing a version rollback
 SET (AKNANO_TEST_ROLLBACK 0)
 
+# Enable memory information dump
+SET (AKNANO_DUMP_MEMORY_USAGE_INFO 1)
+
 ################################################################################
 
 # CROSS COMPILER SETTING
 SET(CMAKE_SYSTEM_NAME Generic)
 CMAKE_MINIMUM_REQUIRED (VERSION 3.10.0)
 
-# THE VERSION NUMBER
-SET (Tutorial_VERSION_MAJOR 1)
-SET (Tutorial_VERSION_MINOR 0)
+# # THE VERSION NUMBER
+# SET (Tutorial_VERSION_MAJOR 1)
+# SET (Tutorial_VERSION_MINOR 0)
 
 # ENABLE ASM
 ENABLE_LANGUAGE(ASM)
