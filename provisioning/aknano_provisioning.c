@@ -120,7 +120,7 @@ int aknano_provision_device()
     #else
     LogInfo(("Provisioning Key and Certificate using PKCS#11 interface. Using flash device"));
     #endif
-    ret = vDevModeKeyProvisioning_new((uint8_t*)key_buf,
+    vDevModeKeyProvisioning_AkNano((uint8_t*)key_buf,
                                 (uint8_t*)cert_buf );
     LogInfo(("Provisioning done"));
 #endif

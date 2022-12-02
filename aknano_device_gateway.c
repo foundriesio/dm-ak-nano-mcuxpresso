@@ -428,9 +428,6 @@ int AkNanoPoll(struct aknano_context *aknano_context)
         int tuf_ret = tuf_refresh(aknano_context, reference_time, tuf_data_buffer, sizeof(tuf_data_buffer)); /* TODO: Get epoch from system clock */
         LogInfo((ANSI_COLOR_MAGENTA "tuf_refresh %s (%d)" ANSI_COLOR_RESET, tuf_get_error_string(tuf_ret), tuf_ret));
 
-        // AkNano_GetRootMetadata(&xTransportInterface, aknano_context->settings, &xResponse);
-
-        // xDemoStatus = AkNano_GetTargets(&xTransportInterface, aknano_context->settings, &xResponse);
         if (tuf_ret == 0) {
             parse_targets_metadata((const char*)tuf_data_buffer, strlen((char*)tuf_data_buffer), aknano_context);
 
