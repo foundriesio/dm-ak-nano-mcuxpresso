@@ -276,41 +276,6 @@ struct NetworkContext
     SecureSocketsTransportParams_t * pParams;
 };
 
-int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context);
-
-status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
-void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings);
-long unsigned int AkNanoGetTime(void);
-bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
-                     const char* event_type,
-                     int version, int success);
-
-void aknano_handle_manifest_data(struct aknano_context *context,
-                                 uint8_t *dst, off_t *offset, 
-                                 uint8_t *src, size_t len);
-
-int AkNanoPoll(struct aknano_context *aknano_context);
-
-bool AkNanoRegisterDevice(struct aknano_settings *aknano_settings);
-void AkNanoInitSettings(struct aknano_settings *aknano_settings);
-
-/* Device Gateway */
-void AkNano_InitializeTransportInterface(TransportInterface_t *pTransportInterface,
-                                        NetworkContext_t *pNetworkContext);
-BaseType_t AkNano_GetRootMetadata(TransportInterface_t *pTransportInterface,
-                                struct aknano_settings *aknano_settings,
-                                HTTPResponse_t *pResponse);
-
-extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
-BaseType_t AkNano_ConnectToDevicesGateway(struct aknano_network_context *network_context);
-
-
-/**/
-
-status_t InitFlashStorage();
-status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
-status_t UpdateFlashStoragePage(int offset, void *data);
-
 struct aknano_network_context
 {
     /* Platform specific fields */
@@ -328,6 +293,13 @@ struct aknano_network_context
     int reply_http_code;
 };
 
+
+/**/
+status_t InitFlashStorage();
+status_t ReadFlashStorage(int offset, void *output, size_t outputMaxLen);
+status_t UpdateFlashStoragePage(int offset, void *data);
+status_t WriteDataToFlash(int offset, const void *data, size_t data_len);
+
 int init_network_context(struct aknano_network_context *network_context);
 
 BaseType_t aknano_mtls_connect(
@@ -338,6 +310,7 @@ BaseType_t aknano_mtls_connect(
         const char *server_root_ca,
         size_t server_root_ca_len
     );
+
 BaseType_t aknano_mtls_send_http_request(
         struct aknano_network_context *network_context,
         const char *hostname,
@@ -353,6 +326,23 @@ BaseType_t aknano_mtls_send_http_request(
         size_t header_len
 );
 
+void aknano_mtls_disconnect(struct aknano_network_context *network_context);
+
+int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context);
+void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings);
+long unsigned int AkNanoGetTime(void);
+bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
+                     const char* event_type,
+                     int version, int success);
+
+int AkNanoPoll(struct aknano_context *aknano_context);
+
+void AkNanoInitSettings(struct aknano_settings *aknano_settings);
+
+
+extern uint8_t ucUserBuffer[ democonfigUSER_BUFFER_LENGTH ];
+BaseType_t AkNano_ConnectToDevicesGateway(struct aknano_network_context *network_context);
+
 BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_context,
                                       const char * pcMethod,
                                       const char * pcPath,
@@ -363,18 +353,18 @@ BaseType_t AkNano_SendHttpRequest( struct aknano_network_context *network_contex
 
 int aknano_gen_serial_and_uuid(char *uuid_string, char *serial_string);
 
-void aknano_mtls_disconnect(struct aknano_network_context *network_context);
+void aknano_handle_manifest_data(struct aknano_context *context,
+                                 uint8_t *dst, off_t *offset, 
+                                 uint8_t *src, size_t len);
 
 void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
 
-int enable_image_and_set_boot_image_position(uint8_t imagePosition);
-
-status_t WriteDataToFlash(int offset, const void *data, size_t data_len);
-
-
 void aknano_dump_memory_info(const char *context);
 
-int aknano_provision_device();
+
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
+bool AkNanoRegisterDevice(struct aknano_settings *aknano_settings);
+#endif
 
 #if defined(AKNANO_ENABLE_EXPLICIT_REGISTRATION) || defined(AKNANO_ALLOW_PROVISIONING)
 CK_RV aknano_read_device_certificate(char* dst, size_t dst_size);
@@ -387,6 +377,9 @@ CK_RV prvDestroyDefaultCryptoObjects( void );
 #ifdef AKNANO_ALLOW_PROVISIONING
 status_t ClearFlashSector(int offset);
 status_t WriteFlashPage(int offset, const void *data);
+
+void vDevModeKeyProvisioning_AkNano(uint8_t *client_key, uint8_t *client_certificate);
+int aknano_provision_device();
 #endif
 
 bool is_valid_certificate_available(bool);
