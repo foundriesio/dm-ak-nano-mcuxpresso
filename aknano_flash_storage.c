@@ -58,7 +58,7 @@ status_t UpdateFlashStoragePage(int offset, void *data)
 }
 
 /* offset needs to be alligned to MFLASH_SECTOR_SIZE (4K) */
-status_t WriteDataToFlash(int offset, void *data, size_t data_len)
+status_t WriteDataToFlash(int offset, const void *data, size_t data_len)
 {
     size_t total_processed = 0;
     size_t chunk_len;

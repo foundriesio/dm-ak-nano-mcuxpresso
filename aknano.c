@@ -81,7 +81,9 @@ void AkNanoUpdateSettingsInFlash(struct aknano_settings *aknano_settings)
 
 void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 {
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     uint32_t temp_value;
+#endif
 
     memset(aknano_settings, 0, sizeof(*aknano_settings));
     strcpy(aknano_settings->tag, "devel");
@@ -387,8 +389,9 @@ extern bool el2go_agent_stopped;
 
 static void AkNanoInit(struct aknano_settings *aknano_settings)
 {
+#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     bool registrationOk;
-    CK_RV cert_status;
+#endif
 
     LogInfo(("Initializing ak-nano..."));
 

@@ -89,7 +89,6 @@ static CK_RV prvGetCertificateHandle( CK_FUNCTION_LIST_PTR pxFunctionList,
                                                  ( CK_OBJECT_HANDLE_PTR ) pxCertHandle,
                                                  1,
                                                  &ulCount );
-        printf("prvGetCertificateHandle '%s' ulCount=%d \r\n", pcLabelName, ulCount);
     }
 
     if( CK_TRUE == xFindInit )
@@ -190,18 +189,18 @@ static CK_RV prvGetCertificate( const char * pcLabelName,
 CK_RV aknano_read_device_certificate(char* dst, size_t dst_size)
 {
     uint8_t *cert_data = NULL;
-    uint32_t cert_size;
+    uint32_t cert_size = 0;
     CK_RV ret = prvGetCertificate(pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS, &cert_data, &cert_size);
     LogInfo(("AkNanoInitSettings: prvGetCertificate '" pkcs11configLABEL_DEVICE_CERTIFICATE_FOR_TLS "' ret=%d", ret));
     LogInfo(("AkNanoInitSettings: prvGetCertificate cert_size=%d", cert_size));
-    if (ret == 0) {
+    if (ret == 0 && cert_size > 0) {
         // static char pem_buffer[2048];
         cert_data[cert_size] = 0;
         cert_size++;
         size_t olen;
         ret = mbedtls_pem_write_buffer( PEM_BEGIN_CRT, PEM_END_CRT,
                                             cert_data, cert_size,
-                                            dst, dst_size, &olen );
+                                            (unsigned char *)dst, dst_size, &olen );
         if (ret == 0) {
             LogInfo(("AkNanoInitSettings: prvGetCertificate pem cert size=%u", olen));
             LogInfo(("AkNanoInitSettings: prvGetCertificate pem cert:\r\n%s", dst));

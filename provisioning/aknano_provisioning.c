@@ -15,8 +15,11 @@ int aknano_gen_device_certificate_and_key(
 					const char* uuid, const char* factory_name, 
 					const char* serial_string, unsigned char* cert_buf, unsigned char* key_buf);
 
+#ifndef AKNANO_ENABLE_EL2GO
 static unsigned char cert_buf[AKNANO_CERT_BUF_SIZE];
 static unsigned char key_buf[AKNANO_CERT_BUF_SIZE];
+#endif
+
 #define FLASH_PAGE_SIZE 256
 #define FLASH_SECTOR_SIZE 4096
 
@@ -33,6 +36,7 @@ int aknano_clear_provisioned_data()
     }
     return 0;
 }
+
 int aknano_provision_device()
 {
     /* 
@@ -41,7 +45,9 @@ int aknano_provision_device()
      */
 
     int ret = 0;
+#ifndef AKNANO_ENABLE_EL2GO
     int offset;
+#endif
     char uuid_and_serial[FLASH_PAGE_SIZE];
 
     aknano_gen_serial_and_uuid(uuid_and_serial, uuid_and_serial+128);

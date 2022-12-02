@@ -369,10 +369,12 @@ void aknano_get_ipv4_and_mac(char* ipv4, uint8_t* mac);
 
 int enable_image_and_set_boot_image_position(uint8_t imagePosition);
 
-status_t WriteDataToFlash(int offset, void *data, size_t data_len);
+status_t WriteDataToFlash(int offset, const void *data, size_t data_len);
 
 
 void aknano_dump_memory_info(const char *context);
+
+int aknano_provision_device();
 
 #if defined(AKNANO_ENABLE_EXPLICIT_REGISTRATION) || defined(AKNANO_ALLOW_PROVISIONING)
 CK_RV aknano_read_device_certificate(char* dst, size_t dst_size);
@@ -384,6 +386,7 @@ CK_RV prvDestroyDefaultCryptoObjects( void );
 
 #ifdef AKNANO_ALLOW_PROVISIONING
 status_t ClearFlashSector(int offset);
+status_t WriteFlashPage(int offset, const void *data);
 #endif
 
 bool is_valid_certificate_available(bool);

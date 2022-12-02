@@ -25,6 +25,7 @@
 #include "platform/iot_threads.h"
 #include "types/iot_network_types.h"
 #include "aws_demo.h"
+#include "aknano_priv.h"
 
 
 #include <nxp_iot_agent_config.h>

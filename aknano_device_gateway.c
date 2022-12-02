@@ -360,7 +360,7 @@ bool AkNanoSendEvent(struct aknano_settings *aknano_settings,
         LogInfo(("AkNanoSendEvent: Device is not registered. Skipping send of event %s", event_type));
         return TRUE;
     }
-#endif AKNANO_ENABLE_EXPLICIT_REGISTRATION
+#endif
 
     BaseType_t xDemoStatus = pdPASS;
 
