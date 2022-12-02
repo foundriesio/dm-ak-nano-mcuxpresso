@@ -60,7 +60,7 @@
 #define configMAX_PRIORITIES                         ( 7 )
 #define configMINIMAL_STACK_SIZE                     ( ( uint16_t ) 90 )
 #ifdef AKNANO_ENABLE_EL2GO
-#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 640 * 1024 ) )
+#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 630 * 1024 ) )
 #else
 #ifdef AKNANO_ENABLE_SE05X
 #define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 480 * 1024 ) )
