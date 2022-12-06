@@ -1,5 +1,5 @@
 ################################################################################
-# Aktualizr-ano build options                                                  #
+# Aktualizr-nano basic build options                                                  #
 ################################################################################
 
 # Use SE05X for device key and certificate provisioning
@@ -16,6 +16,11 @@ if(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
     SET(CMAKE_BOARD_MODEL rt1060)
 endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
 
+################################################################################
+
+################################################################################
+# Aktualizr-nano advanced development build options                                                  #
+################################################################################
 # Delete local TUF metadata, starting over with original root.1.json
 SET (AKNANO_DELETE_TUF_DATA 0)
 
@@ -27,6 +32,9 @@ SET (AKNANO_TEST_ROLLBACK 0)
 
 # Enable memory information dump
 SET (AKNANO_DUMP_MEMORY_USAGE_INFO 1)
+
+# Enable very basic tests before starting main functionality
+SET (AKNANO_SELF_TEST 0)
 
 ################################################################################
 
@@ -221,9 +229,9 @@ if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
      target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
 endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
 
-if(CMAKE_AKNANO_TEST EQUAL 1)
+if(AKNANO_SELF_TEST EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
-endif(CMAKE_AKNANO_TEST EQUAL 1)
+endif(AKNANO_SELF_TEST EQUAL 1)
 
 if (AKNANO_DELETE_TUF_DATA EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DELETE_TUF_DATA")

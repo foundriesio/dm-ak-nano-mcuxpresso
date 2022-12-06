@@ -27,6 +27,7 @@
 #include "flexspi_flash_config.h"
 
 #include <stdio.h>
+#include <time.h>
 
 #define AKNANO_REQUEST_BODY ""
 #define AKNANO_REQUEST_BODY_LEN sizeof(AKNANO_REQUEST_BODY)-1
@@ -88,8 +89,6 @@ static BaseType_t prvConnectToDownloadServer( NetworkContext_t * pxNetworkContex
 
 static int HandleReceivedData(const unsigned char* data, int offset, int dataLen, uint32_t partition_log_addr, uint32_t partition_size)
 {
-    LogInfo(("Writing image chunk to flash. offset=%d len=%d", offset, dataLen));
-
 #ifdef AKNANO_DRY_RUN
     LogInfo(("** Dry run mode, skipping flash operations"));
     return 0;
@@ -105,7 +104,6 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
 
     /* Page buffers */
     uint32_t page_size;
-    // uint32_t *page_buffer;
 
     /* Received/processed data counter */
     uint32_t total_processed = 0;
@@ -115,6 +113,7 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
 
     unsigned char page_buffer[MFLASH_PAGE_SIZE];
 
+    LogInfo(("Writing image chunk to flash. offset=%d len=%d", offset, dataLen));
     page_size   = MFLASH_PAGE_SIZE;
 
     /* Obtain physical address of FLASH to perform operations with */
@@ -197,7 +196,6 @@ static int HandleReceivedData(const unsigned char* data, int offset, int dataLen
 
 BaseType_t GetFileSize(size_t* pxFileSize, HTTPResponse_t *xResponse)
 {
-    
     /* The location of the file size in pcContentRangeValStr. */
     char * pcFileSizeStr = NULL;
 
@@ -241,8 +239,6 @@ BaseType_t GetFileSize(size_t* pxFileSize, HTTPResponse_t *xResponse)
     LogInfo( ( "The file is %d bytes long.", ( int ) *pxFileSize ) );
     return pdPASS;
 }
-
-#include <time.h>
 
 static BaseType_t prvDownloadFile(NetworkContext_t *pxNetworkContext,
                                  const TransportInterface_t * pxTransportInterface,
@@ -479,7 +475,6 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
     // xDemoStatus = connectToServerWithBackoffRetries( prvConnectToServer,
     //                                                     &xNetworkContext );
 
-
     LogInfo(("AkNanoDownloadAndFlashImage: prvConnectToServer Result: %ld", xDemoStatus));
     if( xDemoStatus == pdPASS )
     {
@@ -509,7 +504,7 @@ int AkNanoDownloadAndFlashImage(struct aknano_context *aknano_context)
         *(h+8), *(h+9), *(h+10), *(h+11), *(h+12), *(h+13), *(h+14), *(h+15),
         *(h+16),*(h+17), *(h+18), *(h+19), *(h+20), *(h+21), *(h+22), *(h+23),
         *(h+24), *(h+25), *(h+26), *(h+27), *(h+28), *(h+29), *(h+30), *(h+31));
-        LogInfo(("Download relativepath=%s", relative_path));
+        LogInfo(("Download relative path=%s", relative_path));
         xDemoStatus = prvDownloadFile(&xNetworkContext, &xTransportInterface, 
             relative_path, aknano_context->settings->image_position, aknano_context);
     }

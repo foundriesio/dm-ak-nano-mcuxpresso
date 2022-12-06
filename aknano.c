@@ -259,7 +259,7 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
 
     if (aknano_settings->last_confirmed_version != aknano_settings->running_version)
     {
-        // TODO: Should not be required, but doing it here because of temp/permanent bug
+        // TODO: Should not be required, but doing it here because of temp/permanent bug. May not be required anymore
         AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_COMPLETED, 0, AKNANO_EVENT_SUCCESS_TRUE);
         memset(aknano_settings->ongoing_update_correlation_id, 0,
                sizeof(aknano_settings->ongoing_update_correlation_id));
@@ -270,9 +270,7 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         LogInfo(("Updating aknano_settings->running_version in flash (%d -> %lu)",
                  aknano_settings->last_confirmed_version, aknano_settings->running_version));
         aknano_settings->last_confirmed_version = aknano_settings->running_version;
-        // strcpy(aknano_settings->ongoing_update_correlation_id, "ABCDEFGHIJKLMNOPQRSTUVXYZ");
         AkNanoUpdateSettingsInFlash(aknano_settings);
-        // aknano_write_to_nvs(AKNANO_NVS_ID_LAST_CONFIRMED_VERSION, &aknano_settings.running_version, sizeof(aknano_settings.running_version));
     }
 
     return 0;
@@ -440,6 +438,13 @@ int RunAkNanoDemo( bool xAwsIotMqttMode,
     ( void ) pNetworkServerInfo;
     ( void ) pNetworkCredentialInfo;
     ( void ) pxNetworkInterface;
+
+#ifdef AKNANO_TEST
+    LogInfo(("AKNano RunAkNanoDemoTest Begin"));
+    RunAkNanoTest();
+    LogInfo(("AKNano RunAkNanoDemoTest Done"));
+    vTaskDelay( pdMS_TO_TICKS( 1000 ) );
+#endif
 
     LogInfo((ANSI_COLOR_YELLOW "AKNano RunAkNanoDemo mode '" AKNANO_PROVISIONING_MODE "'" ANSI_COLOR_RESET));
 #ifdef AKNANO_RESET_DEVICE_ID

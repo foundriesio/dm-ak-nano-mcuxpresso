@@ -159,12 +159,6 @@ const char * g_port_name = NULL;
  * Prototypes
  ******************************************************************************/
 void BOARD_InitNetwork(void);
-/* Declaration of demo function. */
-int RunOtaCoreMqttDemo(bool awsIotMqttMode,
-                       const char *pIdentifier,
-                       void *pNetworkServerInfo,
-                       void *pNetworkCredentialInfo,
-                       const IotNetworkInterface_t *pNetworkInterface);
 
 extern int initNetwork(void);
 
@@ -315,11 +309,6 @@ void aknano_start_el2go_task();
 void vApplicationDaemonTaskStartupHook(void)
 {
     configPRINTF(("AKNano vApplicationDaemonTaskStartupHook.\r\n"));
-    /* A simple example to demonstrate key and certificate provisioning in
-     * microcontroller flash using PKCS#11 interface. This should be replaced
-     * by production ready key provisioning mechanism. */
-    // Detsch, disabled
-    // vDevModeKeyProvisioning();
 
     if (SYSTEM_Init() == pdPASS)
     {
@@ -333,21 +322,13 @@ void vApplicationDaemonTaskStartupHook(void)
             initTime();
             initStorage();
 
-#ifdef AKNANO_TEST
-            LogInfo(("AKNano RunAkNanoDemoTest Begin"));
-            RunAkNanoTest();
-            LogInfo(("AKNano RunAkNanoDemoTest Done"));
-            vTaskDelay( pdMS_TO_TICKS( 1000 ) );
-            return 0;
-#else
-            static demoContext_t mqttDemoContext = {.networkTypes                = AWSIOT_NETWORK_TYPE_ETH,
-                                                    .demoFunction                = RunAkNanoDemo,
-                                                    .networkConnectedCallback    = NULL,
-                                                    .networkDisconnectedCallback = NULL};
+            static demoContext_t otaDemoContext = {.networkTypes                = AWSIOT_NETWORK_TYPE_ETH,
+                                                   .demoFunction                = RunAkNanoDemo,
+                                                   .networkConnectedCallback    = NULL,
+                                                   .networkDisconnectedCallback = NULL};
 
-            Iot_CreateDetachedThread(runDemoTask, &mqttDemoContext, (tskIDLE_PRIORITY + 1),
+            Iot_CreateDetachedThread(runDemoTask, &otaDemoContext, (tskIDLE_PRIORITY + 1),
                                      AKNANO_TASK_STACK_SIZE);
-#endif
         }
     }
 }

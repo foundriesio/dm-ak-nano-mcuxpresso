@@ -87,6 +87,9 @@ void btn_read_task(void *pvParameters)
     //Set toggle interval to 1000ms
     // const TickType_t sample_interval = 2000 / portTICK_PERIOD_MS;
 
+#ifdef AKNANO_TEST
+    vTaskDelay(pdMS_TO_TICKS(5000));
+#endif
     // Initialize the last_wake_time variable with the current time
     last_wake_time = xTaskGetTickCount();
 

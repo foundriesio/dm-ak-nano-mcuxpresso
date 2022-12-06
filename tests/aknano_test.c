@@ -14,7 +14,6 @@
 
 #include "aknano_priv.h"
 #include "aknano_secret.h"
-// #include "flexspi_flash_config.h"
 
 
 /**
@@ -32,67 +31,70 @@ TEST_TEAR_DOWN( Full_AKNano )
 
 TEST_GROUP_RUNNER( Full_AKNano )
 {
-    /************* otaPAL_CloseFile Tests *************/
-    RUN_TEST_CASE( Full_AKNano, akNano_BasicTest );
     RUN_TEST_CASE( Full_AKNano, akNano_TestFlashAccess );
-    // RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayAccess );
-    // RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayGetRoot );
-}
-
-
-TEST( Full_AKNano, akNano_BasicTest )
-{
-    TEST_ASSERT_EQUAL( 1, 1 );
-    TEST_ASSERT_EQUAL( 2, 2 );
+    RUN_TEST_CASE( Full_AKNano, akNano_TestDeviceGatewayAccess );
 }
 
 TEST( Full_AKNano, akNano_TestFlashAccess )
 {
-    char buf[500];
+    uint8_t original_data[128];
+    uint8_t new_data[128];
+    uint8_t i;
+    status_t ret;
 
-    status_t ret = ReadFlashStorage(AKNANO_FLASH_OFF_LAST_APPLIED_VERSION,
-                     buf,
-                     4);
+    ret = ReadFlashStorage(AKNANO_FLASH_OFF_STATE_BASE,
+                     original_data,
+                     sizeof(original_data));
 
     TEST_ASSERT(ret == kStatus_Success);
+
+    for (i=0; i< sizeof(new_data); i++)
+        new_data[i] = i;
+
+    ret = UpdateFlashStoragePage(AKNANO_FLASH_OFF_STATE_BASE,
+                     new_data);
+
+    TEST_ASSERT(ret == kStatus_Success);
+    ret = ReadFlashStorage(AKNANO_FLASH_OFF_STATE_BASE,
+                     new_data, sizeof(new_data));
+
+    TEST_ASSERT(ret == kStatus_Success);
+
+    for (i=0; i< sizeof(new_data); i++)
+        TEST_ASSERT(new_data[i] == i);
+
+    ret = UpdateFlashStoragePage(AKNANO_FLASH_OFF_STATE_BASE,
+                     original_data);
+
+    TEST_ASSERT(ret == kStatus_Success);
+
+    ret = ReadFlashStorage(AKNANO_FLASH_OFF_STATE_BASE,
+                     new_data, sizeof(new_data));
+
+    TEST_ASSERT(ret == kStatus_Success);
+
+    TEST_ASSERT(ret == kStatus_Success);
+    for (i=0; i< sizeof(new_data); i++)
+        TEST_ASSERT(new_data[i] == original_data[i]);
 }
 
 TEST( Full_AKNano, akNano_TestDeviceGatewayAccess )
 {
-    // TransportInterface_t xTransportInterface;
-    NetworkContext_t xNetworkContext = { 0 };
-    // SecureSocketsTransportParams_t secureSocketsTransportParams = { 0 };
+    struct aknano_network_context network_context;
     BaseType_t xDemoStatus = pdPASS;
 
-    struct aknano_settings aknano_settings;
-    struct aknano_context aknano_context;
+    if (!is_valid_certificate_available(false))
+        TEST_IGNORE_MESSAGE("Device certificate is not available. Skipping Device Gateway connection test");
 
-    AkNanoInitSettings(&aknano_settings);
-#ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
-    if (aknano_settings.device_certificate[0] == 0) {
-        TEST_IGNORE_MESSAGE("Device certificate is not set. Skipping execution of test");
-    }
-#endif
-    memset(&aknano_context, 0, sizeof(aknano_context));
-    aknano_context.settings = &aknano_settings;
-
-    /* Upon return, pdPASS will indicate a successful demo execution.
-    * pdFAIL will indicate some failures occurred during execution. The
-    * user of this demo must check the logs for any failure codes. */
-    // xNetworkContext.pParams = &secureSocketsTransportParams;
-    // xDemoStatus = AkNano_ConnectToDevicesGateway(&xNetworkContext, &xTransportInterface);
+    xDemoStatus = AkNano_ConnectToDevicesGateway(&network_context);
+    TEST_ASSERT(xDemoStatus == pdPASS);
 
     /* Close the network connection.  */
-    SecureSocketsTransport_Disconnect( &xNetworkContext );
-
-    TEST_ASSERT(xDemoStatus == pdPASS);
+    aknano_mtls_disconnect(&network_context);
 }
 
 int RunAkNanoTest( void )
 {
-
-    // InitFlashStorage();
-
     int status = -1;
 
     /* Initialize unity. */
