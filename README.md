@@ -108,7 +108,7 @@ Some adjustments are required on top of MCUBoot available from MCUXpresso 2.12.1
 Apply the patch by running the following command inside the `SDK_2_12_1_MIMXRT1060-EVKB`
 directory:
 ~~~
-patch -p1 --binary < ..\foundriesio-mcu-ota\patches\mcuboot_sdk_2_12_1_mimxrt1060_evkb_crlf.patch
+patch -p1 --binary < ..\foundriesio-mcu-ota\poc\patches\mcuboot_sdk_2_12_1_mimxrt1060_evkb_crlf.patch
 ~~~
 
 
@@ -132,12 +132,12 @@ making it match the root-rsa-2048.pem key, used during signing.
 
 ~~~
 cd SDK_2_12_1_MIMXRT1060-EVKB\boards\evkmimxrt1060\mcuboot_opensource\armgcc
-flexspi_nor_release.bat
+build_flexspi_nor_release.bat
 ~~~
 
 - Load resulting elf image into board
 ~~~
-pyocd load flexspi_nor_release\mcuboot_opensource.elf
+pyocd load flexspi_nor_release\mcuboot_opensource.elf -t MIMXRT1060
 ~~~
 
 ## 4 Build and load Proof-of-Concept application
@@ -252,16 +252,7 @@ build_flexspi_nor_release.bat
 
 ~~~
 cd foundriesio-mcu-ota\foundriesio\dm-ak-nano-mcuxpresso\armgcc\
-python ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB\middleware\mcuboot_opensource\scripts\imgtool.py sign \
-        --key ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB-EVKB\middleware\mcuboot_opensource\root-rsa-2048.pem  \
-        --align 4 \
-        --header-size 0x400 \
-        --pad-header \
-        --slot-size 0x200000 \
-        --version 1.0.0+1000 \
-        --pad --confirm \
-        flexspi_nor_release\ota_demo.bin \
-        flexspi_nor_release\ota_demo.signed.bin \
+python ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB\middleware\mcuboot_opensource\scripts\imgtool.py sign --key ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB\middleware\mcuboot_opensource\root-rsa-2048.pem --align 4 --header-size 0x400 --pad-header --slot-size 0x200000 --version 1.0.0+1000 --pad --confirm flexspi_nor_release\ota_demo.bin flexspi_nor_release\ota_demo.signed.bin
 ~~~
 
 Notice that we use the `--pad --confirm` options, that are only required when the
@@ -409,15 +400,7 @@ build_flexspi_nor_release.bat
 
 ~~~
 cd foundriesio-mcu-ota\foundriesio\dm-ak-nano-mcuxpresso\armgcc\
-python ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB\middleware\mcuboot_opensource\scripts\imgtool.py sign \
-        --key ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB-EVKB\middleware\mcuboot_opensource\root-rsa-2048.pem  \
-        --align 4 \
-        --header-size 0x400 \
-        --pad-header \
-        --slot-size 0x200000 \
-        --version 1.0.0+1001 \
-        flexspi_nor_release\ota_demo.bin \
-        flexspi_nor_release\ota_demo.signed.bin \
+python ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB\middleware\mcuboot_opensource\scripts\imgtool.py sign --key ..\..\..\..\SDK_2_12_1_MIMXRT1060-EVKB\middleware\mcuboot_opensource\root-rsa-2048.pem --align 4 --header-size 0x400 --pad-header --slot-size 0x200000 --version 1.0.0+1001 flexspi_nor_release\ota_demo.bin flexspi_nor_release\ota_demo.signed.bin
 ~~~
 
 Notice that the `--pad --confirm` options should not be used.
