@@ -72,7 +72,7 @@
 extern ex_sss_boot_ctx_t gex_sss_demo_boot_ctx;
 extern ex_sss_cloud_ctx_t gex_sss_demo_tls_ctx;
 
-#define EX_SSS_BOOT_RTOS_STACK_SIZE (1024*8)
+#define EX_SSS_BOOT_RTOS_STACK_SIZE (1024*10)
 #define MAX_UID_DECIMAL_STRING_SIZE 44U
 
 const char* update_status_report_description(nxp_iot_UpdateStatusReport_UpdateStatus status) {
