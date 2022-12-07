@@ -364,8 +364,8 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
         LogInfo(("Device serial is set"));
     }
 #else
-    if (!is_valid_certificate_available(false)) {
-        LogWarn((ANSI_COLOR_RED "Device certificate is not set. Running provisioning process" ANSI_COLOR_RESET));
+    if (!is_device_serial_set() || !is_valid_certificate_available(false)) {
+        LogWarn((ANSI_COLOR_RED "Device certificate (and/or serial) is not set. Running provisioning process" ANSI_COLOR_RESET));
         aknano_provision_device();
         vTaskDelay(pdMS_TO_TICKS(1000));
         if (!is_valid_certificate_available(false)) {
@@ -373,7 +373,7 @@ static void AkNanoInit(struct aknano_settings *aknano_settings)
             vTaskDelay(pdMS_TO_TICKS( 120000 ));
         }
     } else {
-        LogInfo(("Device certificate is set"));
+        LogInfo(("Device certificate and serial are set"));
     }
 #endif
 #endif
