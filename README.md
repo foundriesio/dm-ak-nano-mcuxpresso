@@ -266,12 +266,33 @@ pyocd flash flexspi_nor_release\ota_demo.signed.bin -a 0x60040000 -t MIMXRT1060
 ~~~
 
 ### 4.5 Checking execution
+
 After flashing, the board will reboot and start executing the PoC application.
+What happens next depends on the selected provisioning mode.
+
+#### 4.5.1 `No Secure Element` and `Standalone SE05X`
 The device will register itself in the factory, and will proceed polling the
 update server trying to fetch updates.
 
 A new device with the randomly generated UUID should appear in
 https://app.foundries.io/factories/FACTORY_NAME
+and in the list returned by `fioctl devices list`.
+
+#### 4.5.2 `EdgeLock 2GO Managed`
+The device first tries to fetch the secure objects from EdgeLock 2GO endpoint.
+If the device was not explicitly added yet (see `Section 4.6`), an error
+message will be printed to the serial output:
+~~~
+ERROR: iot_agent_update_device_configuration L#537 iot_agent_update_device_configuration_from_datastore failed with 0xffffffd8
+Update status report:
+  The device update FAILED (0x0035: ERR_DEVICE_NOT_WHITELISTED)
+~~~
+After performing the step described in `Section 4.6`, the device should be able 
+to fetch the secure objects, and it will register itself in the factory,
+with a name and UUID staring with `nxp-0000`, such as `nxp-00000000003932ce-0001`.
+
+The new device will be listed in https://app.foundries.io/factories/FACTORY_NAME
+and in the list returned by `fioctl devices list`.
 
 ### 4.6 Adding device to EdgeLock 2GO *(`EdgeLock 2GO Managed` mode only)*
 
@@ -326,6 +347,20 @@ output, and looks like this:
 UID in hex format: 040050013FE3A6988FABD6046389DA0F6880
 UID in decimal format: 348555488454828795258771919000334924474496
 ~~~
+
+The `935389312472` value is the `Hardware 12NC` corresponding to the `SE050C2HQ1/Z01V3`
+model, used in the current PoC. Other SE models have a different 12NC values:
+
+| Product Type | 12NC# |
+|---| --- |
+| SE050A1HQ1/Z01SGZ | 935386722472 |
+| SE050A2HQ1/Z01SHZ | 935386984472 |
+| SE050B1HQ1/Z01SEZ | 935386985472 |
+| SE050B2HQ1/Z01SFZ | 935386986472 |
+| SE050C1HQ1/Z01SCZ | 935386987472 |
+| SE050C2HQ1/Z01SDZ | 935386988472 |
+
+The 12NC value can also be obtained from [EdgeLock 2GO website](https://edgelock2go.com)
 
 The configured devices can be listed with:
 ~~~
@@ -463,3 +498,16 @@ factory web dashboard, or by looking fo the device UUID in the serial output.
 
 The factory user needs to have `Owner` role in the factory, and the `fioctl` token
 requires the `devices:read-update` permission.
+
+### 5.7 Removing published version
+
+Published binaries can be removed from the targets list by using the `fioctl targets prune` command:
+
+~~~
+fioctl targets prune <target> [<target>...]
+~~~
+
+Example:
+~~~
+fioctl targets prune "MIMXRT1060-EVK-v1001"
+~~~
