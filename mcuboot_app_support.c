@@ -361,8 +361,8 @@ static status_t boot_swap_ok(void)
         off_header_erase = FLASH_AREA_IMAGE_1_OFFSET;
     }
 
-    LogInfo("Deleting header of inactive image in %s slot (rollback support for direct-xip)",
-           off_header_erase == FLASH_AREA_IMAGE_1_OFFSET ? "primary" : "secondary");
+    LogInfo(("Deleting header of inactive image in %s slot (rollback support for direct-xip)",
+           off_header_erase == FLASH_AREA_IMAGE_1_OFFSET ? "primary" : "secondary"));
     status = mflash_drv_sector_erase(off_header_erase);
     if (status != kStatus_Success)
     {
