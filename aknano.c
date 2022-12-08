@@ -88,7 +88,6 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
     memset(aknano_settings, 0, sizeof(*aknano_settings));
     strcpy(aknano_settings->tag, "devel");
     aknano_settings->polling_interval = 15;
-    // strcpy(aknano_settings->factory_name, "nxp-hbt-poc");
 #ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     strcpy(aknano_settings->token, AKNANO_API_TOKEN);
 #endif
@@ -96,8 +95,6 @@ void AkNanoInitSettings(struct aknano_settings *aknano_settings)
 #ifdef AKNANO_ENABLE_EXPLICIT_REGISTRATION
     aknano_read_device_certificate(aknano_settings->device_certificate, sizeof(aknano_settings->device_certificate));
 #endif
-    // strcpy(aknano_settings->serial, "000000000000");
-    // sfw_flash_read(REMAP_FLAG_ADDRESS, &aknano_settings->image_position, 1);
     aknano_settings->image_position = get_active_image() + 1;
 
     LogInfo(("AkNanoInitSettings: image_position=%u", aknano_settings->image_position));
@@ -177,17 +174,14 @@ static int aknano_handle_img_confirmed(struct aknano_settings *aknano_settings)
         if (currentStatus == kSwapType_Testing) {
             LogInfo(("Current image state is Testing. Marking as permanent"));
             bl_update_image_state(kSwapType_Permanent);
-            // AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_APPLIED, aknano_settings->running_version);
         } else if (currentStatus == kSwapType_ReadyForTest) {
             LogInfo(("Current image state is ReadyForTest"));
         } else {
             image_ok = true;
             LogInfo(("Current image state is Permanent"));
-            // TODO: Only send on Testing image
-            // AkNanoSendEvent(aknano_settings, AKNANO_EVENT_INSTALLATION_APPLIED, aknano_settings->running_version);
         }
     } else {
-        LogWarn(("Erro getting image state"));
+        LogWarn(("Error getting image state"));
         image_ok = true;
     }
 
