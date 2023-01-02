@@ -26,7 +26,7 @@
 #ifndef _AWS_DEMO_CONFIG_H_
 #define _AWS_DEMO_CONFIG_H_
 
-#include "ota_demo_config.h"
+// #include "ota_demo_config.h"
 
 /* Default configuration for all demos. Individual demos can override these below */
 #define democonfigDEMO_STACKSIZE                          ( configMINIMAL_STACK_SIZE * 15 )
