@@ -110,18 +110,18 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../mcuboot_app_support.h"
 "${ProjDirPath}/../flash_partitioning.h"
 "${ProjDirPath}/../read_button_task.c"
-"${ProjDirPath}/../aknano_device_gateway.c"
-"${ProjDirPath}/../aknano_targets_manifest.c"
-"${ProjDirPath}/../aknano_flash_storage.c"
-"${ProjDirPath}/../aknano_image_download.c"
-"${ProjDirPath}/../aknano_rest_api.c"
+"${ProjDirPath}/../aknano/aknano_device_gateway.c"
+"${ProjDirPath}/../aknano/aknano_targets_manifest.c"
+"${ProjDirPath}/../aknano/aknano_flash_storage.c"
+"${ProjDirPath}/../aknano/aknano_image_download.c"
+"${ProjDirPath}/../aknano/aknano_rest_api.c"
 "${ProjDirPath}/../aknano_client.c"
-"${ProjDirPath}/../aknano_tuf_client.c"
-"${ProjDirPath}/../aknano.c"
-"${ProjDirPath}/../aknano_net.c"
-"${ProjDirPath}/../aknano_pkcs11.c"
+"${ProjDirPath}/../aknano/aknano_tuf_client.c"
+"${ProjDirPath}/../aknano/aknano.c"
+"${ProjDirPath}/../aknano/aknano_net.c"
+"${ProjDirPath}/../aknano/aknano_pkcs11.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
-"${ProjDirPath}/../tests/aknano_test.c"
+"${ProjDirPath}/../aknano/tests/aknano_test.c"
 "${ProjDirPath}/../../libtufnano/libtufnano.c"
 
 "${FreeRtosAwsPath}/demos/demo_runner/iot_demo_freertos.c"
@@ -255,7 +255,8 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
     ${ProjDirPath}/../../..
     ${ProjDirPath}/../config_files
-    ${ProjDirPath}/../tests
+    ${ProjDirPath}/../aknano/tests
+    ${ProjDirPath}/../aknano
     ${ProjDirPath}/../../libtufnano
     
     ${FreeRtosAwsPath}/libraries/logging/include/
@@ -574,7 +575,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
         # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_APP_DEBUG")
 
         target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
-            "${ProjDirPath}/../aknano_el2go.c"
+            "${ProjDirPath}/../aknano/aknano_el2go.c"
             "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/sm_apdu.c"
             "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecp_alt_sss.c"
             "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecdh_alt_ax.c"
@@ -597,10 +598,10 @@ if(AKNANO_ALLOW_PROVISIONING EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ALLOW_PROVISIONING")
     target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
         # PKCS#11 using mflash
-        "${ProjDirPath}/../provisioning/aknano_provisioning_mbedtls.c"
-        "${ProjDirPath}/../provisioning/aknano_provisioning.c"
+        "${ProjDirPath}/../aknano/provisioning/aknano_provisioning_mbedtls.c"
+        "${ProjDirPath}/../aknano/provisioning/aknano_provisioning.c"
     )
     target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
-        ${ProjDirPath}/../provisioning
+        ${ProjDirPath}/../aknano/provisioning
     )
 endif(AKNANO_ALLOW_PROVISIONING EQUAL 1)
