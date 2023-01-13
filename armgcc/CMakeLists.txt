@@ -110,18 +110,8 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../mcuboot_app_support.h"
 "${ProjDirPath}/../flash_partitioning.h"
 "${ProjDirPath}/../read_button_task.c"
-"${ProjDirPath}/../aknano/aknano_device_gateway.c"
-"${ProjDirPath}/../aknano/aknano_targets_manifest.c"
-"${ProjDirPath}/../aknano/aknano_flash_storage.c"
-"${ProjDirPath}/../aknano/aknano_image_download.c"
-"${ProjDirPath}/../aknano/aknano_rest_api.c"
 "${ProjDirPath}/../aknano_client.c"
-"${ProjDirPath}/../aknano/aknano_tuf_client.c"
-"${ProjDirPath}/../aknano/aknano.c"
-"${ProjDirPath}/../aknano/aknano_net.c"
-"${ProjDirPath}/../aknano/aknano_pkcs11.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
-"${ProjDirPath}/../aknano/tests/aknano_test.c"
 "${ProjDirPath}/../../libtufnano/libtufnano.c"
 
 "${FreeRtosAwsPath}/demos/demo_runner/iot_demo_freertos.c"
@@ -231,10 +221,6 @@ if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
      target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
 endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
 
-if(AKNANO_SELF_TEST EQUAL 1)
-    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
-endif(AKNANO_SELF_TEST EQUAL 1)
-
 if (AKNANO_DELETE_TUF_DATA EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DELETE_TUF_DATA")
 endif (AKNANO_DELETE_TUF_DATA EQUAL 1)
@@ -255,8 +241,6 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
     ${ProjDirPath}/../../..
     ${ProjDirPath}/../config_files
-    ${ProjDirPath}/../aknano/tests
-    ${ProjDirPath}/../aknano
     ${ProjDirPath}/../../libtufnano
     
     ${FreeRtosAwsPath}/libraries/logging/include/
@@ -306,6 +290,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     #path for entry cmake
     set(CMAKE_MODULE_PATH
+        ${ProjDirPath}/../../aktualizr-nano/
         ${ProjDirPath}/../../../mcuxsdk/
         ${ProjDirPath}/../../../
         ${ProjDirPath}/../../../middleware
@@ -321,6 +306,7 @@ endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 if(CMAKE_BOARD_MODEL STREQUAL rt1170)
     #path for entry cmake
     set(CMAKE_MODULE_PATH
+        ${ProjDirPath}/../../aktualizr-nano/
         ${ProjDirPath}/../../../mcuxsdk/
         ${ProjDirPath}/../../../
         ${ProjDirPath}/../../../middleware
@@ -350,6 +336,8 @@ include(driver_flexspi)
 # include(middleware_lwip_enet_ethernetif)
 
 # include(middleware_lwip)
+
+include(middleware_aktualizr-nano)
 
 include(device_CMSIS)
 include(driver_clock)
@@ -381,6 +369,11 @@ include(component_mflash_file)
 # include(middleware_freertos-kernel)
 
 # include(middleware_freertos-kernel_heap_4)
+
+if(AKNANO_SELF_TEST EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
+    include(middleware_aktualizr-nano_tests)
+endif(AKNANO_SELF_TEST EQUAL 1)
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     include(device_startup)
@@ -556,10 +549,13 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
     include(driver_lpi2c_freertos)
 
     if(AKNANO_ENABLE_EL2GO EQUAL 1)
-        SET (CMAKE_MODULE_PATH $CMAKE_MODULE_PATH
+        SET (CMAKE_MODULE_PATH
+            ${CMAKE_MODULE_PATH}
             ${SE05X_SDK_FROM_ZIP_PATH}
         )
         include(middleware_se_hostlib_nxp_iot_agent_lib)
+        include(middleware_aktualizr-nano_tests)
+        include(middleware_aktualizr-nano_el2go)
 
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DAKNANO_ENABLE_EL2GO")
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DPB_FIELD_16BIT")
@@ -575,7 +571,6 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
         # SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNX_LOG_ENABLE_APP_DEBUG")
 
         target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
-            "${ProjDirPath}/../aknano/aknano_el2go.c"
             "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/sm_apdu.c"
             "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecp_alt_sss.c"
             "${SE05X_SDK_PATH}/sss/plugin/mbedtls/ecdh_alt_ax.c"
@@ -596,12 +591,5 @@ endif(AKNANO_ENABLE_SE05X EQUAL 1)
 
 if(AKNANO_ALLOW_PROVISIONING EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ALLOW_PROVISIONING")
-    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
-        # PKCS#11 using mflash
-        "${ProjDirPath}/../aknano/provisioning/aknano_provisioning_mbedtls.c"
-        "${ProjDirPath}/../aknano/provisioning/aknano_provisioning.c"
-    )
-    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
-        ${ProjDirPath}/../aknano/provisioning
-    )
+    include(middleware_aktualizr-nano_provisioning)
 endif(AKNANO_ALLOW_PROVISIONING EQUAL 1)
