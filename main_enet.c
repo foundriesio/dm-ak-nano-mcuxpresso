@@ -295,7 +295,7 @@ void print_string(const char *string)
     PRINTF(string);
 }
 
-int RunAkNanoDemo( bool xAwsIotMqttMode,
+int start_aknano( bool xAwsIotMqttMode,
                         const char * pIdentifier,
                         void * pNetworkServerInfo,
                         void * pNetworkCredentialInfo,
@@ -323,7 +323,7 @@ void vApplicationDaemonTaskStartupHook(void)
             initStorage();
 
             static demoContext_t otaDemoContext = {.networkTypes                = AWSIOT_NETWORK_TYPE_ETH,
-                                                   .demoFunction                = RunAkNanoDemo,
+                                                   .demoFunction                = start_aknano,
                                                    .networkConnectedCallback    = NULL,
                                                    .networkDisconnectedCallback = NULL};
 

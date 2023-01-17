@@ -12,6 +12,6 @@
 int initStorage();
 int initTime();
 time_t get_current_epoch();
-status_t AkNanoGenRandomBytes(char *output, size_t size);
+status_t aknano_gen_random_bytes(char *output, size_t size);
 
 #endif
