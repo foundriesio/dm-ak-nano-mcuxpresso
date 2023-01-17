@@ -24,7 +24,7 @@
  */
 #ifdef AKNANO_BOARD_MODEL_RT1060
 #include "fsl_trng.h"
-status_t AkNanoGenRandomBytes(char *output, size_t size)
+status_t aknano_gen_random_bytes(char *output, size_t size)
 {
     trng_config_t trng_config;
     int status = TRNG_GetDefaultConfig(&trng_config);
@@ -89,7 +89,7 @@ void initRandom()
 
 }
 
-status_t AkNanoGenRandomBytes(char *output, size_t size)
+status_t aknano_gen_random_bytes(char *output, size_t size)
 {
     if (!randomInitialized)
     {
@@ -189,7 +189,7 @@ int initTime()
 /* Storage */
 int initStorage()
 {
-        return InitFlashStorage();
+        return aknano_init_flash_storage();
 }
 
 /*
