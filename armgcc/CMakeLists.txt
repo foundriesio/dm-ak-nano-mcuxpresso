@@ -21,8 +21,11 @@ endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
 ################################################################################
 # Aktualizr-nano advanced development build options                                                  #
 ################################################################################
-# Delete local TUF metadata, starting over with original root.1.json
+# Delete local TUF metadata, starting over with provisioned root.1.json
 SET (AKNANO_DELETE_TUF_DATA 0)
+
+# Delete provisioned TUF 1.root.json
+SET (AKNANO_DELETE_PROVISIONED_TUF_ROOT 0)
 
 # Delete device key, certificate, serial and UUID
 SET (AKNANO_RESET_DEVICE_ID 0)
@@ -223,6 +226,10 @@ endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
 
 if (AKNANO_DELETE_TUF_DATA EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DELETE_TUF_DATA")
+endif (AKNANO_DELETE_TUF_DATA EQUAL 1)
+
+if (AKNANO_DELETE_PROVISIONED_TUF_ROOT EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DELETE_PROVISIONED_TUF_ROOT")
 endif (AKNANO_DELETE_TUF_DATA EQUAL 1)
 
 if (AKNANO_RESET_DEVICE_ID EQUAL 1)
