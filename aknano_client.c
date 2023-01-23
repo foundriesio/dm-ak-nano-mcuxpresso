@@ -154,16 +154,16 @@ static void SNTPRequest()
     sntp_example_init();
 
     int i;
-    for(i=0; i<5; i++) {
+    for(i=0; i<10; i++) {
         vTaskDelay( pdMS_TO_TICKS( 1000 ) );
         if (boot_up_epoch) {
             vTaskDelay( pdMS_TO_TICKS( 500 ) );
             break;
         }
     }
-    if (i == 5) {
+    if (i == 10) {
         // LOCK_TCPIP_CORE();
-        sntp_stop();
+        // sntp_stop();
         // UNLOCK_TCPIP_CORE();
         vTaskDelay( pdMS_TO_TICKS( 500 ) );
     }
