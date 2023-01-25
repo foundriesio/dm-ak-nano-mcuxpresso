@@ -213,11 +213,64 @@ configured first.
 First the FoundriesFactory that has been registered with EdgeLock 2GO. Contact
 [Foundries.io support team|https://foundriesio.atlassian.net/servicedesk/customer/portal/1/group/1/create/3].
 
+Once that initial configuration is done, this is the expected output of the
+`fioctl el2g status` command:
+```
+$ fioctl el2g status
+# Subdomain: s3q86u6rppswnpjy.device-link.edgelock2go.com
+
+# Product IDs
+        ID            NAME
+        --            ----
+        935389312472  SE050C2HQ1/Z01V3
+
+# Secure Objects
+        TYPE  NAME  OBJECT ID
+        ----  ----  ---------
+
+# Intermediate CAs
+```
 
 Then, configure the device gateway credentials with the following command.
 Please notice that the factory PKI (Section 4.2) should already be set up.
 ```
 fioctl el2g config-device-gateway --pki-dir </absolute/path/to/certs/>
+```
+
+The expected result for `fioctl el2g status` will be something like:
+```
+$ fioctl el2g status -f mcu-test-1
+# Subdomain: s3q86u6rppswnphy.device-link.edgelock2go.com
+
+# Product IDs
+        ID            NAME
+        --            ----
+        935389312472  SE050C2HQ1/Z01V3
+
+# Secure Objects
+        TYPE         NAME                        OBJECT ID
+        ----         ----                        ---------
+        CERTIFICATE  fio-device-gateway-ca-prod  83000043
+        CERTIFICATE  fio-device-gateway-ca       83000043
+        KEYPAIR      fio-device-gateway-ca-kp    83000042
+
+# Intermediate CAs
+Name: fio-device-gateway-ca
+Algorithm: NIST_P256
+ID: 3467
+-----BEGIN CERTIFICATE-----
+MIIB3TCCAYKgAwIBAgIUG0ckz3TwkypMb2WqDKT+gNkr9OEwCgYIKoZIzj0EAwIw
+KjETMBEGA1UEAwwKRmFjdG9yeS1DQTETMBEGA1UECwwKbWN1LXRlc3QtMTAeFw0y
+MzAxMjUxNjQ0MDhaFw0zMzAxMjIxNjQ0MDhaMEoxJTAjBgNVBAMMHGZpby02MTI2
+M2M4NjRkZTM0Mzk0ZWQ4YjY2ZTQxEzARBgNVBAsMCm1jdS10ZXN0LTExDDAKBhNV
+BAoMA254cDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABFUe47cegb8KaeonTvWD
+HfISWSQwDoscNZOIgEE1gz7Oluxl2pgJT3G50SAk4AR94PLiQ3HITsBt/M75h7VX
+fMmjZjBkMA4GA1UdDwEB/wQEAwICBDASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1Ud
+DgQWBBTCX8TNoXoXexIy080uMuQ7TcXbODAfBgNVHSMEGDAWgBS+qWI8LILusexB
+wM2TjlearF5BczAKBggqhkjOPQQDAgNJADBGAiEA2wX2Yz26fNW6+ZPftf9Fjb1T
+fRMBa5XPEB6M3lcDx3YCIQDJdkwKYHdlIheA1jd+WstqY4uTarT2PlA04fStmO05
+Sg==
+-----END CERTIFICATE-----
 ```
 
 More details are available at
