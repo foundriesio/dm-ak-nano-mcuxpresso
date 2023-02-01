@@ -116,6 +116,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../aknano_client.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 "${ProjDirPath}/../../libtufnano/libtufnano.c"
+"${ProjDirPath}/../../libtufnano/ext/fiat/src/curve25519.c"
 
 "${FreeRtosAwsPath}/demos/demo_runner/iot_demo_freertos.c"
 "${FreeRtosAwsPath}/demos/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c"
@@ -249,6 +250,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../../..
     ${ProjDirPath}/../config_files
     ${ProjDirPath}/../../libtufnano
+    ${ProjDirPath}/../../libtufnano/ext/fiat/src/
     
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
