@@ -1,5 +1,5 @@
 ################################################################################
-# Aktualizr-nano basic build options                                                  #
+# Aktualizr-nano basic build options                                           #
 ################################################################################
 
 # Use SE05X for device key and certificate provisioning
@@ -19,7 +19,7 @@ endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
 ################################################################################
 
 ################################################################################
-# Aktualizr-nano advanced development build options                                                  #
+# Aktualizr-nano advanced development build options                            #
 ################################################################################
 # Delete local TUF metadata, starting over with provisioned root.1.json
 SET (AKNANO_DELETE_TUF_DATA 0)
@@ -231,7 +231,7 @@ endif (AKNANO_DELETE_TUF_DATA EQUAL 1)
 
 if (AKNANO_DELETE_PROVISIONED_TUF_ROOT EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DELETE_PROVISIONED_TUF_ROOT")
-endif (AKNANO_DELETE_TUF_DATA EQUAL 1)
+endif (AKNANO_DELETE_PROVISIONED_TUF_ROOT EQUAL 1)
 
 if (AKNANO_RESET_DEVICE_ID EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_RESET_DEVICE_ID")
