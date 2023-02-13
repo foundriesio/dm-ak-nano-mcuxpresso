@@ -301,6 +301,8 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     set(CMAKE_MODULE_PATH
         ${ProjDirPath}/../../aktualizr-nano/
         ${ProjDirPath}/../../../mcuxsdk/
+        ${ProjDirPath}/../../../mcuxsdk/components/phy/mdio/enet/
+        ${ProjDirPath}/../../../middleware/CMSIS_5/Core/Include/
         ${ProjDirPath}/../../../
         ${ProjDirPath}/../../../middleware
         ${ProjDirPath}/../../../middleware/mbedtls
@@ -309,6 +311,9 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
         ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
         ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
         ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
+        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id
+        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id/socs/rt10xx
+        ${ProjDirPath}/../../../rtos/freertos/freertos_kernel
     )
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
@@ -319,11 +324,16 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
         ${ProjDirPath}/../../../mcuxsdk/
         ${ProjDirPath}/../../../
         ${ProjDirPath}/../../../middleware
+        ${ProjDirPath}/../../../mcuxsdk/components/phy/mdio/enet/
+        ${ProjDirPath}/../../../middleware/CMSIS_5/Core/Include/
         ${ProjDirPath}/../../../middleware/mbedtls
         ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
         ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
         ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
         ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
+        ${ProjDirPath}/../../../rtos/freertos/freertos_kernel
+        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id
+        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id/socs/rt10xx
     )
 endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
@@ -391,7 +401,14 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
     include(driver_trng)
     include(middleware_mbedtls_MIMXRT1062)
+
+    include(middleware_mbedtls_port_ksdk)
+
+    include(middleware_mbedtls_rt)
     include(middleware_lwip_enet_ethernetif_MIMXRT1062)
+
+    include(middleware_lwip_MIMXRT1062)
+    include(component_silicon_id_MIMXRT1062)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
 
@@ -410,6 +427,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
     include(driver_dcdc_soc)
 
     include(driver_phy-device-rtl8211f)
+    include(component_silicon_id_MIMXRT1176_cm7)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
 include(driver_igpio)

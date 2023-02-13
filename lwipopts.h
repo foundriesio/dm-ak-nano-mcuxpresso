@@ -4,7 +4,7 @@
  * This file is based on \src\include\lwip\opt.h
  ******************************************************************************
  * Copyright (c) 2013-2016, Freescale Semiconductor, Inc.
- * Copyright 2016-2019 NXP
+ * Copyright 2016-2018, 2022 NXP
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -13,11 +13,8 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
-void sntp_set_system_time(unsigned long sec);
-#define SNTP_SET_SYSTEM_TIME sntp_set_system_time
-#define  USE_RTOS 1
-
 #if USE_RTOS
+
 /**
  * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
  * critical regions during buffer allocation, deallocation and memory
@@ -39,10 +36,22 @@ void sntp_set_system_time(unsigned long sec);
 #define LWIP_SOCKET 1
 
 /**
+ * LWIP_SO_SNDTIMEO==1: Enable send timeout for sockets/netconns and
+ * SO_SNDTIMEO processing.
+ */
+#define LWIP_SO_SNDTIMEO 1
+
+/**
  * LWIP_SO_RCVTIMEO==1: Enable receive timeout for sockets/netconns and
  * SO_RCVTIMEO processing.
  */
 #define LWIP_SO_RCVTIMEO 1
+
+/**
+ * LWIP_SO_SNDRCVTIMEO_NONSTANDARD==1: SO_RCVTIMEO/SO_SNDTIMEO take an int
+ * (milliseconds, much like winsock does) instead of a struct timeval (default).
+ */
+#define LWIP_SO_SNDRCVTIMEO_NONSTANDARD 1
 
 #else
 /**
@@ -124,6 +133,11 @@ void sys_mark_tcpip_thread(void);
    timeouts. */
 #ifndef MEMP_NUM_SYS_TIMEOUT
 #define MEMP_NUM_SYS_TIMEOUT 10
+#endif
+/* MEMP_NUM_REASS_DATA: The number of whole IP packets
+   queued for reassembly. */
+#ifndef MEMP_NUM_REASSDATA
+#define MEMP_NUM_REASSDATA 2
 #endif
 
 /* ---------- Pbuf options ---------- */
@@ -332,6 +346,20 @@ Some MCU allow computing and verifying the IP, UDP, TCP and ICMP checksums by ha
 #include "lwip/arch.h"
 u32_t lwip_rand(void);
 #define LWIP_RAND() lwip_rand()
+#endif
+
+/**
+ * LWIP_NETIF_EXT_STATUS_CALLBACK==1: Support an extended callback function
+ * for several netif related event that supports multiple subscribers.
+ * @see netif_ext_status_callback
+ */
+#define LWIP_NETIF_EXT_STATUS_CALLBACK 1
+
+/**
+ * IP_REASS_MAX_PBUFS: Number of buffers reserved for IP fragment reassembly.
+ */
+#ifndef IP_REASS_MAX_PBUFS
+#define IP_REASS_MAX_PBUFS 4
 #endif
 
 #endif /* __LWIPOPTS_H__ */
