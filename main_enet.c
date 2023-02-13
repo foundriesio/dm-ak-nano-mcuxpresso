@@ -55,7 +55,6 @@
 #else
 #include "fsl_phyrtl8211f.h"
 #endif
-#include "fsl_enet_mdio.h"
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
 #include "fsl_enet.h"
@@ -67,14 +66,15 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "netif/ethernet.h"
-#include "enet_ethernetif.h"
+#include "ethernetif.h"
 #include "lwip/netifapi.h"
+#include "fsl_iomuxc.h"
+#include "fsl_enet.h"
 
 #ifdef AKNANO_BOARD_MODEL_RT1060
-#include "fsl_phyksz8081.h"
-#include "fsl_enet_mdio.h"
-#include "fsl_gpio.h"
+// #include "fsl_enet_mdio.h"
 #include "fsl_iomuxc.h"
+#include "fsl_phyksz8081.h"
 #endif
 
 #if AKNANO_ENABLE_SE05X
@@ -93,10 +93,10 @@ const char * g_port_name = NULL;
  * Definitions
  ******************************************************************************/
 /* MAC address configuration. */
-#define configMAC_ADDR                     \
-    {                                      \
-        0x02, 0x12, 0x13, 0x10, 0x15, 0x25 \
-    }
+// #define configMAC_ADDR                     \
+//     {                                      \
+//         0x02, 0x12, 0x13, 0x10, 0x15, 0x25 \
+//     }
 
 #ifdef AKNANO_BOARD_MODEL_RT1060
 
@@ -104,36 +104,34 @@ const char * g_port_name = NULL;
 /*! @brief Network interface initialization function. */
 #define EXAMPLE_NETIF_INIT_FN ethernetif0_init
 #endif /* EXAMPLE_NETIF_INIT_FN */
-/* Address of PHY interface. */
-#define EXAMPLE_PHY_ADDRESS BOARD_ENET0_PHY_ADDRESS
-/* MDIO operations. */
-#define EXAMPLE_MDIO_OPS enet_ops
 
-/* PHY operations. */
-#define EXAMPLE_PHY_OPS phyksz8081_ops
-
-/* ENET clock frequency. */
-#define EXAMPLE_CLOCK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
+/* Ethernet configuration. */
+extern phy_ksz8081_resource_t g_phy_resource;
+#define EXAMPLE_ENET         ENET
+#define EXAMPLE_PHY_ADDRESS  BOARD_ENET0_PHY_ADDRESS
+#define EXAMPLE_PHY_OPS      &phyksz8081_ops
+#define EXAMPLE_CLOCK_FREQ   CLOCK_GetFreq(kCLOCK_IpgClk)
 
 #else
 #if BOARD_NETWORK_USE_100M_ENET_PORT
+extern phy_ksz8081_resource_t g_phy_resource;
+#define EXAMPLE_ENET ENET
 /* Address of PHY interface. */
 #define EXAMPLE_PHY_ADDRESS BOARD_ENET0_PHY_ADDRESS
 /* PHY operations. */
-#define EXAMPLE_PHY_OPS phyksz8081_ops
+#define EXAMPLE_PHY_OPS &phyksz8081_ops
 /* ENET instance select. */
 #define EXAMPLE_NETIF_INIT_FN ethernetif0_init
 #else
+extern phy_rtl8211f_resource_t g_phy_resource;
+#define EXAMPLE_ENET          ENET_1G
 /* Address of PHY interface. */
 #define EXAMPLE_PHY_ADDRESS   BOARD_ENET1_PHY_ADDRESS
 /* PHY operations. */
-#define EXAMPLE_PHY_OPS       phyrtl8211f_ops
+#define EXAMPLE_PHY_OPS       &phyrtl8211f_ops
 /* ENET instance select. */
 #define EXAMPLE_NETIF_INIT_FN ethernetif1_init
 #endif
-
-/* MDIO operations. */
-#define EXAMPLE_MDIO_OPS enet_ops
 
 /* ENET clock frequency. */
 #define EXAMPLE_CLOCK_FREQ CLOCK_GetRootClockFreq(kCLOCK_Root_Bus)
@@ -144,6 +142,8 @@ const char * g_port_name = NULL;
 #endif /* EXAMPLE_NETIF_INIT_FN */
 #endif
 
+#define EXAMPLE_PHY_RESOURCE &g_phy_resource
+
 #define INIT_SUCCESS 0
 #define INIT_FAIL    1
 
@@ -153,7 +153,7 @@ const char * g_port_name = NULL;
 #define LOGGING_TASK_STACK_SIZE (200)
 #define LOGGING_QUEUE_LENGTH    (16)
 
-#define AKNANO_TASK_STACK_SIZE 5000
+#define AKNANO_TASK_STACK_SIZE 9000
 
 /*******************************************************************************
  * Prototypes
@@ -165,14 +165,40 @@ extern int initNetwork(void);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-static mdio_handle_t mdioHandle = {.ops = &EXAMPLE_MDIO_OPS};
-static phy_handle_t phyHandle   = {.phyAddr = EXAMPLE_PHY_ADDRESS, .mdioHandle = &mdioHandle, .ops = &EXAMPLE_PHY_OPS};
+static phy_handle_t phyHandle;
 
 struct netif netif;
+
+
+#ifdef AKNANO_BOARD_MODEL_RT1060
+phy_ksz8081_resource_t g_phy_resource;
+#else
+#if BOARD_NETWORK_USE_100M_ENET_PORT
+phy_ksz8081_resource_t g_phy_resource;
+#else
+phy_rtl8211f_resource_t g_phy_resource;
+#endif
+#endif
 
 /*******************************************************************************
  * Code
  ******************************************************************************/
+static void MDIO_Init(void)
+{
+    (void)CLOCK_EnableClock(s_enetClock[ENET_GetInstance(EXAMPLE_ENET)]);
+    ENET_SetSMI(EXAMPLE_ENET, EXAMPLE_CLOCK_FREQ, false);
+}
+
+static status_t MDIO_Write(uint8_t phyAddr, uint8_t regAddr, uint16_t data)
+{
+    return ENET_MDIOWrite(EXAMPLE_ENET, phyAddr, regAddr, data);
+}
+
+static status_t MDIO_Read(uint8_t phyAddr, uint8_t regAddr, uint16_t *pData)
+{
+    return ENET_MDIORead(EXAMPLE_ENET, phyAddr, regAddr, pData);
+ }
+
 #ifdef AKNANO_BOARD_MODEL_RT1060
 void BOARD_InitModuleClock(void)
 {
@@ -184,14 +210,6 @@ void BOARD_InitModuleClock(void)
     CLOCK_InitEnetPll(&config);
 }
 
-void delay(void)
-{
-    volatile uint32_t i = 0;
-    for (i = 0; i < 1000000; ++i)
-    {
-        __asm("NOP"); /* delay */
-    }
-}
 #else
 void BOARD_InitModuleClock(void)
 {
@@ -237,53 +255,73 @@ void BOARD_ENETFlexibleConfigure(enet_config_t *config)
 
 int initNetwork(void)
 {
-    ip4_addr_t netif_ipaddr, netif_netmask, netif_gw;
+    // return 0;
     ethernetif_config_t enet_config = {
-        .phyHandle  = &phyHandle,
-        .macAddress = configMAC_ADDR,
+        .phyHandle   = &phyHandle,
+        .phyAddr     = EXAMPLE_PHY_ADDRESS,
+        .phyOps      = EXAMPLE_PHY_OPS,
+        .phyResource = EXAMPLE_PHY_RESOURCE,
+        .srcClockHz  = EXAMPLE_CLOCK_FREQ,
     };
 
-    mdioHandle.resource.csrClock_Hz = EXAMPLE_CLOCK_FREQ;
-
-#ifdef AKNANO_USE_STATIC_NETWORK_SETTINGS
-    IP4_ADDR(&netif_ipaddr, 192, 168, 15, 8);
-    IP4_ADDR(&netif_netmask, 255, 255, 255, 0);
-    IP4_ADDR(&netif_gw, 192, 168, 15, 1);
+#ifdef configMAC_ADDR
+    enet_config.macAddress = configMAC_ADDR;
 #else
-    IP4_ADDR(&netif_ipaddr, 0, 0, 0, 0);
-    IP4_ADDR(&netif_netmask, 0, 0, 0, 0);
-    IP4_ADDR(&netif_gw, 0, 0, 0, 0);
+     (void)SILICONID_ConvertToMacAddr(&enet_config.macAddress);
 #endif
     tcpip_init(NULL, NULL);
 
-    netifapi_netif_add(&netif, &netif_ipaddr, &netif_netmask, &netif_gw, &enet_config, EXAMPLE_NETIF_INIT_FN,
-                       tcpip_input);
-    netifapi_netif_set_default(&netif);
-    netifapi_netif_set_up(&netif);
+    err_t ret;
+    ret = netifapi_netif_add(&netif, NULL, NULL, NULL, &enet_config, EXAMPLE_NETIF_INIT_FN, tcpip_input);
+    if (ret != (err_t)ERR_OK)
+    {
+        (void)PRINTF("netifapi_netif_add: %d\r\n", ret);
+        while (true)
+        {
+        }
+    }
+    ret = netifapi_netif_set_default(&netif);
+    if (ret != (err_t)ERR_OK)
+    {
+        (void)PRINTF("netifapi_netif_set_default: %d\r\n", ret);
+        while (true)
+        {
+        }
+    }
+    ret = netifapi_netif_set_up(&netif);
+    if (ret != (err_t)ERR_OK)
+    {
+        (void)PRINTF("netifapi_netif_set_up: %d\r\n", ret);
+        while (true)
+        {
+        }
+    }
 
 #ifdef AKNANO_USE_STATIC_NETWORK_SETTINGS
 	#include "lwip/dns.h"
 	ip4_addr_t netif_dns;
 	IP4_ADDR(&netif_dns, 8, 8, 8, 8);
 	dns_setserver(0, &netif_dns);
+    IP4_ADDR(&netif.ip, 192, 168, 15, 8);
+    IP4_ADDR(&netif.netmask, 255, 255, 255, 0);
+    IP4_ADDR(&netif.gw, 192, 168, 15, 1);
 #else
+    while (ethernetif_wait_linkup(&netif, 5000) != ERR_OK)
+    {
+        (void)PRINTF("PHY Auto-negotiation failed. Please check the cable connection and link partner setting.\r\n");
+    }
+
     configPRINTF(("Getting IP address from DHCP ...\r\n"));
-    netifapi_dhcp_start(&netif);
-
-    struct dhcp *dhcp;
-    dhcp = (struct dhcp *)netif_get_client_data(&netif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
-
-    while (dhcp->state != DHCP_STATE_BOUND)
+    ret = netifapi_dhcp_start(&netif);
+    if (ret != (err_t)ERR_OK)
     {
-        vTaskDelay(1000);
+        (void)PRINTF("netifapi_dhcp_start: %d\r\n", ret);
+        while (true)
+        {
+        }
     }
-
-    if (dhcp->state == DHCP_STATE_BOUND)
-    {
-        configPRINTF(("IPv4 Address: %u.%u.%u.%u\r\n", ((u8_t *)&netif.ip_addr.addr)[0],
-                      ((u8_t *)&netif.ip_addr.addr)[1], ((u8_t *)&netif.ip_addr.addr)[2],
-                      ((u8_t *)&netif.ip_addr.addr)[3]));
-    }
+    (void)ethernetif_wait_ipv4_valid(&netif, ETHERNETIF_WAIT_FOREVER);
+    configPRINTF(("IPv4 Address: %s\r\n", ipaddr_ntoa(&netif.ip_addr)));
     configPRINTF(("DHCP OK\r\n"));
 #endif
 
@@ -357,11 +395,16 @@ int main(void)
 
     GPIO_PinInit(GPIO1, 9, &gpio_config);
     GPIO_PinInit(GPIO1, 10, &gpio_config);
-    /* pull up the ENET_INT before RESET. */
+    /* Pull up the ENET_INT before RESET. */
     GPIO_WritePinOutput(GPIO1, 10, 1);
     GPIO_WritePinOutput(GPIO1, 9, 0);
-    delay();
+    SDK_DelayAtLeastUs(10000, CLOCK_GetFreq(kCLOCK_CpuClk));
     GPIO_WritePinOutput(GPIO1, 9, 1);
+
+    MDIO_Init();
+    g_phy_resource.read  = MDIO_Read;
+    g_phy_resource.write = MDIO_Write;
+
 #else
     BOARD_InitPins();
     BOARD_BootClockRUN();
@@ -373,12 +416,8 @@ int main(void)
     IOMUXC_SelectENETClock();
 
 #if BOARD_NETWORK_USE_100M_ENET_PORT
-xx
     BOARD_InitEnetPins();
-    GPIO_PinInit(GPIO9, 11, &gpio_config);
     GPIO_PinInit(GPIO12, 12, &gpio_config);
-    /* Pull up the ENET_INT before RESET. */
-    GPIO_WritePinOutput(GPIO9, 11, 1);
     GPIO_WritePinOutput(GPIO12, 12, 0);
     SDK_DelayAtLeastUs(10000, CLOCK_GetFreq(kCLOCK_CpuClk));
     GPIO_WritePinOutput(GPIO12, 12, 1);
@@ -396,6 +435,9 @@ xx
     EnableIRQ(ENET_1G_MAC0_Tx_Rx_1_IRQn);
     EnableIRQ(ENET_1G_MAC0_Tx_Rx_2_IRQn);
 #endif
+    MDIO_Init();
+    g_phy_resource.read  = MDIO_Read;
+    g_phy_resource.write = MDIO_Write;
 #endif
 
     CRYPTO_InitHardware();
@@ -412,17 +454,4 @@ xx
     vTaskStartScheduler();
     for (;;)
         ;
-}
-
-void *pvPortCalloc(size_t xNum, size_t xSize)
-{
-    void *pvReturn;
-
-    pvReturn = pvPortMalloc(xNum * xSize);
-    if (pvReturn != NULL)
-    {
-        memset(pvReturn, 0x00, xNum * xSize);
-    }
-
-    return pvReturn;
 }
