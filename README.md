@@ -323,7 +323,7 @@ The process for obtaining the required content is described in Section 4.2.
 The comments inside the code explain which files should be used for each of
 the required macros, and are replicated bellow.
 
-- `foundriesio-mcu-ota\foundriesio\dm-ak-nano-mcuxpresso\aknano_secret.h`
+- `foundriesio-mcu-ota\foundriesio\aktualizr-nano\src\aknano_secret.h`
 ~~~
 /*
  * The factory UUID is used as subdomain name to access the factory-specific
@@ -382,7 +382,7 @@ the required macros, and are replicated bellow.
 "-----END CERTIFICATE-----\n"
 ~~~
 
-- `foundriesio-mcu-ota\foundriesio\dm-ak-nano-mcuxpresso\provisioning\aknano_provisioning_secret.h`
+- `foundriesio-mcu-ota\foundriesio\aktualizr-nano\src\provisioning\aknano_provisioning_secret.h`
 
 **This file does not need to be filled when `EdgeLock 2GO Managed` mode is used**
 ~~~
