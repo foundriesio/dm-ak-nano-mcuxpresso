@@ -158,6 +158,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../../../middleware/freertos/coreJSON/source/core_json.c"
 "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/core_pkcs11.c"
 "${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/core_pki_utils.c"
+"${ProjDirPath}/../../../middleware/inih/ini.c"
 
 "${ProjDirPath}/../../../middleware/http-parser/http_parser.c"
 
@@ -269,6 +270,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../../../middleware/unity/extras/fixture/src/
     ${ProjDirPath}/../../../middleware/unity/extras/memory/src/
     ${ProjDirPath}/../../../middleware/unity/src/
+    ${ProjDirPath}/../../../middleware/inih/
     ${FreeRtosAwsPath}/demos/common/pkcs11_helpers
     ${FreeRtosAwsPath}/demos/dev_mode_key_provisioning/include/
     ${FreeRtosAwsPath}/demos/include/
