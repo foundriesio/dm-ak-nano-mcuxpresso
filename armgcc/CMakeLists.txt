@@ -344,7 +344,7 @@ include(afr)
 include(all_devices)
 
 # include modules
-include(driver_mdio-enet)
+# include(driver_mdio-enet)
 
 include(driver_phy-device-ksz8081)
 
@@ -407,7 +407,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     include(middleware_mbedtls_rt)
     include(middleware_lwip_enet_ethernetif_MIMXRT1062)
 
-    include(middleware_lwip_MIMXRT1062)
+    include(middleware_lwip)
     include(component_silicon_id_MIMXRT1062)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
