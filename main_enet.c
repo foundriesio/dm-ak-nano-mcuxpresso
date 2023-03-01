@@ -93,10 +93,12 @@ const char * g_port_name = NULL;
  * Definitions
  ******************************************************************************/
 /* MAC address configuration. */
-// #define configMAC_ADDR                     \
-//     {                                      \
-//         0x02, 0x12, 0x13, 0x10, 0x15, 0x25 \
-//     }
+/*
+#define configMAC_ADDR                     \
+     {                                      \
+         0x02, 0x12, 0x13, 0x10, 0x15, 0x25 \
+     }
+*/
 
 #ifdef AKNANO_BOARD_MODEL_RT1060
 
