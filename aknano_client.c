@@ -7,14 +7,14 @@
 
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
+#include "lwip/apps/sntp.h"
+
 #include "aknano_priv.h"
 #include "aknano_secret.h"
 
 #include "flexspi_flash_config.h"
 #include "lwip/opt.h"
-#include "lwip/apps/sntp.h"
 #include "lwip/netif.h"
-#include "sntp_example.h"
 
 #include <time.h>
 #include <stdio.h>
@@ -110,7 +110,7 @@ status_t aknano_gen_random_bytes(char *output, size_t size)
  */
 
 static time_t boot_up_epoch;
-void sntp_set_system_time(u32_t sec)
+void aknano_client_sntp_set_system_time(u32_t sec)
 {
     LogInfo(("SNTP sntp_set_system_time"));
     char buf[32];
@@ -146,7 +146,7 @@ void sntp_example_init(void)
 
     sntp_init();
     UNLOCK_TCPIP_CORE();
-    LogInfo(("SNTP Initialized"));
+    LogInfo(("SNTP started"));
 }
 
 static void SNTPRequest()
@@ -154,7 +154,7 @@ static void SNTPRequest()
     sntp_example_init();
 
     int i;
-    for(i=0; i<10; i++) {
+    for(i=0; i<20; i++) {
         vTaskDelay( pdMS_TO_TICKS( 1000 ) );
         if (boot_up_epoch) {
             vTaskDelay( pdMS_TO_TICKS( 500 ) );
@@ -168,7 +168,7 @@ static void SNTPRequest()
         vTaskDelay( pdMS_TO_TICKS( 500 ) );
     }
 
-    LogInfo(("Proceeding after sntp"));
+    LogInfo(("Proceeding after sntp after waiting %d seconds", i / 2));
 }
 
 

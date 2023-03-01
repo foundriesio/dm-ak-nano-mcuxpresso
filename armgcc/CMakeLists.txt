@@ -246,6 +246,8 @@ if (AKNANO_DUMP_MEMORY_USAGE_INFO EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DUMP_MEMORY_USAGE_INFO")
 endif (AKNANO_DUMP_MEMORY_USAGE_INFO EQUAL 1)
 
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DSNTP_SET_SYSTEM_TIME=aknano_client_sntp_set_system_time")
+
 target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
     ${ProjDirPath}/../../..
