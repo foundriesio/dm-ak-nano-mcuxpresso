@@ -4,8 +4,8 @@ Proof-of-Concept sample application for Aktualizr-nano, a device management and
 OTA update client for MCUs based on FoundriesFactory.
 It runs on top of MCUXpresso SDK.
 
-The current code is not intended for production use, and is currently a mere
-prototype illustrating the possibility of using Foundries.io services in MCUs.
+*The current code is not intended for production use, and is currently a mere
+prototype illustrating the possibility of using Foundries.io services in MCUs.*
 
 The first sections of the following instructions were strongly based on
 https://github.com/FreeRTOS/iot-reference-nxp-rt1060
@@ -37,6 +37,9 @@ https://github.com/FreeRTOS/iot-reference-nxp-rt1060
 * [PyOCD](https://pyocd.io/)
 * [West](https://pypi.org/project/west/)
 
+### 1.3 Credentials Requirements
+
+* A FoundriesFactory account, that can be created at https://app.foundries.io/
 
 ## 2 Hardware and Software Setup
 
@@ -210,8 +213,8 @@ devices to be manages without the need to interact with the EdgeLock 2GO
 API explicitly. If that integration is to be used, the factory need to be
 configured first.
 
-First the FoundriesFactory that has been registered with EdgeLock 2GO. Contact
-[Foundries.io support team|https://foundriesio.atlassian.net/servicedesk/customer/portal/1/group/1/create/3].
+First the FoundriesFactory needs to be registered with EdgeLock 2GO. This should 
+be requested to the [Foundries.io support team](https://foundriesio.atlassian.net/servicedesk/customer/portal/1/group/1/create/3).
 
 Once that initial configuration is done, this is the expected output of the
 `fioctl el2g status` command:
@@ -439,7 +442,7 @@ python ..\..\..\..\SDK_2_13_0_MIMXRT1060-EVKB\middleware\mcuboot_opensource\scri
 ~~~
 
 Notice that we use the `--pad --confirm` options, that are only required when the
-image is going ot be loaded fo the first time.
+image is going to be loaded for the first time.
 
 We also set the version to 1.0.0 and revision value to 1000.
 
@@ -518,7 +521,7 @@ IQCKZuR2IM4exjY9tDhIUD+Iywf0vw4MqlG9vinfAJIo7w==
 
 ~~~
 
-Each device can be added to be added with a command like:
+Each device can be added with a command like:
 ~~~
 fioctl el2g devices add 935389312472 <UUID>
 ~~~
