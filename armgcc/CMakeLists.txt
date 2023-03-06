@@ -89,6 +89,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     include(${ProjDirPath}/config_rt1060.cmake)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
+include(${ProjDirPath}/../../libtufnano/tufFilePaths.cmake)
 
 SET(FreeRtosAwsPath "${ProjDirPath}/../../../rtos/amazon-freertos")
 SET(FreeRtosKernelPath "${ProjDirPath}/../../../rtos/freertos/freertos_kernel")
@@ -115,9 +116,8 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../read_button_task.c"
 "${ProjDirPath}/../aknano_client.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
-"${ProjDirPath}/../../libtufnano/libtufnano.c"
-"${ProjDirPath}/../../libtufnano/ext/fiat/src/curve25519.c"
-
+${TUF_SOURCES}
+${TUF_FIAT_SOURCES}
 "${FreeRtosAwsPath}/demos/demo_runner/iot_demo_freertos.c"
 "${FreeRtosAwsPath}/demos/dev_mode_key_provisioning/src/aws_dev_mode_key_provisioning.c"
 "${FreeRtosAwsPath}/demos/network_manager/aws_iot_network_manager.c"
@@ -252,8 +252,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/..
     ${ProjDirPath}/../../..
     ${ProjDirPath}/../config_files
-    ${ProjDirPath}/../../libtufnano
-    ${ProjDirPath}/../../libtufnano/ext/fiat/src/
+    ${TUF_INCLUDE_PUBLIC_DIRS}
     
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
