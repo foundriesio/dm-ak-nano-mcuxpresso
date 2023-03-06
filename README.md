@@ -4,6 +4,16 @@ Proof-of-Concept sample application for Aktualizr-nano, a device management and
 OTA update client for MCUs based on FoundriesFactory.
 It runs on top of MCUXpresso SDK.
 
+This guide documents the complete flow for using the current solution on a `MIMXRT1060-EVKB` board, including:
+* Fetching the required software
+* Building and loading the booloader
+* Building, signing and setting the version of an application with OTA support
+* Loading a first build of the application into the board using an USB cable
+* Provisioning device keys and certificates, with and without the use of EdgeLock 2GO and a SE050 secure element
+* Onboarding of the device to the EdgeLock 2GO service
+* Viewing the device status using FoundriesFactory tools
+* Publishing signed binaries of new application versions to be fetched by the device
+
 *The current code is not intended for production use, and is currently a mere
 prototype illustrating the possibility of using Foundries.io services in MCUs.*
 
