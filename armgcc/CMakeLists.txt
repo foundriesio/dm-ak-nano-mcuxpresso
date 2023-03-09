@@ -39,6 +39,10 @@ SET (AKNANO_DUMP_MEMORY_USAGE_INFO 1)
 # Enable very basic tests before starting main functionality
 SET (AKNANO_SELF_TEST 0)
 
+# Disable reboots
+# To be used durign debug sessions where reboot operation can't be performed
+SET (AKNANO_DISABLE_REBOOT 0)
+
 ################################################################################
 
 # CROSS COMPILER SETTING
@@ -245,6 +249,10 @@ endif (AKNANO_TEST_ROLLBACK EQUAL 1)
 if (AKNANO_DUMP_MEMORY_USAGE_INFO EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DUMP_MEMORY_USAGE_INFO")
 endif (AKNANO_DUMP_MEMORY_USAGE_INFO EQUAL 1)
+
+if (AKNANO_DISABLE_REBOOT EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DISABLE_REBOOT")
+endif (AKNANO_DISABLE_REBOOT EQUAL 1)
 
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DSNTP_SET_SYSTEM_TIME=aknano_client_sntp_set_system_time")
 
