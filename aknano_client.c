@@ -7,17 +7,18 @@
 
 #define LIBRARY_LOG_LEVEL LOG_INFO
 
-#include "lwip/apps/sntp.h"
-
-#include "aknano_priv.h"
-#include "aknano_secret.h"
+#include <stdio.h>
+#include <time.h>
 
 #include "flexspi_flash_config.h"
+#include "lwip/apps/sntp.h"
 #include "lwip/opt.h"
 #include "lwip/netif.h"
 
-#include <time.h>
-#include <stdio.h>
+#include "aknano.h"
+#include "aknano_debug.h"
+#include "aknano_flash_storage.h"
+#include "aknano_secret.h"
 
 /*
  * Random numbers generator

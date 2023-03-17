@@ -7,7 +7,7 @@
 
 #ifndef __AKNANO_CLIENT_H__
 #define __AKNANO_CLIENT_H__
-#include "aknano_priv.h"
+#include "aknano_public_api.h"
 
 int initStorage();
 int initTime();
