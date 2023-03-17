@@ -49,6 +49,8 @@
 #include "types/iot_network_types.h"
 #include "aws_demo.h"
 
+#include "aknano_public_api.h"
+
 #ifdef AKNANO_BOARD_MODEL_RT1170
 #if BOARD_NETWORK_USE_100M_ENET_PORT
 #include "fsl_phyksz8081.h"
@@ -70,6 +72,7 @@
 #include "lwip/netifapi.h"
 #include "fsl_iomuxc.h"
 #include "fsl_enet.h"
+#include "fsl_silicon_id.h"
 
 #ifdef AKNANO_BOARD_MODEL_RT1060
 // #include "fsl_enet_mdio.h"
@@ -335,11 +338,25 @@ void print_string(const char *string)
     PRINTF(string);
 }
 
-int start_aknano( bool xAwsIotMqttMode,
-                        const char * pIdentifier,
-                        void * pNetworkServerInfo,
-                        void * pNetworkCredentialInfo,
-                        const IotNetworkInterface_t * pxNetworkInterface );
+/**
+ * @brief Entry point of aktualizr-nano
+ */
+int start_aknano(bool                         xAwsIotMqttMode,
+                 const char *                 pIdentifier,
+                 void *                       pNetworkServerInfo,
+                 void *                       pNetworkCredentialInfo,
+                 const IotNetworkInterface_t *pxNetworkInterface)
+{
+    (void)xAwsIotMqttMode;
+    (void)pIdentifier;
+    (void)pNetworkServerInfo;
+    (void)pNetworkCredentialInfo;
+    (void)pxNetworkInterface;
+
+    aknano_sample_loop();
+    return 0;
+}
+
 int initTime();
 int initStorage();
 #if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
