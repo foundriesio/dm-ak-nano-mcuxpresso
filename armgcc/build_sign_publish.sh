@@ -31,6 +31,7 @@ FLASH_SLOT1_ADDRESS=0x60040000
 FLASH_SLOT2_ADDRESS=0x60240000
 export BOARD_MODEL="rt1060"
 BUILD_HWID="MIMXRT1060-EVK"
+PYOCD_TARGET="MIMXRT1060"
 
 DO_PUBLISH=1
 PUBLISH_TAGS="devel"
@@ -63,6 +64,7 @@ for i in "$@"; do
       FLASH_SLOT1_ADDRESS=0x30040000
       FLASH_SLOT2_ADDRESS=0x30240000
       BUILD_HWID="MIMXRT1170-EVK"
+      PYOCD_TARGET="mimxrt1170_cm7"
       export BOARD_MODEL="rt1170"
       shift # past argument
       ;;
@@ -72,6 +74,7 @@ for i in "$@"; do
       FLASH_SLOT2_ADDRESS=0x60240000
       export BOARD_MODEL="rt1060"
       BUILD_HWID="MIMXRT1060-EVK"
+      PYOCD_TARGET="mimxrt1060"
       shift # past argument
       ;;
     --force-cleanjup)
@@ -116,12 +119,23 @@ fi
 
 signed_file="${build_full_path}/ota_demo.signed.bin"
 
+
+if [ ${DO_FLASH_PRIMARY_SLOT} -eq 1 ]; then
+  if [ ${BUILD_RT1060} -eq 1 ]; then
+    pyocd load image_trailer.bin -a 0x6023ff00
+  else
+    pyocd load image_trailer.bin -a 0x3023ff00
+  fi
+#  pad_confirm="--pad --confirm"
+fi
+
 python3 ${mcuboot_path}/scripts/imgtool.py sign \
         --key ${mcuboot_path}/root-rsa-2048.pem  \
         --align 4 \
         --header-size 0x400 \
         --pad-header \
         --slot-size 0x200000 \
+        ${pad_confirm} \
         --version 2.7.0+${revision} \
         ${build_full_path}/ota_demo.bin \
         ${signed_file}
@@ -148,8 +162,9 @@ fi
 if [ ${DO_FLASH} -eq 1 ]; then
   echo -e "${COLOR_CYAN}"
   echo -e "Flashing..."
-  [ ${DO_FLASH_PRIMARY_SLOT} -eq 1 ]   && pyocd flash ${signed_file} -a $FLASH_SLOT1_ADDRESS
-  [ ${DO_FLASH_SECONDARY_SLOT} -eq 1 ] && pyocd flash ${signed_file} -a $FLASH_SLOT2_ADDRESS
+  ls -lh ${signed_file}
+  [ ${DO_FLASH_PRIMARY_SLOT} -eq 1 ]   && pyocd flash ${signed_file} -a $FLASH_SLOT1_ADDRESS -t ${PYOCD_TARGET}
+  [ ${DO_FLASH_SECONDARY_SLOT} -eq 1 ] && pyocd flash ${signed_file} -a $FLASH_SLOT2_ADDRESS -t ${PYOCD_TARGET}
   echo -e "Flashing Done"
   echo -e "${COLOR_RESET}"
 fi
