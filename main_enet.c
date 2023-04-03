@@ -353,7 +353,7 @@ int start_aknano(bool                         xAwsIotMqttMode,
     (void)pNetworkCredentialInfo;
     (void)pxNetworkInterface;
 
-    aknano_sample_loop();
+    aknano_sample_loop(NULL);
     return 0;
 }
 
