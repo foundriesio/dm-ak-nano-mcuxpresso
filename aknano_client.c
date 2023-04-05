@@ -25,7 +25,7 @@
  */
 #ifdef AKNANO_BOARD_MODEL_RT1060
 #include "fsl_trng.h"
-status_t aknano_gen_random_bytes(char *output, size_t size)
+status_t aknano_cli_gen_random_bytes(char *output, size_t size)
 {
     trng_config_t trng_config;
     int status = TRNG_GetDefaultConfig(&trng_config);
@@ -90,7 +90,7 @@ void initRandom()
 
 }
 
-status_t aknano_gen_random_bytes(char *output, size_t size)
+status_t aknano_cli_gen_random_bytes(char *output, size_t size)
 {
     if (!randomInitialized)
     {
@@ -173,7 +173,7 @@ static void SNTPRequest()
 }
 
 
-time_t get_current_epoch()
+time_t aknano_cli_get_current_epoch()
 {
     if (boot_up_epoch == 0)
         boot_up_epoch = 1637778974; // 2021-11-24
