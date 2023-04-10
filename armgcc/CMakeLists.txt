@@ -16,6 +16,9 @@ if(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
     SET(CMAKE_BOARD_MODEL rt1060)
 endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
 
+# Enable AWS MQTT demo task
+SET (AKNANO_ENABLE_AWS_MQTT_DEMO_TASK 0)
+
 ################################################################################
 
 ################################################################################
@@ -94,11 +97,14 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
 endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
 include(${ProjDirPath}/../../libtufnano/tufFilePaths.cmake)
+include(${ProjDirPath}/../../../middleware/coreMQTT-Agent/mqttAgentFilePaths.cmake)
+include(${ProjDirPath}/../../../middleware/coreMQTT/mqttFilePaths.cmake)
+
 
 SET(FreeRtosAwsPath "${ProjDirPath}/../../../rtos/amazon-freertos")
 SET(FreeRtosKernelPath "${ProjDirPath}/../../../rtos/freertos/freertos_kernel")
 
-add_executable(${MCUX_SDK_PROJECT_NAME} 
+add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../config_files/FreeRTOSConfig.h"
 "${ProjDirPath}/../config_files/aws_mbedtls_config.h"
 #"${ProjDirPath}/../config_files/aws_demo_config.h"
@@ -119,6 +125,7 @@ add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../flash_partitioning.h"
 "${ProjDirPath}/../read_button_task.c"
 "${ProjDirPath}/../aknano_client.c"
+"${ProjDirPath}/../aws_mqtt_starter.c"
 "${ProjDirPath}/../flexspi_nor_flash_ops.c"
 ${TUF_SOURCES}
 ${TUF_FIAT_SOURCES}
@@ -170,6 +177,15 @@ ${TUF_FIAT_SOURCES}
 
 "${ProjDirPath}/../../../middleware/unity/src/unity.c"
 "${ProjDirPath}/../../../middleware/unity/extras/fixture/src/unity_fixture.c"
+"${ProjDirPath}/../../../rtos/amazon-freertos/demos/coreMQTT_Agent/mqtt_agent_task.c"
+"${ProjDirPath}/../../../rtos/amazon-freertos/demos/coreMQTT_Agent/subscription_manager.c"
+"${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/freertos_agent_message.c"
+"${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/freertos_command_pool.c"
+"${ProjDirPath}/../../../rtos/amazon-freertos/demos/common/pkcs11_helpers/pkcs11_helpers.c"
+"${ProjDirPath}/../../../rtos/amazon-freertos/demos/coreMQTT_Agent/simple_sub_pub_demo.c"
+${MQTT_AGENT_SOURCES}
+${MQTT_SOURCES}
+${MQTT_SERIALIZER_SOURCES}
 )
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1170)
@@ -261,11 +277,11 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../../..
     ${ProjDirPath}/../config_files
     ${TUF_INCLUDE_PUBLIC_DIRS}
-    
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
     ${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/include/
     ${ProjDirPath}/../../../middleware/freertos/backoffAlgorithm/source/include/
+    ${MQTT_INCLUDE_PUBLIC_DIRS}
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/include/
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/interface/
     ${ProjDirPath}/../../../middleware/freertos/coreJSON/source/include/
@@ -305,6 +321,8 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosAwsPath}/tests/include/
     ${FreeRtosKernelPath}/include/
     ${FreeRtosKernelPath}/portable/GCC/ARM_CM4F/
+    ${MQTT_AGENT_INCLUDE_PUBLIC_DIRS}
+    "${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/include"
 )
 
 if(CMAKE_BOARD_MODEL STREQUAL rt1060)
@@ -631,3 +649,7 @@ if(AKNANO_ALLOW_PROVISIONING EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ALLOW_PROVISIONING")
     include(middleware_aktualizr-nano_provisioning)
 endif(AKNANO_ALLOW_PROVISIONING EQUAL 1)
+
+if(AKNANO_ENABLE_AWS_MQTT_DEMO_TASK EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_ENABLE_AWS_MQTT_DEMO_TASK")
+endif(AKNANO_ENABLE_AWS_MQTT_DEMO_TASK EQUAL 1)
