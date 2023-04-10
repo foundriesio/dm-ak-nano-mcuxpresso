@@ -301,13 +301,12 @@ int initNetwork(void)
         {
         }
     }
-
 #ifdef AKNANO_USE_STATIC_NETWORK_SETTINGS
-	#include "lwip/dns.h"
-	ip4_addr_t netif_dns;
-	IP4_ADDR(&netif_dns, 8, 8, 8, 8);
-	dns_setserver(0, &netif_dns);
-    IP4_ADDR(&netif.ip, 192, 168, 15, 8);
+    #include "lwip/dns.h"
+    ip4_addr_t netif_dns;
+    IP4_ADDR(&netif_dns, 8, 8, 8, 8);
+    dns_setserver(0, &netif_dns);
+    IP4_ADDR(&netif.ip_addr, 192, 168, 15, 8);
     IP4_ADDR(&netif.netmask, 255, 255, 255, 0);
     IP4_ADDR(&netif.gw, 192, 168, 15, 1);
 #else
@@ -394,6 +393,7 @@ void btn_read_task(void *pvParameters);
 #define led_toggle_task_PRIO (configMAX_PRIORITIES - 1)
 #define btn_press_task_PRIO (configMAX_PRIORITIES - 1)
 
+void aws_mqtt_starter();
 void sampleAppTask( void * pvParameters );
 
 int main(void)
@@ -465,6 +465,9 @@ int main(void)
 
         // if( xTaskCreate( prvLoggingTask, "Logging", usStackSize, NULL, uxPriority, NULL ) == pdPASS )
     xTaskCreate(btn_read_task, "btn_read_task", 2048, NULL, btn_press_task_PRIO, NULL);
+#ifdef AKNANO_ENABLE_AWS_MQTT_DEMO_TASK
+    xTaskCreate(aws_mqtt_starter, "aws_mqtt_starter", 2048, NULL, configMAX_PRIORITIES - 1, NULL);
+#endif
 
     // xTaskCreate(sampleAppTask, "sntp_task", 4096, NULL, btn_press_task_PRIO, NULL);
 #if defined(AKNANO_ENABLE_EL2GO) && defined(AKNANO_ALLOW_PROVISIONING)
