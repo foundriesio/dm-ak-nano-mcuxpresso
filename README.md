@@ -707,3 +707,28 @@ Example:
 ~~~
 fioctl targets prune "MIMXRT1060-EVK-v1001"
 ~~~
+
+## 7 Enabling AWS IoT MQTT demo task
+
+The same device credentials used for establishing a secure mTLS channel between the device and
+Foundries.io device gateway can be used to securely communicate with AWS IoT cloud infrastructure. The integrated 
+AWS IoT MQTT demo task exemplifies that use.
+
+In order to run the MQTT sample, you need to:
+- Have an active [AWS IoT](https://aws.amazon.com/iot-core/) account
+- Set the factory Certificate Authority as a trusted signer for devices certificates in AWS IoT, and setup the required
+policies. The steps required to do so are organized in a [Python script](https://foundries.io/media/aws-iot-setup.py).
+After editing the `factory_cas` with the factory PKI files path (Section 4.2), you can run the script and the account
+will be configured. Please notice that this script uses the aws command line application. More information can be found
+at [this blog post](https://foundries.io/insights/blog/aws-iot-jitp/)
+- Change the AKNANO_ENABLE_AWS_MQTT_DEMO_TASK option in the CMakeLists.txt file from `0` to `1`
+- Set the values for `democonfigROOT_CA_PEM` and `democonfigMQTT_BROKER_ENDPOINT` inside 
+`foundriesio/dm-ak-nano-mcuxpresso/config_files/mqtt_agent_demo_config.h` with the access information for your
+AWS IoT account.
+
+After configuring and running the PoC application with the MQTT task, the device will be listed in:
+```
+aws iot list-things
+```
+And you can see the published messages in the AWS IoT web interface, in `MQTT test client`, after subscribing to the
+`/filter/Publisher0` topic.
