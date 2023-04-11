@@ -643,10 +643,10 @@ Any value higher then the original flashed revision, 1000, can be used.
 
 In order to upload and publish the new version, run the following command.
 Notice that the "1001" revision matches the value used during signing.
-The "nxp" tag is used, and it can be any arbitrary string.
+The "new_tag" tag is used, and it can be any arbitrary string.
 
 ~~~
-fioctl --verbose targets create-file "ota_demo.signed.bin" "1001" "MIMXRT1060-EVK" "nxp"
+fioctl --verbose targets create-file "ota_demo.signed.bin" "1001" "MIMXRT1060-EVK" "new_tag"
 ~~~
 
 The configuration of which tag should be followed by each device can be set
@@ -654,19 +654,27 @@ dynamically, as described bellow.
 
 ### 6.6 Changing the tag tracked by the device
 
-The *tag* that is being tracked by the device, as long as the *polling_interval* and
-the *btn_polling_interval* can be adjusted by uploading a settings JSON file to the
-factory. Here is an example:
+In order to change the tag that is being tracked by a specific device, the command is the same as on MPUs:
 
+```
+fioctl device config updates <device_name> --tag <tag> --force
+```
+For example:
+```
+fioctl device config updates "0A557380-4808-125C-6C0F-5689E6462ED8" --tag "new_tag" --force
+```
+
+### 6.7 Changing the generic config file
+
+The current PoC uses two configurations that can be adjusted by changing the generic JSON config file for the device:
+- *polling_interval* sets the interval between aknano check-ins with the device gateway
+- *btn_polling_interval* sets the interval between reads of the board user button done by the sample task
+
+Here is an example:
 ~~~
 {
     "reason": "",
     "files": [
-        {
-            "name": "tag",
-            "value": "nxp",
-            "unencrypted": true
-        },
         {
             "name": "polling_interval",
             "value": "10",
