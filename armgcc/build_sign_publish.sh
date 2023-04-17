@@ -29,7 +29,7 @@ DO_FORCE_CLEANUP=0 # not effective yet
 BUILD_RT1060=1
 FLASH_SLOT1_ADDRESS=0x60040000
 FLASH_SLOT2_ADDRESS=0x60240000
-export BOARD_MODEL="rt1060"
+AKNANO_BOARD_MODEL="rt1060"
 BUILD_HWID="MIMXRT1060-EVK"
 PYOCD_TARGET="MIMXRT1060"
 
@@ -65,14 +65,14 @@ for i in "$@"; do
       FLASH_SLOT2_ADDRESS=0x30240000
       BUILD_HWID="MIMXRT1170-EVK"
       PYOCD_TARGET="mimxrt1170_cm7"
-      export BOARD_MODEL="rt1170"
+      AKNANO_BOARD_MODEL="rt1170"
       shift # past argument
       ;;
     --rt1060)
       BUILD_RT1060=1
       FLASH_SLOT1_ADDRESS=0x60040000
       FLASH_SLOT2_ADDRESS=0x60240000
-      export BOARD_MODEL="rt1060"
+      AKNANO_BOARD_MODEL="rt1060"
       BUILD_HWID="MIMXRT1060-EVK"
       PYOCD_TARGET="mimxrt1060"
       shift # past argument
@@ -109,6 +109,7 @@ build_full_path="flexspi_nor_release"
 unsigned_file="${build_full_path}/ota_demo.bin"
 rm -f "${unsigned_file}"
 
+export AKNANO_BOARD_MODEL
 if [ $DO_TEST_BUILD -eq 1 ]; then
   # integration test build
   ./build_flexspi_nor_test.sh

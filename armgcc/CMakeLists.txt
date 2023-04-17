@@ -12,18 +12,18 @@ SET (AKNANO_ENABLE_EL2GO 0)
 SET (AKNANO_ALLOW_PROVISIONING 1)
 
 # Board type rt1060 or rt1170
-if(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
-    SET(CMAKE_BOARD_MODEL rt1060)
-endif(NOT DEFINED CMAKE_BOARD_MODEL OR CMAKE_BOARD_MODEL STREQUAL "")
+SET (AKNANO_BOARD_MODEL rt1060)
 
 # Enable AWS MQTT demo task
 SET (AKNANO_ENABLE_AWS_MQTT_DEMO_TASK 0)
 
 ################################################################################
 
+
 ################################################################################
 # Aktualizr-nano advanced development build options                            #
 ################################################################################
+
 # Delete local TUF metadata, starting over with provisioned root.1.json
 SET (AKNANO_DELETE_TUF_DATA 0)
 
@@ -50,6 +50,34 @@ SET (AKNANO_DISABLE_REBOOT 0)
 SET (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID 0)
 
 ################################################################################
+
+
+################################################################################
+# Overwrite default values if environment variables are set:
+################################################################################
+
+if (DEFINED ENV{AKNANO_ENABLE_EL2GO})
+    set (AKNANO_ENABLE_EL2GO $ENV{AKNANO_ENABLE_EL2GO})
+endif (DEFINED ENV{AKNANO_ENABLE_EL2GO})
+
+if (DEFINED ENV{AKNANO_ENABLE_SE05X})
+    set (AKNANO_ENABLE_SE05X $ENV{AKNANO_ENABLE_SE05X})
+endif (DEFINED ENV{AKNANO_ENABLE_SE05X})
+
+if (DEFINED ENV{AKNANO_ALLOW_PROVISIONING})
+    set (AKNANO_ENABLE_SE05X $ENV{AKNANO_ALLOW_PROVISIONING})
+endif (DEFINED ENV{AKNANO_ALLOW_PROVISIONING})
+
+if (DEFINED ENV{AKNANO_ENABLE_AWS_MQTT_DEMO_TASK})
+    set (AKNANO_ENABLE_SE05X $ENV{AKNANO_ENABLE_AWS_MQTT_DEMO_TASK})
+endif (DEFINED ENV{AKNANO_ENABLE_AWS_MQTT_DEMO_TASK})
+
+if (DEFINED ENV{AKNANO_BOARD_MODEL})
+    set (AKNANO_BOARD_MODEL $ENV{AKNANO_BOARD_MODEL})
+endif (DEFINED ENV{AKNANO_BOARD_MODEL})
+
+################################################################################
+
 
 # CROSS COMPILER SETTING
 SET(CMAKE_SYSTEM_NAME Generic)
@@ -89,15 +117,15 @@ SET(THREADX_ARCH "cortex_m7")
 SET(THREADX_TOOLCHAIN "gnu")
 
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+if(AKNANO_BOARD_MODEL STREQUAL rt1170)
     include(${ProjDirPath}/flags_rt1170.cmake)
     include(${ProjDirPath}/config_rt1170.cmake)
-endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+if(AKNANO_BOARD_MODEL STREQUAL rt1060)
     include(${ProjDirPath}/flags_rt1060.cmake)
     include(${ProjDirPath}/config_rt1060.cmake)
-endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
 include(${ProjDirPath}/../../libtufnano/tufFilePaths.cmake)
 include(${ProjDirPath}/../../../middleware/coreMQTT-Agent/mqttAgentFilePaths.cmake)
@@ -191,7 +219,7 @@ ${MQTT_SOURCES}
 ${MQTT_SERIALIZER_SOURCES}
 )
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+if(AKNANO_BOARD_MODEL STREQUAL rt1170)
     target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
     "${ProjDirPath}/../board_rt1170/pin_mux.c"
     "${ProjDirPath}/../board_rt1170/pin_mux.h"
@@ -209,9 +237,9 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
     target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${ProjDirPath}/../board_rt1170
     )
-endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+if(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
     target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
     "${ProjDirPath}/../board_rt1060/pin_mux.c"
@@ -234,7 +262,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
     target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
         ${ProjDirPath}/../../../mcuxsdk/drivers/trng/
     )
-endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_FLEXSPI_NOR} -fdiagnostics-color -DUSE_FLASH=1 -DLWIP_NETIF_API=1 -DMBEDTLS_ERROR_C -DMBEDTLS_MCUX_FREERTOS_THREADING_ALT -DMBEDTLS_CMAC_C -DJSON_QUERY_KEY_SEPARATOR=\\'/\\'")
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DCACHE_MODE_WRITE_THROUGH")
@@ -272,6 +300,11 @@ endif (AKNANO_DUMP_MEMORY_USAGE_INFO EQUAL 1)
 if (AKNANO_DISABLE_REBOOT EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DISABLE_REBOOT")
 endif (AKNANO_DISABLE_REBOOT EQUAL 1)
+
+if (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID")
+endif (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID EQUAL 1)
+
 
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DSNTP_SET_SYSTEM_TIME=aknano_client_sntp_set_system_time")
 
@@ -328,7 +361,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     "${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/include"
 )
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+if(AKNANO_BOARD_MODEL STREQUAL rt1060)
     #path for entry cmake
     set(CMAKE_MODULE_PATH
         ${ProjDirPath}/../../aktualizr-nano/
@@ -347,9 +380,9 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
         ${ProjDirPath}/../../../mcuxsdk/components/silicon_id/socs/rt10xx
         ${ProjDirPath}/../../../rtos/freertos/freertos_kernel
     )
-endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+if(AKNANO_BOARD_MODEL STREQUAL rt1170)
     #path for entry cmake
     set(CMAKE_MODULE_PATH
         ${ProjDirPath}/../../aktualizr-nano/
@@ -367,7 +400,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
         ${ProjDirPath}/../../../mcuxsdk/components/silicon_id
         ${ProjDirPath}/../../../mcuxsdk/components/silicon_id/socs/rt10xx
     )
-endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
 
 
 include(afr)
@@ -426,7 +459,7 @@ if(AKNANO_SELF_TEST EQUAL 1)
     include(middleware_aktualizr-nano_tests)
 endif(AKNANO_SELF_TEST EQUAL 1)
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1060)
+if(AKNANO_BOARD_MODEL STREQUAL rt1060)
     include(device_startup)
     include(device_system)
     include(driver_dcp)
@@ -441,10 +474,10 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1060)
 
     include(middleware_lwip)
     include(component_silicon_id_MIMXRT1062)
-endif(CMAKE_BOARD_MODEL STREQUAL rt1060)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
 
-if(CMAKE_BOARD_MODEL STREQUAL rt1170)
+if(AKNANO_BOARD_MODEL STREQUAL rt1170)
     include(all_lib_device_MIMXRT1176_cm7)
 
     include(device_startup_MIMXRT1176_cm7)
@@ -460,7 +493,7 @@ if(CMAKE_BOARD_MODEL STREQUAL rt1170)
 
     include(driver_phy-device-rtl8211f)
     include(component_silicon_id_MIMXRT1176_cm7)
-endif(CMAKE_BOARD_MODEL STREQUAL rt1170)
+endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
 
 include(driver_igpio)
 
@@ -613,7 +646,6 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
             ${SE05X_SDK_FROM_ZIP_PATH}
         )
         include(middleware_se_hostlib_nxp_iot_agent_lib)
-        include(middleware_aktualizr-nano_tests)
         include(middleware_aktualizr-nano_el2go)
 
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DAKNANO_ENABLE_EL2GO")
