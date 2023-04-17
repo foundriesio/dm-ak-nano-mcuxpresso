@@ -46,6 +46,9 @@ SET (AKNANO_SELF_TEST 0)
 # To be used durign debug sessions where reboot operation can't be performed
 SET (AKNANO_DISABLE_REBOOT 0)
 
+# Force a fixed UUID for the device, by using the MAC address as UUID
+SET (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID 0)
+
 ################################################################################
 
 # CROSS COMPILER SETTING
