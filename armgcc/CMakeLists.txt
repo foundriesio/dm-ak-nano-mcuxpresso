@@ -52,6 +52,12 @@ SET (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID 0)
 # An arbitrary string to add to key serial output locations, facilitating test analysis
 SET (AKNANO_TEST_MESSAGE_PREAMBLE "TEST ")
 
+# Dump every TUF metadata that is downloaded from the devide gateway
+SET (AKNANO_DUMP_DOWNLOADED_TUF_METADATA 0)
+
+# Default tag used when fetching targets from the device gateway
+SET (AKNANO_DEFAULT_TAG "devel")
+
 ################################################################################
 
 
@@ -118,6 +124,14 @@ endif (DEFINED ENV{AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID})
 if (DEFINED ENV{AKNANO_TEST_MESSAGE_PREAMBLE})
     set (AKNANO_TEST_MESSAGE_PREAMBLE $ENV{AKNANO_TEST_MESSAGE_PREAMBLE})
 endif (DEFINED ENV{AKNANO_TEST_MESSAGE_PREAMBLE})
+
+if (DEFINED ENV{AKNANO_DUMP_DOWNLOADED_TUF_METADATA})
+    set (AKNANO_DUMP_DOWNLOADED_TUF_METADATA $ENV{AKNANO_DUMP_DOWNLOADED_TUF_METADATA})
+endif (DEFINED ENV{AKNANO_DUMP_DOWNLOADED_TUF_METADATA})
+
+if (DEFINED ENV{AKNANO_DEFAULT_TAG})
+    set (AKNANO_DEFAULT_TAG $ENV{AKNANO_DEFAULT_TAG})
+endif (DEFINED ENV{AKNANO_DEFAULT_TAG})
 
 ################################################################################
 
@@ -348,7 +362,6 @@ if (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID")
 endif (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID EQUAL 1)
 
-
 SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DSNTP_SET_SYSTEM_TIME=aknano_client_sntp_set_system_time")
 
 
@@ -376,7 +389,15 @@ ENDIF (NOT AKNANO_COMMIT_ID STREQUAL "")
 
 IF (NOT AKNANO_TEST_MESSAGE_PREAMBLE STREQUAL "")
     target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE AKNANO_TEST_MESSAGE_PREAMBLE="${AKNANO_TEST_MESSAGE_PREAMBLE}")
-ENDIF (NOT AKNANO_COMMIT_ID STREQUAL "")
+ENDIF (NOT AKNANO_TEST_MESSAGE_PREAMBLE STREQUAL "")
+
+IF (NOT AKNANO_DEFAULT_TAG STREQUAL "")
+    target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE AKNANO_DEFAULT_TAG="${AKNANO_DEFAULT_TAG}")
+ENDIF (NOT AKNANO_DEFAULT_TAG STREQUAL "")
+
+if (AKNANO_DUMP_DOWNLOADED_TUF_METADATA EQUAL 1)
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_DUMP_DOWNLOADED_TUF_METADATA")
+endif (AKNANO_DUMP_DOWNLOADED_TUF_METADATA EQUAL 1)
 
 message(STATUS "MANIFEST_HASH: ${AKNANO_COMMIT_ID}")
 message(STATUS "AKNANO_HASH: ${AKNANO_MANIFEST_COMMIT_ID}")
@@ -620,6 +641,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
         "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_mw.c"
         "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_policy.c"
         "${SE05X_SDK_PATH}/sss/src/se05x/fsl_sss_se05x_scp03.c"
+        "${SE05X_SDK_PATH}/sss/ex/src/ex_sss_se05x_auth.c"
         "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/sm_connect.c"
         "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/infra/global_platf.c"
         "${SE05X_SDK_PATH}/hostlib/hostLib/libCommon/nxScp/nxScp03_Com.c"
