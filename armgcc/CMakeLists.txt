@@ -195,16 +195,10 @@ SET(FreeRtosKernelPath "${ProjDirPath}/../../../rtos/freertos/freertos_kernel")
 add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../config_files/FreeRTOSConfig.h"
 "${ProjDirPath}/../config_files/aws_mbedtls_config.h"
-#"${ProjDirPath}/../config_files/aws_demo_config.h"
-#"${ProjDirPath}/../config_files/aws_wifi_config.h"
-#"${ProjDirPath}/../config_files/core_http_config.h"
-#"${ProjDirPath}/../config_files/core_mqtt_config.h"
 "${ProjDirPath}/../config_files/core_pkcs11_config.h"
 "${ProjDirPath}/../config_files/FreeRTOSIPConfig.h"
 "${ProjDirPath}/../config_files/iot_config.h"
 "${ProjDirPath}/../config_files/iot_secure_sockets_config.h"
-# "${ProjDirPath}/../config_files/ota_config.h"
-# "${ProjDirPath}/../config_files/ota_demo_config.h"
 "${ProjDirPath}/../config_files/aws_iot_network_config.h"
 "${ProjDirPath}/../main_enet.c"
 "${ProjDirPath}/../lwipopts.h"
@@ -234,7 +228,6 @@ ${TUF_FIAT_SOURCES}
 "${FreeRtosAwsPath}/libraries/logging/iot_logging.c"
 "${FreeRtosAwsPath}/tests/common/aws_test.c"
 "${FreeRtosAwsPath}/tests/common/aws_test_framework.c"
-"${FreeRtosAwsPath}/tests/common/iot_test_freertos.c"
 
 "${FreeRtosKernelPath}/croutine.c"
 "${FreeRtosKernelPath}/event_groups.c"
@@ -246,8 +239,6 @@ ${TUF_FIAT_SOURCES}
 "${FreeRtosKernelPath}/tasks.c"
 "${FreeRtosKernelPath}/timers.c"
 
-## "${FreeRtosAwsPath}/libraries/3rdparty/lwip_osal/src/sys_arch.c" # -> this file lacks a few functions
-"${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/src/sys_arch.c"
 "${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif_kinetis.c"
 "${ProjDirPath}/../../../middleware/lwip/port/enet_ethernetif.c"
 "${ProjDirPath}/../../../poc/3rdparty/rtos/freertos/vendors/nxp/secure_sockets/lwip/iot_secure_sockets.c"
@@ -411,16 +402,12 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${TUF_INCLUDE_PUBLIC_DIRS}
     ${FreeRtosAwsPath}/libraries/logging/include/
     ${ProjDirPath}/../../../middleware/pkcs11/
-    ${ProjDirPath}/../../../poc/3rdparty/middleware/freertos/lwip_osal/include/
     ${ProjDirPath}/../../../middleware/freertos/backoffAlgorithm/source/include/
     ${MQTT_INCLUDE_PUBLIC_DIRS}
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/include/
     ${ProjDirPath}/../../../middleware/freertos/coreHTTP/source/interface/
     ${ProjDirPath}/../../../middleware/freertos/coreJSON/source/include/
     ${ProjDirPath}/../../../middleware/freertos/corePKCS11/source/include/
-    ${ProjDirPath}/../../../middleware/freertos/corePKCS11/test/shared-config/
-    ${ProjDirPath}/../../../middleware/freertos/pkcs11/
-    ${ProjDirPath}/../../../middleware/freertos/tls_freertos/
     ${ProjDirPath}/../../../middleware/http-parser/
     ${ProjDirPath}/../../../middleware/lwip/port/
     ${ProjDirPath}/../../../middleware/mbedtls/port/ksdk/
@@ -432,7 +419,6 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosAwsPath}/demos/dev_mode_key_provisioning/include/
     ${FreeRtosAwsPath}/demos/include/
     ${FreeRtosAwsPath}/demos/network_manager/
-    ${FreeRtosAwsPath}/libraries/3rdparty/lwip_osal/include/
     ${FreeRtosAwsPath}/libraries/3rdparty/mbedtls_utils/
     ${FreeRtosAwsPath}/libraries/abstractions/platform/freertos/include/
     ${FreeRtosAwsPath}/libraries/abstractions/platform/include/
@@ -445,7 +431,6 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosAwsPath}/libraries/c_sdk/standard/common/include/
     ${FreeRtosAwsPath}/libraries/c_sdk/standard/common/include/private/
     ${FreeRtosAwsPath}/libraries/c_sdk/standard/common/include/types/
-    ${FreeRtosAwsPath}/libraries/coreHTTP/source/dependency/3rdparty/http_parser/
     ${FreeRtosAwsPath}/libraries/freertos_plus/standard/crypto/include/
     ${FreeRtosAwsPath}/libraries/freertos_plus/standard/tls/include/
     ${FreeRtosAwsPath}/libraries/freertos_plus/standard/tls/include/
