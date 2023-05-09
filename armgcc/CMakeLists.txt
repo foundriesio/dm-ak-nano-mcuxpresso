@@ -227,7 +227,6 @@ ${TUF_FIAT_SOURCES}
 "${FreeRtosAwsPath}/libraries/logging/iot_logging_task_dynamic_buffers.c"
 "${FreeRtosAwsPath}/libraries/logging/iot_logging.c"
 "${FreeRtosAwsPath}/tests/common/aws_test.c"
-"${FreeRtosAwsPath}/tests/common/aws_test_framework.c"
 
 "${FreeRtosKernelPath}/croutine.c"
 "${FreeRtosKernelPath}/event_groups.c"
@@ -435,11 +434,10 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosAwsPath}/libraries/freertos_plus/standard/tls/include/
     ${FreeRtosAwsPath}/libraries/freertos_plus/standard/tls/include/
     ${FreeRtosAwsPath}/libraries/freertos_plus/standard/utils/include/
-    ${FreeRtosAwsPath}/tests/include/
     ${FreeRtosKernelPath}/include/
     ${FreeRtosKernelPath}/portable/GCC/ARM_CM4F/
     ${MQTT_AGENT_INCLUDE_PUBLIC_DIRS}
-    "${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/include"
+    ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/include
 )
 
 if(AKNANO_BOARD_MODEL STREQUAL rt1060)
@@ -537,6 +535,15 @@ include(component_mflash_file)
 
 if(AKNANO_SELF_TEST EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
+    target_sources(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        "${FreeRtosAwsPath}/tests/common/aws_test_framework.c"
+        "${FreeRtosAwsPath}/tests/common/iot_test_freertos.c"
+    )
+
+    target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
+        ${FreeRtosAwsPath}/tests/include/
+    )
+
     include(middleware_aktualizr-nano_tests)
 endif(AKNANO_SELF_TEST EQUAL 1)
 
