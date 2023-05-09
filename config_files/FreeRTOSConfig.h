@@ -65,7 +65,7 @@
 #ifdef AKNANO_ENABLE_SE05X
 #define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 480 * 1024 ) )
 #else
-#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 240 * 1024 ) )
+#define configTOTAL_HEAP_SIZE                        ( ( size_t ) ( 360 * 1024 ) )
 #endif
 #endif
 #define configMAX_TASK_NAME_LEN                      ( 16 )
