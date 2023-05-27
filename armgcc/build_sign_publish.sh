@@ -38,6 +38,7 @@ PUBLISH_TAGS="devel"
 
 DO_BREAK_SIGNATURE=0
 DO_TEST_BUILD=0
+build_type="release"
 
 for i in "$@"; do
   case $i in
@@ -89,6 +90,10 @@ for i in "$@"; do
       DO_BREAK_SIGNATURE=1
       shift # past argument
       ;;
+    --debug)
+      build_type="debug"
+      shift # past argument
+      ;;
     -*|--*)
       echo "Unknown option $i"
       exit 1
@@ -105,7 +110,7 @@ else
   revision=1300
 fi
 
-build_full_path="flexspi_nor_release"
+build_full_path="flexspi_nor_${build_type}"
 unsigned_file="${build_full_path}/ota_demo.bin"
 rm -f "${unsigned_file}"
 
@@ -115,7 +120,8 @@ if [ $DO_TEST_BUILD -eq 1 ]; then
   ./build_flexspi_nor_test.sh
 else
   # regular build
-  ./build_flexspi_nor_release.sh
+  build_cmd="./build_flexspi_nor_${build_type}.sh"
+  ${build_cmd}
 fi
 
 signed_file="${build_full_path}/ota_demo.signed.bin"
