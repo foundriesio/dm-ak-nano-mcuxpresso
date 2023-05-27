@@ -531,7 +531,9 @@ status_t bl_get_image_state(uint32_t *state)
     struct image_trailer image_trailer2;
 
     struct image_trailer *image_trailer_active;
+#ifndef CONFIG_MCUBOOT_FLASH_REMAP_ENABLE
     struct image_trailer *image_trailer_dormant;
+#endif
 
     off    = FLASH_AREA_IMAGE_1_OFFSET + FLASH_AREA_IMAGE_1_SIZE - sizeof(struct image_trailer);
     status = flash_read(off, (uint32_t *)&image_trailer1, sizeof(struct image_trailer));
@@ -552,12 +554,16 @@ status_t bl_get_image_state(uint32_t *state)
     if (get_active_image() == PRIMARY_SLOT_ACTIVE)
     {
         image_trailer_active  = &image_trailer1;
+#ifndef CONFIG_MCUBOOT_FLASH_REMAP_ENABLE
         image_trailer_dormant = &image_trailer2;
+#endif
     }
     else
     {
         image_trailer_active  = &image_trailer2;
+#ifndef CONFIG_MCUBOOT_FLASH_REMAP_ENABLE
         image_trailer_dormant = &image_trailer1;
+#endif
     }
 
 #ifndef CONFIG_MCUBOOT_FLASH_REMAP_ENABLE
