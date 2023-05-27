@@ -338,13 +338,13 @@
  */
 
 /** Use the default session (i.e. session less) login */
-#define SSS_HAVE_SE05X_AUTH_NONE 0
+#define SSS_HAVE_SE05X_AUTH_NONE 1
 
 /** Do User Authentication with UserID */
 #define SSS_HAVE_SE05X_AUTH_USERID 0
 
 /** Use Platform SCP for connection to SE */
-#define SSS_HAVE_SE05X_AUTH_PLATFSCP03 1
+#define SSS_HAVE_SE05X_AUTH_PLATFSCP03 0
 
 /** Do User Authentication with AES Key
  * Earlier this was called AppletSCP03 */
