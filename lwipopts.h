@@ -362,6 +362,8 @@ u32_t lwip_rand(void);
 #define IP_REASS_MAX_PBUFS 4
 #endif
 
+void aknano_client_sntp_set_system_time(u32_t sec);
+
 #endif /* __LWIPOPTS_H__ */
 
 /*****END OF FILE****/
