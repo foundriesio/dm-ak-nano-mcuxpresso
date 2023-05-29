@@ -110,7 +110,13 @@
 #if defined(FSL_FEATURE_SOC_DCP_COUNT) && (FSL_FEATURE_SOC_DCP_COUNT > 0)
 #include "fsl_dcp.h"
 
+/*
+ * Plug-and-Trust 04.03.01 has issues with DCP AES when SCP03 authentication is enabled, at least on RT1060.
+ * Disabling it for now.
+ */
+#ifndef AKNANO_ENABLE_SE05X
 #define MBEDTLS_FREESCALE_DCP_AES    /* Enable use of DCP AES.*/
+#endif
 #define MBEDTLS_FREESCALE_DCP_SHA1   /* Enable use of DCP SHA1.*/
 #define MBEDTLS_FREESCALE_DCP_SHA256 /* Enable use of DCP SHA256.*/
 
