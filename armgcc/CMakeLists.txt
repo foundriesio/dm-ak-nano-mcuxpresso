@@ -50,7 +50,7 @@ SET (AKNANO_DISABLE_REBOOT 0)
 SET (AKNANO_USE_MAC_ADDRESS_AS_DEVICE_UUID 0)
 
 # An arbitrary string to add to key serial output locations, facilitating test analysis
-SET (AKNANO_TEST_MESSAGE_PREAMBLE "TEST ")
+SET (AKNANO_TEST_MESSAGE_PREAMBLE "TEST")
 
 # Dump every TUF metadata that is downloaded from the devide gateway
 SET (AKNANO_DUMP_DOWNLOADED_TUF_METADATA 0)
