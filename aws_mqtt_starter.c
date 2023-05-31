@@ -4,10 +4,20 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "aknano_public_api.h"
+
+int RunCoreMqttAgentDemo(bool awsIotMqttMode,
+                         const char *pIdentifier,
+                         void *pNetworkServerInfo,
+                         void *pNetworkCredentialInfo,
+                         const void *pNetworkInterface);
+
 void aws_mqtt_starter()
 {
-    /* Wait for a few seconds, while aknano initializes */
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    /* Wait for aknano to initialize */
+    while (!aknano_is_initialized())
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
     RunCoreMqttAgentDemo(false, NULL, NULL, NULL, NULL);
     for(;;) {
         vTaskDelay(pdMS_TO_TICKS(5000));
