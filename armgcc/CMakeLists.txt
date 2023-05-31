@@ -427,7 +427,6 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosAwsPath}/libraries/abstractions/platform/include/
     ${FreeRtosAwsPath}/libraries/abstractions/platform/include/
     ${FreeRtosAwsPath}/libraries/abstractions/platform/include/platform/
-    ${FreeRtosAwsPath}/libraries/abstractions/platform/include/private/
     ${FreeRtosAwsPath}/libraries/abstractions/secure_sockets/include/
     ${FreeRtosAwsPath}/libraries/abstractions/transport/secure_sockets/
     ${FreeRtosAwsPath}/libraries/c_sdk/standard/common/include/
