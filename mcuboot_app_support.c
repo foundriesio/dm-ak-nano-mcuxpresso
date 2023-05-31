@@ -181,7 +181,7 @@ static int32_t flash_read(uint32_t addr, uint32_t *buffer, uint32_t len)
 
     return 0;
 }
-
+#ifndef CONFIG_MCUBOOT_FLASH_REMAP_ENABLE
 static int check_unset(uint8_t *p, int len)
 {
     while (len > 0)
@@ -195,6 +195,7 @@ static int check_unset(uint8_t *p, int len)
     }
     return 1;
 }
+#endif
 
 static int boot_img_magic_check(uint8_t *p)
 {
