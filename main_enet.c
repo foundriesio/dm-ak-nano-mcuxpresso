@@ -465,7 +465,7 @@ int main(void)
         // if( xTaskCreate( prvLoggingTask, "Logging", usStackSize, NULL, uxPriority, NULL ) == pdPASS )
     xTaskCreate(btn_read_task, "btn_read_task", 2048, NULL, btn_press_task_PRIO, NULL);
 #ifdef AKNANO_ENABLE_AWS_MQTT_DEMO_TASK
-    xTaskCreate(aws_mqtt_starter, "aws_mqtt_starter", 2048, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(aws_mqtt_starter, "aws_mqtt_starter", 8 * 1024, NULL, configMAX_PRIORITIES - 1, NULL);
 #endif
 
     // xTaskCreate(sampleAppTask, "sntp_task", 4096, NULL, btn_press_task_PRIO, NULL);
