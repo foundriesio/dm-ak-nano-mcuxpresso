@@ -95,7 +95,7 @@
 #define configTIMER_TASK_PRIORITY                    ( configMAX_PRIORITIES - 2 )
 #define configTIMER_QUEUE_LENGTH                     10
 #ifdef AKNANO_ENABLE_SE05X
-#define configTIMER_TASK_STACK_DEPTH                 ( 8*1024 )
+#define configTIMER_TASK_STACK_DEPTH                 ( 10*1024 )
 #else
 #define configTIMER_TASK_STACK_DEPTH                 ( configMINIMAL_STACK_SIZE * 8 )
 #endif
