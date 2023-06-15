@@ -235,8 +235,6 @@ static status_t boot_swap_test(void)
     memset(buf, 0xff, MFLASH_PAGE_SIZE);
     memcpy(image_trailer_p->magic, boot_img_magic, sizeof(boot_img_magic));
 
-    LogError(("write magic number offset = 0x%x", off - MFLASH_PAGE_SIZE));
-
     status = mflash_drv_sector_erase(off - MFLASH_SECTOR_SIZE);
     if (status != kStatus_Success)
     {
