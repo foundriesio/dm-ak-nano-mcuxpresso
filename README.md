@@ -203,10 +203,14 @@ https://docs.foundries.io/latest/getting-started/signup/index.html#create-a-fact
 ### 4.2 Setting up factory PKI
 
 Once the factory is created, you need to set up the factory's PKI. This is done
-by running the following commands:
+by running the following command:
+
 ```
 fioctl keys ca create </absolute/path/to/certs/>
 ```
+**Please notice that the `fioctl keys ca create` command is currently only supported
+on Linux and WSL environments, and should not be executed in Windows PowerShell.**
+
 The command can only be executed once, so store the generate certificates and
 keys in a safe place.
 
@@ -245,10 +249,13 @@ $ fioctl el2g status
 ```
 
 Then, configure the device gateway credentials with the following command.
-Please notice that the factory PKI (Section 4.2) should already be set up.
+The factory PKI (Section 4.2) should already be set up.
+
 ```
 fioctl el2g config-device-gateway --pki-dir </absolute/path/to/certs/>
 ```
+**Please notice that the `fioctl el2g config-device-gateway` command is currently only supported
+on Linux and WSL environments, and should not be executed in Windows PowerShell.**
 
 The expected result for `fioctl el2g status` will be something like:
 ```
@@ -476,14 +483,14 @@ and in the list returned by `fioctl devices list`.
 
 #### 5.6.2 `EdgeLock 2GO Managed`
 The device first tries to fetch the secure objects from EdgeLock 2GO endpoint.
-If the device was not explicitly added yet (see `Section 4.6`), an error
+If the device was not explicitly added yet (see the next section), an error
 message will be printed to the serial output:
 ~~~
 ERROR: iot_agent_update_device_configuration L#537 iot_agent_update_device_configuration_from_datastore failed with 0xffffffd8
 Update status report:
   The device update FAILED (0x0035: ERR_DEVICE_NOT_WHITELISTED)
 ~~~
-After performing the step described in `Section 4.6`, the device should be able
+After performing the step described in the next session, the device should be able
 to fetch the secure objects, and it will register itself in the factory,
 with a name and UUID staring with `nxp-0000`, such as `nxp-00000000003932ce-0001`.
 
@@ -740,3 +747,41 @@ aws iot list-things
 ```
 And you can see the published messages in the AWS IoT web interface, in `MQTT test client`, after subscribing to the
 `/filter/Publisher0` topic.
+
+## 8 Advanced topics
+### 8.1 Device re-provisioning
+
+Specially during testing, it may be useful to re-provision the device with a new set of keys and certificate.
+When "No Secure Element" or "Standalone SE05X" provisioning modes are used, all that has to be done is
+erase the board flash. Although in "Standalone SE05X" mode secure objects will stay inside the SE, they will
+be automatically overwritten once the provisioning software detects that the device does not have serial and
+UUID set.
+
+When in "EdgeLock 2GO Managed" mode, additional steps are required. The secure objects need to be erased from
+the Secure Element, and the device has to removed and re-added to the EdgeLock 2GO database.
+Erasing the secure objects from the Secure Element can be achieved by compiling the firmware with
+AKNANO_RESET_DEVICE_ID set (check CMakeLists.txt), loading the binary and waiting for it to run for a few seconds, until the execution is halted.
+To remove the device from the EdgeLock 2GO database, run a command like:
+```
+fioctl el2g devices delete 935389312472 <UUID>
+```
+And then re-add the device, like described in Section 5.7.
+After those steps, the regular firmware (without AKNANO_RESET_DEVICE_ID enabled) should be loaded to the board.
+
+### 8.2 Enabling High Assurance Boot (HAB)
+
+In the process described in the document, the OTA update images signatures validated by the bootloader,
+MCU Boot.
+In order to allow the bootloader image to be validated as well, the board boot ROM code has to provide
+some authentication mechanism.
+The MIMXRT1060-EVKB board provides the High Assurance Boot (HAB) functionality, that can
+be enabled with this objective.
+
+In order to enable HAB, the [NXP MCUXpresso Secure Provisioning](https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-secure-provisioning-tool:MCUXPRESSO-SECURE-PROVISIONING) tool has to be used. A walkthrough 
+of the HAB enabling process can be found is also [available](https://www.nxp.com/pages/secure-boot-on-the-i-mx-rt10xx-crossover-mcus:TIP-SECURE-BOOT-ON-THE-I.MX-RT10XX-CROSSOVER-MCUS?SAMLart=ST-AAF0E3YJDJej%2BJVBprc7Vu5rkUdez2IREF5agwakysTZKo6kjKUWEzSa).
+HAB documentation usually covers a simpler scenario, where no bootloader is used.
+But not much changes when a bootloader is used. It is just a matter of signing the bootloader image 
+itself (Sections 3.1 and 3.2) instead of a standalone application image.
+After fusing the board making it only accept a signed bootloader, the remaining of the OTA process is
+still the same. The OTA images are still only signed by the private key corresponding to the public key
+selected during MCU Boot build.
