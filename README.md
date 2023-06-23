@@ -89,7 +89,7 @@ the following base tree:
 ~~~
 ├── foundriesio-mcu-ota
 │   ├── foundriesio
-│   ├── mcuxsdk
+│   ├── core
 │   ├── middleware
 │   ├── poc
 │   └── rtos
