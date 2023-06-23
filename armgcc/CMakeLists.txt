@@ -191,6 +191,7 @@ include(${ProjDirPath}/../../../middleware/coreMQTT/mqttFilePaths.cmake)
 
 SET(FreeRtosAwsPath "${ProjDirPath}/../../../rtos/amazon-freertos")
 SET(FreeRtosKernelPath "${ProjDirPath}/../../../rtos/freertos/freertos_kernel")
+SET(MCUXpressoPath "${ProjDirPath}/../../../core/")
 
 add_executable(${MCUX_SDK_PROJECT_NAME}
 "${ProjDirPath}/../config_files/FreeRTOSConfig.h"
@@ -298,7 +299,7 @@ if(AKNANO_BOARD_MODEL STREQUAL rt1060)
     "${ProjDirPath}/../board_rt1060/dcd.c"
     "${ProjDirPath}/../board_rt1060/dcd.h"
 
-    "${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1062/gcc/startup_MIMXRT1062.S"
+    "${MCUXpressoPath}/devices/MIMXRT1062/gcc/startup_MIMXRT1062.S"
     )
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DAKNANO_BOARD_MODEL_RT1060")
 
@@ -307,7 +308,7 @@ if(AKNANO_BOARD_MODEL STREQUAL rt1060)
     )
 
     target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
-        ${ProjDirPath}/../../../mcuxsdk/drivers/trng/
+        ${MCUXpressoPath}/drivers/trng/
     )
 endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
@@ -447,19 +448,19 @@ if(AKNANO_BOARD_MODEL STREQUAL rt1060)
     #path for entry cmake
     set(CMAKE_MODULE_PATH
         ${ProjDirPath}/../../aktualizr-nano/
-        ${ProjDirPath}/../../../mcuxsdk/
-        ${ProjDirPath}/../../../mcuxsdk/components/phy/mdio/enet/
+        ${MCUXpressoPath}/
+        ${MCUXpressoPath}/components/phy/mdio/enet/
         ${ProjDirPath}/../../../middleware/CMSIS_5/Core/Include/
         ${ProjDirPath}/../../../
         ${ProjDirPath}/../../../middleware
         ${ProjDirPath}/../../../middleware/mbedtls
-        ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1162
-        ${ProjDirPath}/../../../mcuxsdk/devices/
-        ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
+        ${MCUXpressoPath}/devices/MIMXRT1162
+        ${MCUXpressoPath}/devices/
+        ${MCUXpressoPath}/drivers/lpi2c/
         ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
         ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
-        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id
-        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id/socs/rt10xx
+        ${MCUXpressoPath}/components/silicon_id
+        ${MCUXpressoPath}/components/silicon_id/socs/rt10xx
         ${ProjDirPath}/../../../rtos/freertos/freertos_kernel
     )
 endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
@@ -468,19 +469,19 @@ if(AKNANO_BOARD_MODEL STREQUAL rt1170)
     #path for entry cmake
     set(CMAKE_MODULE_PATH
         ${ProjDirPath}/../../aktualizr-nano/
-        ${ProjDirPath}/../../../mcuxsdk/
+        ${MCUXpressoPath}/
         ${ProjDirPath}/../../../
         ${ProjDirPath}/../../../middleware
-        ${ProjDirPath}/../../../mcuxsdk/components/phy/mdio/enet/
+        ${MCUXpressoPath}/components/phy/mdio/enet/
         ${ProjDirPath}/../../../middleware/CMSIS_5/Core/Include/
         ${ProjDirPath}/../../../middleware/mbedtls
-        ${ProjDirPath}/../../../mcuxsdk/devices/MIMXRT1176
-        ${ProjDirPath}/../../../mcuxsdk/drivers/lpi2c/
+        ${MCUXpressoPath}/devices/MIMXRT1176
+        ${MCUXpressoPath}/drivers/lpi2c/
         ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions
         ${ProjDirPath}/../../../rtos/amazon-freertos/tools/cmake
         ${ProjDirPath}/../../../rtos/freertos/freertos_kernel
-        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id
-        ${ProjDirPath}/../../../mcuxsdk/components/silicon_id/socs/rt10xx
+        ${MCUXpressoPath}/components/silicon_id
+        ${MCUXpressoPath}/components/silicon_id/socs/rt10xx
     )
 endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
 
@@ -684,7 +685,7 @@ if(AKNANO_ENABLE_SE05X EQUAL 1)
         ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/platform/inc/
         ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/libCommon/infra/
         ${SE05X_SDK_FROM_ZIP_PATH}/sss/plugin/pkcs11/
-        ${ProjDirPath}/../../../mcuxsdk/components/phy/device/phyrtl8211f/
+        ${MCUXpressoPath}/components/phy/device/phyrtl8211f/
 
         # El2Go
         ${SE05X_SDK_FROM_ZIP_PATH}/hostlib/hostLib/tstUtil/
