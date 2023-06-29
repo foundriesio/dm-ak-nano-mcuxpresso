@@ -211,6 +211,10 @@ fioctl keys ca create </absolute/path/to/certs/>
 **Please notice that the `fioctl keys ca create` command is currently only supported
 on Linux and WSL environments, and should not be executed in Windows PowerShell.**
 
+If you can't run the command successfully on your environment, please contact
+[Foundries.io support team](https://foundriesio.atlassian.net/servicedesk/customer/portal/1/group/1/create/3)
+for help.
+
 The command can only be executed once, so store the generate certificates and
 keys in a safe place.
 
@@ -227,8 +231,9 @@ devices to be manages without the need to interact with the EdgeLock 2GO
 API explicitly. If that integration is to be used, the factory need to be
 configured first.
 
-First the FoundriesFactory needs to be registered with EdgeLock 2GO. This should 
+First the FoundriesFactory needs to be registered with EdgeLock 2GO. This should
 be requested to the [Foundries.io support team](https://foundriesio.atlassian.net/servicedesk/customer/portal/1/group/1/create/3).
+The 12NC of the SE05X model should to be used be informed in the request.
 
 Once that initial configuration is done, this is the expected output of the
 `fioctl el2g status` command:
@@ -726,7 +731,7 @@ fioctl targets prune "MIMXRT1060-EVK-v1001"
 ## 7 Enabling AWS IoT MQTT demo task
 
 The same device credentials used for establishing a secure mTLS channel between the device and
-Foundries.io device gateway can be used to securely communicate with AWS IoT cloud infrastructure. The integrated 
+Foundries.io device gateway can be used to securely communicate with AWS IoT cloud infrastructure. The integrated
 AWS IoT MQTT demo task exemplifies that use.
 
 In order to run the MQTT sample, you need to:
@@ -737,7 +742,7 @@ After editing the `factory_cas` with the factory PKI files path (Section 4.2), y
 will be configured. Please notice that this script uses the aws command line application. More information can be found
 at [this blog post](https://foundries.io/insights/blog/aws-iot-jitp/)
 - Change the AKNANO_ENABLE_AWS_MQTT_DEMO_TASK option in the CMakeLists.txt file from `0` to `1`
-- Set the values for `democonfigROOT_CA_PEM` and `democonfigMQTT_BROKER_ENDPOINT` inside 
+- Set the values for `democonfigROOT_CA_PEM` and `democonfigMQTT_BROKER_ENDPOINT` inside
 `foundriesio/dm-ak-nano-mcuxpresso/config_files/mqtt_agent_demo_config.h` with the access information for your
 AWS IoT account.
 
@@ -777,10 +782,10 @@ some authentication mechanism.
 The MIMXRT1060-EVKB board provides the High Assurance Boot (HAB) functionality, that can
 be enabled with this objective.
 
-In order to enable HAB, the [NXP MCUXpresso Secure Provisioning](https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-secure-provisioning-tool:MCUXPRESSO-SECURE-PROVISIONING) tool has to be used. A walkthrough 
+In order to enable HAB, the [NXP MCUXpresso Secure Provisioning](https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-secure-provisioning-tool:MCUXPRESSO-SECURE-PROVISIONING) tool has to be used. A walkthrough
 of the HAB enabling process can be found is also [available](https://www.nxp.com/pages/secure-boot-on-the-i-mx-rt10xx-crossover-mcus:TIP-SECURE-BOOT-ON-THE-I.MX-RT10XX-CROSSOVER-MCUS?SAMLart=ST-AAF0E3YJDJej%2BJVBprc7Vu5rkUdez2IREF5agwakysTZKo6kjKUWEzSa).
 HAB documentation usually covers a simpler scenario, where no bootloader is used.
-But not much changes when a bootloader is used. It is just a matter of signing the bootloader image 
+But not much changes when a bootloader is used. It is just a matter of signing the bootloader image
 itself (Sections 3.1 and 3.2) instead of a standalone application image.
 After fusing the board making it only accept a signed bootloader, the remaining of the OTA process is
 still the same. The OTA images are still only signed by the private key corresponding to the public key
