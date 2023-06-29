@@ -1,0 +1,237 @@
+Release Name: Sample application for FoundriesFactory MCUs management
+Release Version: 2023_m3
+Package License: BSD-3-Clause
+Description: This software pack provides a sample application for using aktualizr-nano, a device management and OTA client for MCUs based on FoundriesFactory.
+Origin: Foundries.io (BSD-3-Clause)
+
+mcux-sdk                   Name: MCUXpresso Software Development Kit (SDK)
+                           Version: 2.13.0
+                           Outgoing License: LA_OPT_NXP_Software_License v39
+                           License File: core/LA_OPT_NXP_Software_License.txt
+                           Format: source code
+                           Description: Comprehensive software enablement
+                           package designed to simplify and accelerate
+                           application development with Arm® Cortex®-M-based
+                           devices from NXP
+                           Location: core
+                           Origin: NXP
+                           Url: https://github.com/nxp-mcuxpresso/mcux-sdk
+
+freertos_kernel            Name: FreeRTOS
+                           Version: 10.4.3_rev1
+                           Outgoing License: MIT
+                           License File:
+                           rtos/freertos/freertos_kernel/LICENSE.md
+                           Format: source code
+                           Description: Open source RTOS kernel for small
+                           devices
+                           Location: rtos/freertos/freertos_kernel
+                           Origin: Amazon (MIT)
+                           Url: https://aws.amazon.com/freertos/
+
+unity                      Name: unity
+                           Version: 2.5.2
+                           Outgoing License: MIT
+                           License File: middleware/unity/LICENSE.txt
+                           Format: source code
+                           Description: Unity Project - A Test Framework for
+                           C
+                           Location: middleware/unity
+                           Origin: Mike Karlesky, Mark VanderVoord, Greg
+                           Williams (MIT)
+                           Url: https://github.com/ThrowTheSwitch/Unity
+
+mbedtls                    Name: Mbed TLS
+                           Version: 2.28.1
+                           Outgoing License: Apache-2.0
+                           License File: middleware/mbedtls/LICENSE
+                           Format: source code
+                           Description: Cryptographic and SSL/TLS Library
+                           Location: middleware/mbedtls
+                           Origin: ARM(Apache-2.0) -
+                           https://github.com/Mbed-TLS/mbedtls/releases/tag/v
+                           2.28.1
+
+lwip                       Name: lwIP TCP/IP Stack
+                           Version: lwIP git repository (2022-05-09, branch:
+                           master, SHA-1:
+                           239918ccc173cb2c2a62f41a40fd893f57faf1d6)
+                           Outgoing License: BSD-3-Clause
+                           License File: middleware/lwip/COPYING
+                           Format: source code
+                           Description: A light-weight TCP/IP stack
+                           Location: middleware/lwip
+                           Origin: Swedish Institute of Computer Science
+                           Url: http://savannah.nongnu.org/projects/lwip
+
+cmsis                      Name: CMSIS
+                           Version: 5.8.0
+                           Outgoing License: Apache License 2.0
+                           License File: middleware/CMSIS_5/LICENSE.txt
+                           Format: source code
+                           Description: Vendor-independent hardware
+                           abstraction layer for microcontrollers that are
+                           based on Arm Cortex processors, distributed by
+                           ARM. cores
+                           Location: middleware/CMSIS_5/
+                           Origin: ARM (Apache-2.0) -
+                           https://github.com/ARM-software/CMSIS_5/releases/t
+                           ag/5.8.0
+
+corejson                   name: FreeRTOS coreJSON
+                           version: 3.0.2
+                           Outgoing License: MIT
+                           License File: middleware/freertos/coreJSON/LICENSE
+                           Format: source code, header files
+                           Description: JSON parser
+                           Location: middleware/freertos/coreJSON
+                           Origin: Amazon (MIT)
+                           Url: https://github.com/FreeRTOS/coreJSON
+
+freertos_corehttp          name: FreeRTOS coreHTTP library
+                           version: 2.1.0
+                           Outgoing License: MIT
+                           License File:
+                           rtos/freertos/libraries/coreHTTP/LICENSE
+                           Format: source code, header files
+                           Description: C language HTTP client library
+                           designed for embedded platforms
+                           Location: rtos/freertos/libraries/coreHTTP
+                           Origin: FreeRTOS -
+                           https://github.com/FreeRTOS/coreHTTP
+
+corepkcs11                 name: FreeRTOS corePKCS11
+                           version: 3.4.0
+                           Outgoing License: MIT
+                           License File: middleware/freertos/corePKCS11/LICENSE
+                           Format: source code, header files
+                           Description: PKCS #11 key management library
+                           Location: middleware/freertos/corePKCS11
+                           Origin: Amazon (MIT)
+                           Url: https://github.com/FreeRTOS/corePKCS11
+
+pkcs11                     Name: OASIS TC pkcs11
+                           Version: 2.40.1
+                           Outgoing License: MIT
+                           License File: middleware/pkcs11/LICENSE.md
+                           Format: source code
+                           Description: Public Key Cryptography Standard #11
+                           defines generic cryptographic token interface.
+                           Location: middleware/pkcs11
+                           Origin: OASIS TC, Amazon (MIT)
+                           Url: https://github.com/amazon-freertos/pkcs11
+
+freertos                   Name: FreeRTOS
+                           Version: 202203.00
+                           Outgoing License: MIT
+                           License File: rtos/amazon-freertos/LICENSE
+                           Format: source code
+                           Description: IoT operating system for
+                           microcontrollers
+                           Location: rtos/amazon-freertos
+                           Origin: Real Time Engineers, Ltd. (MIT)
+                           Url: https://aws.amazon.com/freertos/
+
+backoffalgorithm           name: FreeRTOS backoffalgorithm
+                           version: 1.2.0
+                           Outgoing License: MIT
+                           License File:
+                           rtos/freertos/backoffalgorithm/LICENSE
+                           Format: source code, header files
+                           Description: Algorithm for calculating exponential
+                           backoff with jitter for network retry attempts.
+                           Location: rtos/freertos/backoffalgorithm
+                           Origin: Amazon (MIT)
+                           Url: https://github.com/FreeRTOS/backoffAlgorithm
+
+http-parser                Name: http-parser
+                           Version: 2.9.4
+                           Outgoing License: MIT
+                           License File: middleware/http-parser/LICENSE-MIT
+                           Format: source code
+                           Description: Parser for HTTP messages written in
+                           C. It parses both requests and responses. Forked
+                           from https://github.com/nodejs/http-parser
+                           Location: middleware/http-parser
+                           Origin: Joyent, Inc.
+                           Url: https://github.com/nodejs/http-parser
+
+dm-ak-nano-mcuxpresso      name: dm-ak-nano-mcuxpresso
+                           version: 2023_m3
+                           Outgoing License: BSD-3-Clause
+                           License File:
+                           foundriesio/dm-ak-nano-mcuxpresso/LICENSE
+                           Format: source code, header files
+                           Description:
+                           Aktualizr-nano client for MCUXpresso SDK
+                           Location: foundriesio/dm-ak-nano-mcuxpresso
+                           Origin: Foundries.io (BSD-3-Clause)
+                           Url:
+                           https://github.com/foundriesio/dm-ak-nano-mcuxpresso
+
+aktualizr-nano             name: aktualizr-nano
+                           version: 2023_m3
+                           Outgoing License: BSD-3-Clause
+                           License File: foundriesio/aktualizr-nano/LICENSE
+                           Format: source code, header files
+                           Description: Device management and OTA update
+                           client for MCUs based on FoundriesFactory
+                           Location: foundriesio/aktualizr-nano
+                           Origin: Foundries.io (BSD-3-Clause)
+                           Url: https://github.com/foundriesio/aktualizr-nano
+
+libtufnano                 name: libtufnano
+                           version: 2023_m3
+                           Outgoing License: BSD-3-Clause
+                           License File: foundriesio/libtufnano/LICENSE
+                           Format: source code, header files
+                           Description: Lightweight implementation of a
+                           subset of The Update Framework (TUF) specification
+                           Location: foundriesio/libtufnano
+                           Origin: Foundries.io (BSD-3-Clause)
+                           Url: https://github.com/foundriesio/libtufnano
+
+plug-and-trust             name: Plug and Trust middleware mini package
+                           version: 04.03.01
+                           Outgoing License: Apache-2.0
+                           License File:
+                           middleware/plug-and-trust/Apache_2_0.txt
+                           Format: source code, header files
+                           Description: Plug and Trust middleware mini package
+                           contains the minimum files required to connect to
+                           SE05x using t1oi2c protocol
+                           Location: middleware/plug-and-trust
+                           Origin: NXP (Apache-2.0)
+                           Url: https://github.com/NXP/plug-and-trust
+
+inih                       name: inih (INI Not Invented Here)
+                           version: r56
+                           Outgoing License: BSD-3-Clause
+                           License File: middleware/inih/LICENSE.txt
+                           Format: source code, header files
+                           Description: Simple .INI file parser written in C
+                           Location: middleware/inih
+                           Origin: Ben Hoyt (BSD-3-Clause)
+                           Url: https://github.com/benhoyt/inih
+
+coremqtt-agent             name: FreeRTOS coreMQTT Agent Library
+                           version: 1.1.0
+                           Outgoing License: MIT
+                           License File: middleware/coreMQTT-Agent/LICENSE
+                           Format: source code, header files
+                           Description: High level API that adds thread
+                           safety to the coreMQTT library
+                           Location: middleware/coreMQTT-Agent
+                           Origin: Amazon (MIT)
+                           Url: https://github.com/FreeRTOS/coreMQTT-Agent
+
+coremqtt                   name: FreeRTOS coreMQTT
+                           version: 1.2.0
+                           Outgoing License: MIT
+                           License File: middleware/coreMQTT/LICENSE
+                           Format: source code, header files
+                           Description: MQTT publish/subscribe messaging
+                           library
+                           Location: middleware/coreMQTT
+                           Origin: Amazon (MIT)
+                           Url: https://github.com/FreeRTOS/coremqtt
