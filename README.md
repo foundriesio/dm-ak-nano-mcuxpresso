@@ -208,12 +208,6 @@ by running the following command:
 ```
 fioctl keys ca create </absolute/path/to/certs/>
 ```
-**Please notice that the `fioctl keys ca create` command is currently only supported
-on Linux and WSL environments, and should not be executed in Windows PowerShell.**
-
-If you can't run the command successfully on your environment, please contact
-[Foundries.io support team](https://foundriesio.atlassian.net/servicedesk/customer/portal/1/group/1/create/3)
-for help.
 
 The command can only be executed once, so store the generate certificates and
 keys in a safe place.
@@ -259,8 +253,6 @@ The factory PKI (Section 4.2) should already be set up.
 ```
 fioctl el2g config-device-gateway --pki-dir </absolute/path/to/certs/>
 ```
-**Please notice that the `fioctl el2g config-device-gateway` command is currently only supported
-on Linux and WSL environments, and should not be executed in Windows PowerShell.**
 
 The expected result for `fioctl el2g status` will be something like:
 ```
