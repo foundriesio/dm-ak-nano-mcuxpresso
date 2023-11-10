@@ -783,7 +783,7 @@ After fusing the board making it only accept a signed bootloader, the remaining 
 still the same. The OTA images are still only signed by the private key corresponding to the public key
 selected during MCU Boot build.
 
-### 8.3 Defining device as production device
+### 8.3 Configuring a production device
 
 FoundriesFactory differentiates between [test and production devices](https://docs.foundries.io/latest/reference-manual/ota/production-targets.html).
 For `No Secure Element` and `Standalone SE05X` provisioning modes, the certificate for a production
