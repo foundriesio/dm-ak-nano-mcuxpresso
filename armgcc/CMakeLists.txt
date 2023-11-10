@@ -442,6 +442,7 @@ target_include_directories(${MCUX_SDK_PROJECT_NAME} PRIVATE
     ${FreeRtosKernelPath}/portable/GCC/ARM_CM4F/
     ${MQTT_AGENT_INCLUDE_PUBLIC_DIRS}
     ${ProjDirPath}/../../../rtos/amazon-freertos/libraries/abstractions/mqtt_agent/include
+    ${ProjDirPath}/../../../middleware/CMSIS_5/Core/Include/
 )
 
 if(AKNANO_BOARD_MODEL STREQUAL rt1060)
@@ -485,57 +486,7 @@ if(AKNANO_BOARD_MODEL STREQUAL rt1170)
     )
 endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
 
-
-include(afr)
-
-#Include Entry cmake component
-include(all_devices)
-
-# include modules
-# include(driver_mdio-enet)
-
-include(driver_phy-device-ksz8081)
-
-include(driver_cache_armv7_m7)
-
-include(driver_flexspi)
-
-# include(middleware_lwip_enet_ethernetif)
-
-# include(middleware_lwip)
-
 include(middleware_aktualizr-nano)
-
-include(device_CMSIS)
-include(driver_clock)
-include(CMSIS_Include_core_cm)
-include(middleware_lwip)
-
-include(driver_phy-common)
-
-include(driver_enet)
-
-include(utility_debug_console)
-
-include(component_mflash_file)
-
-# include(backoff_algorithm)
-
-# include(component_mflash_rt1170)
-
-# include(middleware_mbedtls)
-
-# include(middleware_mbedtls_port_ksdk)
-
-# include(middleware_mbedtls_rt2)
-
-# include(middleware_freertos-aws_iot_demos_dev_mode_key_provisioning)
-
-# include(middleware_freertos-aws_iot_vendor_nxp_secure_sockets_lwip)
-
-# include(middleware_freertos-kernel)
-
-# include(middleware_freertos-kernel_heap_4)
 
 if(AKNANO_SELF_TEST EQUAL 1)
     SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -DUNITY_INCLUDE_CONFIG_H -DAKNANO_TEST")
@@ -551,55 +502,28 @@ if(AKNANO_SELF_TEST EQUAL 1)
     include(middleware_aktualizr-nano_tests)
 endif(AKNANO_SELF_TEST EQUAL 1)
 
+set_source_files_properties("${ProjDirPath}/../config_files/FreeRTOSConfig.h" PROPERTIES COMPONENT_CONFIG_FILE "middleware_freertos-kernel_template")
+set_source_files_properties("${ProjDirPath}/../config_files/core_mqtt_config.h" PROPERTIES COMPONENT_CONFIG_FILE "middleware_freertos_coremqtt_template")
+set_source_files_properties("${ProjDirPath}/../config_files/core_pkcs11_config.h" PROPERTIES COMPONENT_CONFIG_FILE "middleware_freertos_corepkcs11_template")
+set_source_files_properties("${ProjDirPath}/../config_files/demo_config.h" PROPERTIES COMPONENT_CONFIG_FILE "middleware_iot_reference_template")
+set_source_files_properties("${ProjDirPath}/../config_files/kvstore_config.h" PROPERTIES COMPONENT_CONFIG_FILE "middleware_iot_reference_template")
+set_source_files_properties("${ProjDirPath}/../lwipopts.h" PROPERTIES COMPONENT_CONFIG_FILE "middleware_lwip_template")
+
+if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
+     target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
+endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_debug)
+
+if(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
+     target_compile_definitions(${MCUX_SDK_PROJECT_NAME}  PRIVATE MBEDTLS_CONFIG_FILE="aws_mbedtls_config.h")
+endif(CMAKE_BUILD_TYPE STREQUAL flexspi_nor_release)
+
 if(AKNANO_BOARD_MODEL STREQUAL rt1060)
-    include(device_startup)
-    include(device_system)
-    include(driver_dcp)
-
-    include(driver_trng)
-    include(middleware_mbedtls_MIMXRT1062)
-
-    include(middleware_mbedtls_port_ksdk)
-
-    include(middleware_mbedtls_rt)
-    include(middleware_lwip_enet_ethernetif_MIMXRT1062)
-
-    include(middleware_lwip)
-    include(component_silicon_id_MIMXRT1062)
+include(${MCUXpressoPath}/devices/MIMXRT1062/all_lib_device.cmake)
 endif(AKNANO_BOARD_MODEL STREQUAL rt1060)
 
-
 if(AKNANO_BOARD_MODEL STREQUAL rt1170)
-    include(all_lib_device_MIMXRT1176_cm7)
-
-    include(device_startup_MIMXRT1176_cm7)
-    include(device_system_MIMXRT1176_cm7)
-
-    include(middleware_mbedtls_MIMXRT1176_cm7)
-    include(middleware_lwip_enet_ethernetif_MIMXRT1176_cm7)
-    include(middleware_mbedtls_port_ksdk)
-
-
-    include(driver_caam)
-    include(driver_dcdc_soc)
-
-    include(driver_phy-device-rtl8211f)
-    include(component_silicon_id_MIMXRT1176_cm7)
+include(${MCUXpressoPath}/devices/MIMXRT1176/all_lib_device.cmake)
 endif(AKNANO_BOARD_MODEL STREQUAL rt1170)
-
-include(driver_igpio)
-
-
-# include(driver_trng)
-
-# include(middleware_freertos-aws_iot_network_manager)
-
-# include(middleware_freertos-aws_iot_demos_ota_demo_helpers)
-
-
-# include(middleware_freertos-aws_iot_demos_corehttp) # 3rdparty
-
-# include(middleware_freertos-aws_iot_libraries_corehttp) # 3rdparty
 
 TARGET_LINK_LIBRARIES(${MCUX_SDK_PROJECT_NAME} PRIVATE -Wl,--start-group)
 
