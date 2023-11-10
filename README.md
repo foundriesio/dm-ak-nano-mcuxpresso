@@ -782,3 +782,16 @@ itself (Sections 3.1 and 3.2) instead of a standalone application image.
 After fusing the board making it only accept a signed bootloader, the remaining of the OTA process is
 still the same. The OTA images are still only signed by the private key corresponding to the public key
 selected during MCU Boot build.
+
+### 8.3 Defining device as production device
+
+FoundriesFactory differentiates between [test and production devices](https://docs.foundries.io/latest/reference-manual/ota/production-targets.html).
+For `No Secure Element` and `Standalone SE05X` provisioning modes, the certificate for a production
+device requires an additional attribute. It is enabled by setting the `AKNANO_PRODUCTION_DEVICE`
+value inside `CMakeLists.txt` to `1` during build. This option only affects the device during provisioning.
+
+For `EdgeLock 2GO Managed` mode this is done by using the `--production` option on the
+`fioctl el2g device add` command. No changes are needed on the device firmware.
+
+The update process for production devices, MCUs and MPUs,
+[involves the use of `waves`](https://docs.foundries.io/latest/reference-manual/ota/production-targets.html).
